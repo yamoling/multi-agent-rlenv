@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "rlenv"
+version = "0.1.0"
+description = "A strongly typed Reinforcement Learning framework"
+authors = ["Yannick Molinghen <yannick.molinghen@ulb.be>"]
+license = "MIT"
+readme = "readme.md"
+
+[tool.poetry.dependencies]
+python = ">=3.8,<3.11"
+numpy = "^1.23.4"
+torch = "^1.12.1"
+tqdm = "^4.64.1"
+smac = {git = "https://github.com/oxwhirl/smac.git"}
+gymnasium = "^0.27.0"
+opencv-python = "^4.6.0.66"
+pettingzoo = "^1.22.3"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
