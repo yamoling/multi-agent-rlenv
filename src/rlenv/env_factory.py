@@ -1,32 +1,17 @@
 from dataclasses import dataclass
-from typing import Union
 from pettingzoo import ParallelEnv
 
 from .models import RLEnv
-from .config import EnvConfig
 from .wrappers import SMACWrapper, GymWrapper, AgentIdWrapper, LastActionWrapper
 
 
-def make(env_name: str) -> RLEnv:
+def make(env: str | ParallelEnv) -> RLEnv:
     """Make an RLEnv from Gym, SMAC or Laser"""
-    config = EnvConfig(env_name, None, False, False)
-    return make_from_config(config)
-
-
-def make_from_config(config: EnvConfig) -> RLEnv:
-    """Make the environment from the given configuration"""
-    builder = EnvBuilder(config.env)
-    if config.with_last_action:
-        builder.with_last_action()
-    if config.with_agent_id:
-        builder.with_agent_id()
-    if config.horizon and config.horizon > 0:
-        builder.horizon(config.horizon)
-    return builder.build()
+    return Builder(env).build()
 
 
 @dataclass
-class EnvBuilder:
+class Builder:
     """Builder for environments"""
     _env: RLEnv
 
@@ -55,27 +40,6 @@ class EnvBuilder:
         if len(map_name) == 0:
             map_name = "3m"
         return SMACWrapper(map_name=map_name)
-
-    # def _get_laser_env(self, env_name: str) -> RLEnv:
-    #     from laser_env import LaserEnv, ObservationType
-    #     map_name = "lvl1"
-    #     obs_dtype = ObservationType.RELATIVE_POSITIONS
-    #     splits = env_name.split(":")
-    #     if len(splits) > 1:
-    #         map_name = splits[1]
-    #     if len(splits) > 2:
-    #         obs_dtype_str = splits[2]
-    #         if obs_dtype_str == "rgb":
-    #             obs_dtype = ObservationType.RGB_IMAGE
-    #         elif obs_dtype_str == "relative":
-    #             obs_dtype = ObservationType.RELATIVE_POSITIONS
-    #         elif obs_dtype_str.startswith("layer"):
-    #             obs_dtype = ObservationType.LAYERED
-    #         else:
-    #             raise ValueError(f"Unknown observation type: {obs_dtype_str}")
-    #     if len(splits) > 3:
-    #         print(f"WARNING: Unknown arguments for laser env: f{splits[2:]}")
-    #     return LaserEnv(map_name, obs_type=obs_dtype)
 
     def horizon(self, horizon: int):
         """Set the horizon (time limit) of the environment"""

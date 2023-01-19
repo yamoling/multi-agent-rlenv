@@ -1,6 +1,6 @@
-from .config import EnvConfig
+__version__ = "0.1.0"
 
 from . import models
 from . import wrappers
 
-from .env_factory import make, EnvBuilder
+from .env_factory import make, Builder

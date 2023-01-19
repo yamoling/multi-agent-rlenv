@@ -1,25 +1,32 @@
 # RLEnv: yet another RL framework
-This framework aims at high level abstractions of RL concepts, allowing building blocks to fit into place.
-Every building block is defined by an interface (python abstract class).
+This framework aims at high level abstractions of RL models, allowing to build algorithms on top of it.
 
 ## Designing an environment
 To create an environment that is compatible with RLEnv, you should inherit from the `rl.models.RLEnv` class.
 
-## Start a training
-### From code
+## Instanciating an environment
+### Simple environments
 ```python
-env = rl.make_env("CartPole-v1")
-model = rl.nn.model_bank.MLP(env.observation_shape, env.extra_feature_shape, (env.n_actions, ))
-optimizer = torch.optim.Adam(model.parameters(), 5e-4)
-qlearning = rl.qlearning.DQNBuilder(model, optimizer, 0.99, 50000, 32, 200, False, loss_function=rl.nn.loss_functions.mse).build()
-policy = rl.policies.DecreasingEpsilonGreedy(env.n_actions, env.n_agents, qlearning, decrease_amount=0.0002)
-agent = rl.Agent(policy)
-runner = rl.Runner(env, agent)
-runner.train(n_steps=10_000)
+import rlenv
+print(rlenv.__version__)
+
+# From Gym
+env = rlenv.make("CartPole-v1")
+
+# From pettingzoo
+from pettingzoo.sisl import pursuit_v4
+env = rlenv.make(pursuit_v4.parallel_env())
 ```
 
-### Through the command line
-```bash
-python3 src/main.py train --algo=dqn --env=CartPole-v0 --model=MLP
+### Adding extra information to the observations
+```python
+import rlenv
+# Building the environment with additional information
+from pettingzoo.sisl import pursuit_v4
+env = rlenv.Builder(pursuit_v4.parallel_env())\
+    .with_agent_id()\
+    .with_last_action()\
+    .build()
+# 8 agents  + 5 actions = 13 extras
+assert env.extra_feature_shape == (13, )
 ```
-All the arguments can be specified on the command lines and default values reside in `config/default_arguments.cfg`.

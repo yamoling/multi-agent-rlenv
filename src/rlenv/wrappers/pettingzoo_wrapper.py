@@ -12,7 +12,7 @@ class PettingZooWrapper(RLEnv):
 
     @property
     def n_actions(self) -> int:
-        self._env.action_space(self.agents[0]).n
+        return self._env.action_space(self.agents[0]).n
 
     @property
     def n_agents(self) -> int:
