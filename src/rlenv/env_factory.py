@@ -67,6 +67,7 @@ class Builder:
     def record_tests(self, folder: str):
         """Add video recording of tests"""
         self._record_folder = folder
+        return self
 
     def build(self) -> tuple[RLEnv, RLEnv]:
         """Build and return the training and testing environments"""
