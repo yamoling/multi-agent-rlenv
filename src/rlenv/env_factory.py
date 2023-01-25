@@ -1,12 +1,13 @@
+from copy import deepcopy
 from dataclasses import dataclass
 from pettingzoo import ParallelEnv
 
 from .models import RLEnv
-from .wrappers import SMACWrapper, GymWrapper, AgentIdWrapper, LastActionWrapper
+from .wrappers import SMACWrapper, GymWrapper, AgentIdWrapper, LastActionWrapper, VideoRecorder
 
 
-def make(env: str | ParallelEnv) -> RLEnv:
-    """Make an RLEnv from Gym, SMAC or Laser"""
+def make(env: str | ParallelEnv) -> tuple[RLEnv, RLEnv]:
+    """Make a train/test tuple of RLEnv from RLEnv, Gym, SMAC or PettingZoo"""
     return Builder(env).build()
 
 
@@ -14,8 +15,10 @@ def make(env: str | ParallelEnv) -> RLEnv:
 class Builder:
     """Builder for environments"""
     _env: RLEnv
+    _record_folder: str|None
 
     def __init__(self, env: str|RLEnv|ParallelEnv) -> None:
+        self._record_folder = None
         match env:
             case str():
                 self._env = self._init_env(env)
@@ -61,6 +64,14 @@ class Builder:
         self._env = LastActionWrapper(self._env)
         return self
 
-    def build(self) -> RLEnv:
-        """Build and return the RLEnv"""
-        return self._env
+    def record_tests(self, folder: str):
+        """Add video recording of tests"""
+        self._record_folder = folder
+
+    def build(self) -> tuple[RLEnv, RLEnv]:
+        """Build and return the training and testing environments"""
+        train_env = self._env
+        test_env = deepcopy(self._env)
+        if self._record_folder is not None:
+            test_env = VideoRecorder(train_env, self._record_folder)
+        return train_env, test_env
