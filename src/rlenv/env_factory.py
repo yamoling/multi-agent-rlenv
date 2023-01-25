@@ -74,5 +74,5 @@ class Builder:
         train_env = self._env
         test_env = deepcopy(self._env)
         if self._record_folder is not None:
-            test_env = VideoRecorder(train_env, self._record_folder)
+            test_env = VideoRecorder(test_env, self._record_folder)
         return train_env, test_env

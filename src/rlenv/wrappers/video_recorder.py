@@ -22,6 +22,7 @@ class VideoRecorder(RLEnvWrapper):
         if not os.path.exists(directory):
             os.makedirs(directory)
         self.video_prefix = video_folder
+        self._video_count = 0
         self._recorder = None
 
     def step(self, actions):
@@ -36,10 +37,11 @@ class VideoRecorder(RLEnvWrapper):
             self._recorder.release()
         height, width, _ = image.shape
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        video_name = f"{self.video_prefix}{timestamp}.avi"
+        video_name = f"{self._video_count}-{self.video_prefix}{timestamp}.avi"
         fps = 10
         self._recorder = cv2.VideoWriter(video_name, 0, fps, (width, height))
         self._recorder.write(image)
+        self._video_count += 1
         return res
 
     def __del__(self):
