@@ -26,7 +26,7 @@ class RLEnvWrapper(RLEnv, ABC):
 
     @property
     def name(self):
-        return self.env.name
+        return f"{self.__class__.__name__}({self.env.name})"
 
     def step(self, actions):
         return self.env.step(actions)
