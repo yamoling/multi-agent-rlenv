@@ -37,7 +37,7 @@ class VideoRecorder(RLEnvWrapper):
             self._recorder.release()
         height, width, _ = image.shape
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        video_name = f"{self._video_count}-{self.video_prefix}{timestamp}.avi"
+        video_name = os.path.join(self.video_prefix, f"{self._video_count}-{timestamp}.avi")
         fps = 10
         self._recorder = cv2.VideoWriter(video_name, 0, fps, (width, height))
         self._recorder.write(image)
