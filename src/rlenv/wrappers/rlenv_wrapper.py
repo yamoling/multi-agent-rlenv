@@ -25,6 +25,10 @@ class RLEnvWrapper(RLEnv, ABC):
         return self.env.observation_shape
 
     @property
+    def extra_feature_shape(self):
+        return self.env.extra_feature_shape
+
+    @property
     def name(self):
         return f"{self.__class__.__name__}({self.env.name})"
 
