@@ -1,8 +1,5 @@
 from dataclasses import dataclass
-from typing import Dict, List
-
 import numpy as np
-import numpy.typing as npt
 
 from .metrics import Metrics
 from .transition import Transition
@@ -11,12 +8,12 @@ from .transition import Transition
 @dataclass
 class Episode:
     """Episode model made of observations, actions, rewards, ..."""
-    _observations: npt.NDArray[np.float32]
-    _extras: npt.NDArray[np.float32]
-    actions: npt.NDArray[np.int64]
-    rewards: npt.NDArray[np.float32]
-    _available_actions: npt.NDArray[np.int64]
-    states: npt.NDArray[np.float32]
+    _observations: np.ndarray[np.float32]
+    _extras: np.ndarray[np.float32]
+    actions: np.ndarray[np.int64]
+    rewards: np.ndarray[np.float32]
+    _available_actions: np.ndarray[np.int64]
+    states: np.ndarray[np.float32]
     metrics: Metrics
     episode_len: int
 
@@ -66,12 +63,12 @@ class Episode:
         return self._observations[1:]
 
     @property
-    def extras(self) -> npt.NDArray[np.float32]:
+    def extras(self) -> np.ndarray[np.float32]:
         """Get the extra features"""
         return self._extras[:-1]
 
     @property
-    def extras_(self) -> npt.NDArray[np.float32]:
+    def extras_(self) -> np.ndarray[np.float32]:
         """Get the next extra features"""
         return self._extras[1:]
 
@@ -91,12 +88,12 @@ class Episode:
         return self._available_actions.shape[2]
 
     @property
-    def available_actions(self) -> npt.NDArray[np.int64]:
+    def available_actions(self) -> np.ndarray[np.int64]:
         """The available actions"""
         return self._available_actions[:-1]
 
     @property
-    def available_actions_(self) -> npt.NDArray[np.int64]:
+    def available_actions_(self) -> np.ndarray[np.int64]:
         """The next available actions"""
         return self._available_actions[1:]
 
@@ -112,7 +109,7 @@ class Episode:
         return dones
 
     @staticmethod
-    def agregate_metrics(episodes: List["Episode"]) -> Metrics:
+    def agregate_metrics(episodes: list["Episode"]) -> Metrics:
         """Agregate metrics of a list of episodes (min, max, avg)"""
         metrics = [e.metrics for e in episodes]
         return Metrics.agregate(metrics)
@@ -165,7 +162,7 @@ class EpisodeBuilder:
             self.available_actions.append(np.ones_like(self.available_actions[-1]))
             self.states.append(np.zeros_like(self.states[-1]))
 
-    def build(self, extra_metrics: Dict[str, float]=None) -> Episode:
+    def build(self, extra_metrics: dict[str, float]=None) -> Episode:
         """Build the Episode"""
         self.metrics["score"] = np.sum(self.rewards)
         self.metrics["episode_length"] = self.episode_len

@@ -1,7 +1,6 @@
 from pettingzoo import ParallelEnv
 from rlenv.models import RLEnv, Observation
 import numpy as np
-import numpy.typing as npt
 
 class PettingZooWrapper(RLEnv):
     def __init__(self, env: ParallelEnv) -> None:
@@ -36,7 +35,7 @@ class PettingZooWrapper(RLEnv):
         except NotImplementedError:
             return np.array([])
     
-    def step(self, actions: npt.NDArray[np.int32]) -> tuple[Observation, float, bool, dict]:
+    def step(self, actions: np.ndarray[np.int32]) -> tuple[Observation, float, bool, dict]:
         action_dict = dict(zip(self.agents, actions))
         obs, reward, term, trunc, info = self._env.step(action_dict)
         obs_data = np.array([v for v in obs.values()])

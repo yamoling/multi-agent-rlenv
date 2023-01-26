@@ -1,7 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Tuple
 import numpy as np
-import numpy.typing as npt
 
 
 from .observation import Observation
@@ -11,11 +9,11 @@ class RLEnv(ABC):
     """This interface defines the attributes and methods that must be implemented to work with this framework"""
 
     @property
-    def extra_feature_shape(self) -> Tuple[int, ...]:
+    def extra_feature_shape(self) -> tuple[int, ...]:
         """The shape of extra features"""
         return (0, )
 
-    def get_avail_actions(self) -> npt.NDArray[np.int32]:
+    def get_avail_actions(self) -> np.ndarray[np.int32]:
         """Get the currently available actions"""
         return np.ones((self.n_agents, self.n_actions), dtype=np.int64)
 
@@ -36,12 +34,12 @@ class RLEnv(ABC):
 
     @property
     @abstractmethod
-    def state_shape(self) -> Tuple[int, ...]:
+    def state_shape(self) -> tuple[int, ...]:
         """The state size."""
 
     @property
     @abstractmethod
-    def observation_shape(self) -> Tuple[int, ...]:
+    def observation_shape(self) -> tuple[int, ...]:
         """The shape of an observation."""
 
     @property
@@ -50,11 +48,11 @@ class RLEnv(ABC):
         """The environment name"""
 
     @abstractmethod
-    def get_state(self) -> npt.NDArray[np.float32]:
+    def get_state(self) -> np.ndarray[np.float32]:
         """Retrieve the current state of the environment."""
 
     @abstractmethod
-    def step(self, actions: npt.NDArray[np.int32]) -> Tuple[Observation, float, bool, dict]:
+    def step(self, actions: np.ndarray[np.int32]) -> tuple[Observation, float, bool, dict]:
         """Perform a step in the environment."""
 
     @abstractmethod

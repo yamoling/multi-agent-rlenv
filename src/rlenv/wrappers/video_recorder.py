@@ -14,7 +14,7 @@ class VideoRecorder(RLEnvWrapper):
     video_prefix: str
     _recorder: cv2.VideoWriter
 
-    def __init__(self, env: RLEnv, video_folder: str = None) -> None:
+    def __init__(self, env: RLEnv, video_folder: str = None, video_encoding: str="mp4") -> None:
         super().__init__(env)
         if not video_folder:
             video_folder = "videos/"
@@ -22,6 +22,7 @@ class VideoRecorder(RLEnvWrapper):
         if not os.path.exists(directory):
             os.makedirs(directory)
         self.video_prefix = video_folder
+        self.video_encoding = video_encoding
         self._video_count = 0
         self._recorder = None
 
@@ -37,7 +38,7 @@ class VideoRecorder(RLEnvWrapper):
             self._recorder.release()
         height, width, _ = image.shape
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        video_name = os.path.join(self.video_prefix, f"{self._video_count}-{timestamp}.avi")
+        video_name = os.path.join(self.video_prefix, f"{self._video_count}-{timestamp}.{self.video_encoding}")
         fps = 10
         self._recorder = cv2.VideoWriter(video_name, 0, fps, (width, height))
         self._recorder.write(image)

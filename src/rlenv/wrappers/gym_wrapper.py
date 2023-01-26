@@ -1,4 +1,3 @@
-from typing import Tuple
 from gymnasium.core import Env
 import numpy as np
 from rlenv.models import RLEnv, Observation
@@ -34,7 +33,7 @@ class GymWrapper(RLEnv):
     def name(self) -> str:
         return self.env.spec.id
 
-    def step(self, actions) -> Tuple[Observation, float, bool, dict]:
+    def step(self, actions) -> tuple[Observation, float, bool, dict]:
         obs_, reward, done, truncated, info = self.env.step(actions[0])
         done = done or truncated
         obs_ = Observation(np.array([obs_], dtype=np.float32), self.get_avail_actions(), self.get_state())

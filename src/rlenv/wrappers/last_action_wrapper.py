@@ -1,4 +1,3 @@
-from typing import Optional
 import numpy as np
 from rlenv.models import Observation
 from .rlenv_wrapper import RLEnvWrapper, RLEnv
@@ -24,7 +23,7 @@ class LastActionWrapper(RLEnvWrapper):
         obs_ = self._add_last_action(obs_, actions)
         return obs_, reward, done, info
 
-    def _add_last_action(self, obs: Observation, last_actions: Optional[np.ndarray]):
+    def _add_last_action(self, obs: Observation, last_actions: np.ndarray[np.int64] | None):
         one_hot_actions = np.zeros((self.n_agents, self.n_actions), dtype=np.float32)
         if last_actions is not None:
             index = np.arange(self.n_agents)

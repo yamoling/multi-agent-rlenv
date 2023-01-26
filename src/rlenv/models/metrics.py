@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Dict, Iterable, List, Optional, Tuple, Union
+from typing import Iterable
 import numpy as np
 
 
@@ -10,8 +10,8 @@ class Measurement:
     arithmetic operators for usability and is mainly used for logging purposes.
     """
     value: float
-    fmt: Optional[str]
-    unit: Optional[str]
+    fmt: str | None
+    unit: str | None
 
     def __init__(self, value, fmt=None, unit="") -> None:
         self.value = value
@@ -20,7 +20,7 @@ class Measurement:
         if fmt is None and isinstance(value, (int, float)):
             self.fmt = ".3f"
 
-    def __add__(self, other: Union["Measurement", float]) -> "Measurement":
+    def __add__(self, other: "Measurement" | float) -> "Measurement":
         fmt = self.fmt
         unit = self.unit
         if isinstance(other, Measurement):
@@ -37,7 +37,7 @@ class Measurement:
     def __str__(self)-> str:
         return format(self.value, self.fmt) + self.unit
 
-    def __lt__(self, other: Union["Measurement", float]) -> bool:
+    def __lt__(self, other: "Measurement" | float) -> bool:
         if isinstance(other, Measurement):
             assert self.unit == other.unit, "Can not compare measurements with different units"
             value = other.value
@@ -47,7 +47,7 @@ class Measurement:
             raise NotImplementedError(f"Comparison not implemented against type {type(other)}")
         return self.value < value
 
-    def __le__(self, other: Union["Measurement", float]) -> bool:
+    def __le__(self, other: "Measurement" | float) -> bool:
         if isinstance(other, Measurement):
             assert self.unit == other.unit, "Can not compare measurements with different units"
             value = other.value
@@ -57,7 +57,7 @@ class Measurement:
             raise NotImplementedError(f"Comparison not implemented against type {type(other)}")
         return self.value <= value
 
-    def __gt__(self, other: Union["Measurement", float]) -> bool:
+    def __gt__(self, other: "Measurement" | float) -> bool:
         if isinstance(other, Measurement):
             assert self.unit == other.unit, "Can not compare measurements with different units"
             value = other.value
@@ -67,7 +67,7 @@ class Measurement:
             raise NotImplementedError(f"Comparison not implemented against type {type(other)}")
         return self.value > value
 
-    def __ge__(self, other: Union["Measurement", float]) -> bool:
+    def __ge__(self, other: "Measurement" | float) -> bool:
         if isinstance(other, Measurement):
             assert self.unit == other.unit, "Can not compare measurements with different units"
             value = other.value
@@ -77,7 +77,7 @@ class Measurement:
             raise NotImplementedError(f"Comparison not implemented against type {type(other)}")
         return self.value >= value
 
-    def __eq__(self, other: Union["Measurement", float]) -> bool:
+    def __eq__(self, other: "Measurement" | float) -> bool:
         if isinstance(other, Measurement):
             assert self.unit == other.unit, "Can not compare measurements with different units"
             value = other.value
@@ -121,20 +121,19 @@ class Metrics(dict):
         """Just for type hinting"""
         return super().__getitem__(key)
 
-    def __setitem__(self, key: str, value: Union[Measurement, float, int]) -> None:
+    def __setitem__(self, key: str, value: Measurement | float | int) -> None:
         if not isinstance(value, Measurement):
             value = Measurement(value)
         return super().__setitem__(key, value)
 
-    def items(self) -> Iterable[Tuple[str, Measurement]]:
-        # pylint: disable = W0235
+    def items(self) -> Iterable[tuple[str, Measurement]]:
         """Just for type hinting"""
         return super().items()
 
     @staticmethod
-    def agregate(all_metrics: List["Metrics"]) -> "Metrics":
+    def agregate(all_metrics: list["Metrics"]) -> "Metrics":
         """Aggregate a list of metrics into min, max, avg and std."""
-        all_values: Dict[str, List[Measurement]] = {}
+        all_values: dict[str, list[Measurement]] = {}
         for metrics in all_metrics:
             for key, value in metrics.items():
                 if key not in all_values:

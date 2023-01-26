@@ -5,3 +5,4 @@ from .last_action_wrapper import LastActionWrapper
 from .smac_wrapper import SMACWrapper
 from .video_recorder import VideoRecorder
 from .pettingzoo_wrapper import PettingZooWrapper
+from .extrinsic_reward_wrapper import DecreasingExpStateCount, LinearStateCount
