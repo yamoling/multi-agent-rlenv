@@ -13,11 +13,8 @@ class VideoRecorder(RLEnvWrapper):
         super().__init__(env)
         if not video_folder:
             video_folder = "videos/"
-        if not video_folder.endswith("/"):
-            video_folder += "/"
-        directory = os.path.dirname(video_folder)
-        if not os.path.exists(directory):
-            os.makedirs(directory)
+        if not os.path.exists(video_folder):
+            os.makedirs(video_folder)
         self.video_folder = video_folder
         self.video_extension = video_encoding
         self._video_count = 0
