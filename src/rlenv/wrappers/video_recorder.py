@@ -36,7 +36,7 @@ class VideoRecorder(RLEnvWrapper):
         height, width, _ = image.shape
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         video_name = os.path.join(self.video_folder, f"{self._video_count}-{timestamp}.{self.video_extension}")
-        os.makedirs(video_name, exist_ok=True)
+        os.makedirs(self.video_folder, exist_ok=True)
         self._recorder = cv2.VideoWriter(video_name, self._four_cc, VideoRecorder.FPS, (width, height))
         self._recorder.write(image)
         self._video_count += 1
