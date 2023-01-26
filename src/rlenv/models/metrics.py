@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Iterable
+from typing import Iterable, Union
 import numpy as np
 
 
@@ -20,7 +20,7 @@ class Measurement:
         if fmt is None and isinstance(value, (int, float)):
             self.fmt = ".3f"
 
-    def __add__(self, other: "Measurement" | float) -> "Measurement":
+    def __add__(self, other: Union["Measurement", float]) -> "Measurement":
         fmt = self.fmt
         unit = self.unit
         if isinstance(other, Measurement):
@@ -37,7 +37,7 @@ class Measurement:
     def __str__(self)-> str:
         return format(self.value, self.fmt) + self.unit
 
-    def __lt__(self, other: "Measurement" | float) -> bool:
+    def __lt__(self, other: Union["Measurement", float]) -> bool:
         if isinstance(other, Measurement):
             assert self.unit == other.unit, "Can not compare measurements with different units"
             value = other.value
@@ -47,7 +47,7 @@ class Measurement:
             raise NotImplementedError(f"Comparison not implemented against type {type(other)}")
         return self.value < value
 
-    def __le__(self, other: "Measurement" | float) -> bool:
+    def __le__(self, other: Union["Measurement", float]) -> bool:
         if isinstance(other, Measurement):
             assert self.unit == other.unit, "Can not compare measurements with different units"
             value = other.value
@@ -57,7 +57,7 @@ class Measurement:
             raise NotImplementedError(f"Comparison not implemented against type {type(other)}")
         return self.value <= value
 
-    def __gt__(self, other: "Measurement" | float) -> bool:
+    def __gt__(self, other: Union["Measurement", float]) -> bool:
         if isinstance(other, Measurement):
             assert self.unit == other.unit, "Can not compare measurements with different units"
             value = other.value
@@ -67,7 +67,7 @@ class Measurement:
             raise NotImplementedError(f"Comparison not implemented against type {type(other)}")
         return self.value > value
 
-    def __ge__(self, other: "Measurement" | float) -> bool:
+    def __ge__(self, other: Union["Measurement", float]) -> bool:
         if isinstance(other, Measurement):
             assert self.unit == other.unit, "Can not compare measurements with different units"
             value = other.value
@@ -77,7 +77,7 @@ class Measurement:
             raise NotImplementedError(f"Comparison not implemented against type {type(other)}")
         return self.value >= value
 
-    def __eq__(self, other: "Measurement" | float) -> bool:
+    def __eq__(self, other: Union["Measurement", float]) -> bool:
         if isinstance(other, Measurement):
             assert self.unit == other.unit, "Can not compare measurements with different units"
             value = other.value
