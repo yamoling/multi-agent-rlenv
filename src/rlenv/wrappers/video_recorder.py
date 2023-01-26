@@ -23,8 +23,8 @@ class VideoRecorder(RLEnvWrapper):
         self._video_count = 0
         self._recorder = None
         match video_encoding:
-            case "mp4": self._four_cc = cv2.VideoWriter_fourcc(*"XVID")
-            case "avi": self._four_cc = cv2.VideoWriter_fourcc(*"MJPG")
+            case "mp4": self._four_cc = cv2.VideoWriter_fourcc(*"mp4v")
+            case "avi": self._four_cc = cv2.VideoWriter_fourcc(*"XVID")
             case other: raise ValueError(f"Unsupported file video encoding: {other}")
         
 
