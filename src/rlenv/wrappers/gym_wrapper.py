@@ -8,9 +8,6 @@ class GymWrapper(RLEnv):
 
     def __init__(self, env: Env) -> None:
         super().__init__()
-        # if "atari" in env.spec.entry_point.lower():
-        #     env = gym.wrappers.AtariPreprocessing(env, frame_skip=1)
-        #     env = gym.wrappers.FrameStack(env, 4)
         self.env = env
 
     @property
@@ -48,7 +45,7 @@ class GymWrapper(RLEnv):
         return obs
 
     def render(self, mode: str = "human"):
-        return self.env.render(mode)
+        return self.env.render()
 
     def seed(self, seed_value: int):
         self.env.reset(seed=seed_value)
