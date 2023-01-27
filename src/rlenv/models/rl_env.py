@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import Literal
 import numpy as np
 
 
@@ -60,8 +61,11 @@ class RLEnv(ABC):
         """Reset the environment."""
 
     @abstractmethod
-    def render(self, mode: str="human"):
-        """Render the environment"""
+    def render(self, mode: Literal["human", "rgb_array"]="human") -> None | np.ndarray:
+        """
+        Render the environment.
+        When calling with 'rgb_array', returns the rgb_array but does not show anything on screen.
+        """
 
 
     def summary(self) -> dict[str, str]:
