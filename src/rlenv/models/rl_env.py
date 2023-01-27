@@ -62,3 +62,15 @@ class RLEnv(ABC):
     @abstractmethod
     def render(self, mode: str="human"):
         """Render the environment"""
+
+
+    def summary(self) -> dict[str, str]:
+        """Summary of the environment informations"""
+        return {
+            "name": self.name,
+            "n_actions": self.n_actions,
+            "n_agents": self.n_agents,
+            "obs_shape": self.observation_shape,
+            "extras_shape": self.extra_feature_shape,
+            "state_shape": self.state_shape
+        }
