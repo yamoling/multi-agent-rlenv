@@ -40,7 +40,7 @@ class RLEnv(ABC):
     @property
     @abstractmethod
     def observation_shape(self) -> tuple[int, ...]:
-        """The shape of an observation."""
+        """The shape of an observation for a single agent."""
 
     @property
     @abstractmethod
