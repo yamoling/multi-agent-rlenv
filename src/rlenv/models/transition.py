@@ -23,3 +23,13 @@ class Transition:
     def n_agents(self) -> int:
         """The number of agents"""
         return len(self.action)
+
+    def to_json(self) -> dict:
+        """Returns a json-serializable dictionary of the transition"""
+        return {
+            "obs": self.obs.to_json(),
+            "obs_": self.obs_.to_json(),
+            "action": self.action.tolist(),
+            "reward": self.reward,
+            "done": self.done
+        }

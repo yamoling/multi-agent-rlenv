@@ -35,3 +35,12 @@ class Observation:
     def n_agents(self) -> int:
         """The number of agents in the observation"""
         return self.data.shape[0]
+
+    def to_json(self) -> dict:
+        """Returns a json-serializable dictionary of the observation"""
+        return {
+            "data": self.data.tolist(),
+            "extras": self.extras.tolist(),
+            "stats": self.state.tolist(),
+            "available_actions": self.available_actions.tolist()
+        }
