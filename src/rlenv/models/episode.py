@@ -131,7 +131,7 @@ class Episode:
             "rewards": self.rewards.tolist(),
             "available_actions": self._available_actions.tolist(),
             "states": self.states.tolist(),
-            "metrics": self.metrics
+            "metrics": self.metrics.to_json()
         }
 
 
