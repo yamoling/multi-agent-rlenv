@@ -91,7 +91,7 @@ class Measurement:
         return Measurement(self.value/divider, self.fmt, self.unit)
 
 
-class Metrics(dict):
+class Metrics(dict[str, Measurement]):
     """Metrics are just a dictionary of type [str, Measurement] with facilities such as adding, dividing and averaging methods."""
 
     def __init__(self, **kwargs) -> None:
@@ -157,3 +157,8 @@ class Metrics(dict):
             return self["score"].value
         except KeyError:
             return self["avg_score"].value
+
+    def to_json(self) -> dict[str, float]:
+        return {
+            key: measurement.value for key, measurement in self.items()
+        }
