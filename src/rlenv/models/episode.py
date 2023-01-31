@@ -122,6 +122,18 @@ class Episode:
         """The episode score (sum of all rewards)"""
         return self.metrics["score"].value
 
+    def to_json(self) -> dict:
+        """Creates a json serialisable dictionary"""
+        return {
+            "obs": self._observations.tolist(),
+            "extras": self._extras.tolist(),
+            "actions": self.actions.tolist(),
+            "rewards": self.rewards.tolist(),
+            "available_actions": self._available_actions.tolist(),
+            "states": self.states.tolist(),
+            "metrics": self.metrics
+        }
+
 
 class EpisodeBuilder:
     """EpisodeBuilder gives away the complexity of building an Episode to another class"""
