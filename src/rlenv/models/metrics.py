@@ -160,5 +160,5 @@ class Metrics(dict[str, Measurement]):
 
     def to_json(self) -> dict[str, float]:
         return {
-            key: measurement.value for key, measurement in self.items()
+            key: float(measurement.value) for key, measurement in self.items()
         }
