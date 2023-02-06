@@ -67,14 +67,13 @@ class RLEnv(ABC):
         When calling with 'rgb_array', returns the rgb_array but does not show anything on screen.
         """
 
-
     def summary(self) -> dict[str, str]:
         """Summary of the environment informations"""
         return {
             "name": self.name,
-            "n_actions": self.n_actions,
-            "n_agents": self.n_agents,
-            "obs_shape": self.observation_shape,
-            "extras_shape": self.extra_feature_shape,
-            "state_shape": self.state_shape
+            "n_actions": int(self.n_actions),
+            "n_agents": int(self.n_agents),
+            "obs_shape": tuple(int(s) for s in self.observation_shape),
+            "extras_shape": tuple(int(s) for s in self.extra_feature_shape),
+            "state_shape": tuple(int(s) for s in self.state_shape)
         }
