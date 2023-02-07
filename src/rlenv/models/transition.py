@@ -24,6 +24,10 @@ class Transition:
         """The number of agents"""
         return len(self.action)
 
+    @property
+    def n_actions(self) -> int:
+        return int(self.obs.available_actions.shape[-1])
+
     def to_json(self) -> dict:
         """Returns a json-serializable dictionary of the transition"""
         return {
