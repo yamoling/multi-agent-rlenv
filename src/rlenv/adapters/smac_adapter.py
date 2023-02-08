@@ -4,7 +4,7 @@ from smac.env import StarCraft2Env
 from rlenv.models import RLEnv, Observation
 
 
-class SMACWrapper(RLEnv):
+class SMACAdapter(RLEnv):
     """Wrapper for the SMAC environment to work with this framework"""
 
     def __init__(self, map_name: str, time_limit=150) -> None:

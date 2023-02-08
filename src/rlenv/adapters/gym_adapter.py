@@ -3,7 +3,7 @@ import numpy as np
 from rlenv.models import RLEnv, Observation
 
 
-class GymWrapper(RLEnv):
+class GymAdapter(RLEnv):
     """Wraps a gym envronment in an RLEnv"""
 
     def __init__(self, env: Env) -> None:

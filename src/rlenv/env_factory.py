@@ -5,8 +5,9 @@ from typing import Literal
 from pettingzoo import ParallelEnv
 
 from .models import RLEnv
+from . import adapters
 from . import wrappers
-# from .wrappers import SMACWrapper, GymWrapper, AgentIdWrapper, LastActionWrapper, VideoRecorder
+
 
 
 def make(env: str | ParallelEnv) -> RLEnv:
@@ -27,8 +28,7 @@ class Builder:
             case RLEnv():
                 self._env = env
             case ParallelEnv():
-                from .wrappers import PettingZooWrapper
-                self._env = PettingZooWrapper(env)
+                self._env = adapters.PettingZooAdapter(env)
             case _:
                 raise NotImplementedError()
         self._test_env = deepcopy(self._env)
@@ -38,25 +38,26 @@ class Builder:
             return self._get_smac_env(env)
         else:
             import gymnasium as gym
-            return wrappers.GymWrapper(gym.make(env, render_mode="rgb_array"))
+            return adapters.GymAdapter(gym.make(env, render_mode="rgb_array"))
 
     def _get_smac_env(self, env_name: str) -> RLEnv:
         env_name = env_name.lower()
         map_name = env_name[len("smac:"):]
         if len(map_name) == 0:
             map_name = "3m"
-        return wrappers.SMACWrapper(map_name=map_name)
+        return adapters.SMACAdapter(map_name=map_name)
 
-    def horizon(self, horizon: int):
-        """Set the horizon (time limit) of the environment"""
+    def time_limit(self, n_steps: int):
+        """Set the time limit (horizon) of the environment (train & test)"""
         if hasattr(self._env, "horizon"):
-            setattr(self._env, "horizon", horizon)
-            setattr(self._test_env, "horizon", horizon)
+            setattr(self._env, "horizon", n_steps)
+            setattr(self._test_env, "horizon", n_steps)
         elif hasattr(self._env, "time_limit"):
-            setattr(self._env, "time_limit", horizon)
-            setattr(self._test_env, "time_limit", horizon)
+            setattr(self._env, "time_limit", n_steps)
+            setattr(self._test_env, "time_limit", n_steps)
         else:
-            raise NotImplementedError(f"{self._env.name} does not support horizon !")
+            self._env = wrappers.TimeLimitWrapper(self._env, n_steps)
+            self._test_env = wrappers.TimeLimitWrapper(self._test_env, n_steps)
         return self
 
     def agent_id(self):

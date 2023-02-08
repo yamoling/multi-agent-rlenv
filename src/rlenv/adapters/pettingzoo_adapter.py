@@ -2,7 +2,7 @@ from pettingzoo import ParallelEnv
 from rlenv.models import RLEnv, Observation
 import numpy as np
 
-class PettingZooWrapper(RLEnv):
+class PettingZooAdapter(RLEnv):
     def __init__(self, env: ParallelEnv) -> None:
         super().__init__()
         self._env = env
