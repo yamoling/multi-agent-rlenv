@@ -11,7 +11,7 @@ class VideoRecorder(RLEnvWrapper):
 
     def __init__(self, env: RLEnv, video_folder: str = None, video_encoding: Literal["mp4", "avi"]="mp4") -> None:
         super().__init__(env)
-        if not video_folder:
+        if video_folder is None:
             video_folder = "videos/"
         self.video_folder = video_folder
         self.video_extension = video_encoding

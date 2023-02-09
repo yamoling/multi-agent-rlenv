@@ -27,7 +27,7 @@ class LinearStateCount(ExtrinsicReward):
         if visit_count > self.anneal_on:
             return 0.
         self.visit_count[h] = visit_count + 1
-        return -visit_count / self.anneal_on + self.additional_reward
+        return self.additional_reward * (1 - ((self.anneal_on - visit_count) / self.anneal_on))
 
 class DecreasingExpStateCount(ExtrinsicReward):
     """
