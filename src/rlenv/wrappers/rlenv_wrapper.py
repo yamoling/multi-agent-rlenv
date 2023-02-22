@@ -1,5 +1,6 @@
 from abc import ABC
-from rlenv.models import RLEnv
+import numpy as np
+from rlenv.models import RLEnv, Observation
 
 
 class RLEnvWrapper(RLEnv, ABC):
@@ -32,8 +33,9 @@ class RLEnvWrapper(RLEnv, ABC):
     def name(self):
         return f"{self.__class__.__name__}({self.env.name})"
 
-    def step(self, actions):
+    def step(self, actions: np.ndarray[np.int32]) -> tuple[Observation, float, bool, dict]:
         return self.env.step(actions)
+    
 
     def reset(self):
         return self.env.reset()

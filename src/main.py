@@ -21,6 +21,6 @@ env = rlenv.Builder(pursuit_v4.parallel_env())\
 assert env.extra_feature_shape == (13, )
 
 
-_, test = rlenv.Builder("CartPole-v1").record("videos", encoding="avi").build_all()
+test = rlenv.Builder("CartPole-v1").add_logger("action", "logs").build()
 test.reset()
 [test.step([0]) for i in range(20)]

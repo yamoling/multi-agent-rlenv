@@ -4,7 +4,7 @@ from rlenv.models import Observation
 from .rlenv_wrapper import RLEnvWrapper, RLEnv
 
 
-class ExtrinsicReward(RLEnvWrapper):
+class IntrinsicReward(RLEnvWrapper):
     @abstractmethod
     def _compute_extrinsic_reward(self, obs: Observation) -> float:
         """Extrinsic reward computation"""
@@ -14,7 +14,7 @@ class ExtrinsicReward(RLEnvWrapper):
         reward += self._compute_extrinsic_reward(obs)
         return obs, reward, done, info
 
-class LinearStateCount(ExtrinsicReward):
+class LinearStateCount(IntrinsicReward):
     def __init__(self, env: RLEnv, additional_reward: float, anneal_on: int) -> None:
         super().__init__(env)
         self.additional_reward = additional_reward
@@ -29,7 +29,7 @@ class LinearStateCount(ExtrinsicReward):
         self.visit_count[h] = visit_count + 1
         return self.additional_reward * (1 - ((self.anneal_on - visit_count) / self.anneal_on))
 
-class DecreasingExpStateCount(ExtrinsicReward):
+class DecreasingExpStateCount(IntrinsicReward):
     """
     Decreasing exponential extrinsic reward based on the state visit count.
     extrinsic_reward(visit_count) = scale_by * e^(visit_count/anneal)

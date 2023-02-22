@@ -60,11 +60,18 @@ class Builder:
             self._test_env = wrappers.TimeLimitWrapper(self._test_env, n_steps)
         return self
     
-    def log_actions(self, folder: str=""):
-        """Log the actions taken by the agents"""
-        import os
-        self._env = wrappers.ActionLogWrapper(self._env, os.path.join(folder, "train"))
-        self._test_env = wrappers.ActionLogWrapper(self._test_env, os.path.join(folder, "test"))
+    def add_logger(self, log_type: Literal["action", "obs"], directory: str=""):
+        """Adds an action|observation logger to the environment.
+        Logs go to the directory/test and directory/train folders"""
+        match log_type:
+            case "action":
+                self._env = wrappers.LogActionWrapper(self._env, os.path.join(directory, "train"))
+                self._test_env = wrappers.LogActionWrapper(self._test_env, os.path.join(directory, "test"))        
+            case "obs":
+                self._env = wrappers.LogObservationWrapper(self._env, os.path.join(directory, "train"))
+                self._test_env = wrappers.LogObservationWrapper(self._env, os.path.join(directory, "test"))
+            case other:
+                raise NotImplementedError(f"Wrapper {other} is unknown")
         return self
 
     def agent_id(self):
@@ -87,7 +94,7 @@ class Builder:
         self._test_env = wrappers.VideoRecorder(self._test_env, folder, video_encoding=encoding)
         return self
 
-    def extrinsic_reward(self, method: Literal["linear", "exp"], initial_reward: float, anneal: float, also_for_testing=False):
+    def intrinsic_reward(self, method: Literal["linear", "exp"], initial_reward: float, anneal: float, also_for_testing=False):
         match method:
             case "linear":
                 self._env = wrappers.LinearStateCount(self._env, initial_reward, anneal)
