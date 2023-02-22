@@ -59,6 +59,12 @@ class Builder:
             self._env = wrappers.TimeLimitWrapper(self._env, n_steps)
             self._test_env = wrappers.TimeLimitWrapper(self._test_env, n_steps)
         return self
+    
+    def log_actions(self, folder: str=""):
+        """Log the actions taken by the agents"""
+        self._env = wrappers.ActionLogWrapper(self._env, folder)
+        self._test_env = wrappers.ActionLogWrapper(self._test_env, folder)
+        return self
 
     def agent_id(self):
         """Adds agent ID to the observations"""

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "rlenv"
-version = "0.2.5"
+version = "0.2.6"
 description = "A strongly typed Reinforcement Learning framework"
 authors = ["Yannick Molinghen <yannick.molinghen@ulb.be>"]
 license = "MIT"

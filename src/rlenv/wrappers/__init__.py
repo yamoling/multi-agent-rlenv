@@ -4,3 +4,4 @@ from .last_action_wrapper import LastActionWrapper
 from .video_recorder import VideoRecorder
 from .extrinsic_reward_wrapper import DecreasingExpStateCount, LinearStateCount
 from .time_limit import TimeLimitWrapper
+from .log_wrapper import ActionLogWrapper
