@@ -62,8 +62,9 @@ class Builder:
     
     def log_actions(self, folder: str=""):
         """Log the actions taken by the agents"""
-        self._env = wrappers.ActionLogWrapper(self._env, folder)
-        self._test_env = wrappers.ActionLogWrapper(self._test_env, folder)
+        import os
+        self._env = wrappers.ActionLogWrapper(self._env, os.path.join(folder, "train"))
+        self._test_env = wrappers.ActionLogWrapper(self._test_env, os.path.join(folder, "test"))
         return self
 
     def agent_id(self):
