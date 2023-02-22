@@ -9,7 +9,7 @@ class LogWrapper(RLEnvWrapper):
         super().__init__(env)
         self._directory = directory
         self._file_name = file_name
-        self._episode_num = 0
+        self._episode_num = -1
         self._logs = []
 
     def _save(self):
@@ -18,6 +18,10 @@ class LogWrapper(RLEnvWrapper):
         with open(log_path, "w") as f:
             json.dump(self._logs, f)
         self._logs = []
+
+    def reset(self) -> Observation:
+        self._episode_num += 1
+        return super().reset()
 
     def step(self, actions: np.ndarray[np.int32]) -> tuple[Observation, float, bool, dict]:
         obs, reward, done, info = super().step(actions)
