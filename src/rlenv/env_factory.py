@@ -69,7 +69,7 @@ class Builder:
                 self._test_env = wrappers.LogActionWrapper(self._test_env, os.path.join(directory, "test"))        
             case "obs":
                 self._env = wrappers.LogObservationWrapper(self._env, os.path.join(directory, "train"))
-                self._test_env = wrappers.LogObservationWrapper(self._env, os.path.join(directory, "test"))
+                self._test_env = wrappers.LogObservationWrapper(self._test_env, os.path.join(directory, "test"))
             case other:
                 raise NotImplementedError(f"Wrapper {other} is unknown")
         return self
