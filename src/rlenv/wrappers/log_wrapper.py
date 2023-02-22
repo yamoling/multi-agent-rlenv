@@ -9,7 +9,7 @@ class LogWrapper(RLEnvWrapper):
         super().__init__(env)
         self._directory = directory
         self._file_name = file_name
-        self._episode_num = -1
+        self._episode_num = 0
         self._logs = []
 
     def _save(self):
