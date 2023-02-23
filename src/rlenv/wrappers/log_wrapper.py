@@ -35,7 +35,11 @@ class LogActionWrapper(LogWrapper):
         super().__init__(env, directory, "actions.json")
 
     def step(self, actions):
-        self._logs.append(actions.tolist())
+        match actions:
+            case np.ndarray(): actions = actions.tolist()
+            case list(): pass
+            case other: raise TypeError(f"actions must be a list or numpy array, not {type(other)}")
+        self._logs.append(actions)
         return super().step(actions)
     
 
