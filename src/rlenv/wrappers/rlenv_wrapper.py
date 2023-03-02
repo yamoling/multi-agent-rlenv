@@ -51,3 +51,6 @@ class RLEnvWrapper(RLEnv, ABC):
 
     def seed(self, seed_value: int):
         return self.env.seed(seed_value)
+
+    def summary(self) -> dict[str, str]:
+        return self.env.summary()

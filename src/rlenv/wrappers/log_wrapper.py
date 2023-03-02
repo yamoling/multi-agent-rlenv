@@ -28,7 +28,7 @@ class LogWrapper(RLEnvWrapper):
         if done:
             self._save()
         return obs, reward, done, info
-
+    
 
 class LogActionWrapper(LogWrapper):
     def __init__(self, env: RLEnv, directory: str):
@@ -41,6 +41,12 @@ class LogActionWrapper(LogWrapper):
             case other: raise TypeError(f"actions must be a list or numpy array, not {type(other)}")
         self._logs.append(actions)
         return super().step(actions)
+    
+    def summary(self) -> dict[str, str]:
+        return {
+            **super().summary(),
+            "actions_logdir": self._directory
+        }
     
 
 class LogObservationWrapper(LogWrapper):
@@ -56,3 +62,9 @@ class LogObservationWrapper(LogWrapper):
         obs, reward, done, info = super().step(actions)
         self._logs.append(obs.to_json())
         return obs, reward, done, info
+
+    def summary(self) -> dict[str, str]:
+        return {
+            **super().summary(),
+            "obs_logdir": self._directory
+        }
