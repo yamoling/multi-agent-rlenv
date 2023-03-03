@@ -16,3 +16,10 @@ class TimeLimitWrapper(RLEnvWrapper):
         obs_, reward, done, info =  super().step(actions)
         done = done or (self._current_step >= self._step_limit)
         return obs_, reward, done, info
+
+    def summary(self) -> dict[str, str]:
+        return {
+            **super().summary(),
+            "time_limit": self._step_limit
+        }
+            
