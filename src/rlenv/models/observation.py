@@ -35,7 +35,17 @@ class Observation:
     def n_agents(self) -> int:
         """The number of agents in the observation"""
         return self.data.shape[0]
-
+    
+    @property
+    def data_shape(self) -> tuple[int, ...]:
+        """The shape of the observation data"""
+        return self.data.shape
+    
+    @property
+    def extras_shape(self) -> tuple[int, ...]:
+        """The shape of the observation extras"""
+        return self.extras.shape
+    
     def to_json(self) -> dict:
         """Returns a json-serializable dictionary of the observation"""
         return {

@@ -60,6 +60,13 @@ class Builder:
             self._test_env = wrappers.TimeLimitWrapper(self._test_env, n_steps)
         return self
     
+    def pad(self, to_pad: Literal["obs", "extra"], n: int):
+        match to_pad:
+            case "obs": self._env = wrappers.PadObservations(self._env, n)
+            case "extra": self._env = wrappers.PadExtras(self._env, n)
+            case other: raise ValueError(f"Unknown padding type: {other}")
+        return self
+    
     def agent_id(self):
         """Adds agent ID to the observations"""
         self._env = wrappers.AgentIdWrapper(self._env)
