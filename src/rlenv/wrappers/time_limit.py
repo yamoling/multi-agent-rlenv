@@ -20,6 +20,6 @@ class TimeLimitWrapper(RLEnvWrapper):
     def summary(self) -> dict[str, str]:
         return {
             **super().summary(),
-            "time_limit": self._step_limit
+            self.__class__.__name__: {"step_limit": self._step_limit}
         }
             

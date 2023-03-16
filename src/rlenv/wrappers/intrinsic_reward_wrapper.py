@@ -32,8 +32,10 @@ class LinearStateCount(IntrinsicReward):
     def summary(self) -> dict[str, str]:
         return {
             **super().summary(),
-            "initial_intrinsic_reward": self.additional_reward,
-            "anneal": self.anneal_on
+            self.__class__.__name__: {
+                "additional_reward": self.additional_reward,
+                "anneal_on": self.anneal_on
+            }
         }
 
 class DecreasingExpStateCount(IntrinsicReward):
@@ -60,6 +62,8 @@ class DecreasingExpStateCount(IntrinsicReward):
     def summary(self) -> dict[str, str]:
         return {
             **super().summary(),
-            "initial_intrinsiscale_reward": self.scale,
-            "anneal": self.anneal
+            self.__class__.__name__: {
+                "scale_by": self.scale,
+                "anneal": self.anneal
+            }
         }
