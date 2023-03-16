@@ -44,9 +44,9 @@ class RLEnv(ABC):
         """The shape of an observation for a single agent."""
 
     @property
-    @abstractmethod
     def name(self) -> str:
         """The environment name"""
+        return self.__class__.__name__
 
     @abstractmethod
     def get_state(self) -> np.ndarray[np.float32]:
