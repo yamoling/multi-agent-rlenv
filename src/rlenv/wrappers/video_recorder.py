@@ -22,13 +22,10 @@ class VideoRecorder(RLEnvWrapper):
             case "avi": self._four_cc = cv2.VideoWriter_fourcc(*"XVID")
             case other: raise ValueError(f"Unsupported file video encoding: {other}")
 
-    def summary(self) -> dict[str, str]:
+    def kwargs(self) -> dict[str,]:
         return {
-            **super().summary(),
-            self.__class__.__name__: {
-                "video_folder": self.video_folder,
-                "video_encoding": self.video_extension
-            }
+            "video_folder": self.video_folder,
+            "video_encoding": self.video_extension
         }
 
     def step(self, actions):

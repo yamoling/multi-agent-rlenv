@@ -24,11 +24,9 @@ class PadExtras(RLEnvWrapper):
         obs.extras = np.concatenate([obs.extras, np.zeros((obs.n_agents, self.n))], axis=-1)
         return obs
     
-    def summary(self) -> dict[str, str]:
-        return {
-            **super().summary(),
-            self.__class__.__name__: { "n_added": self.n }
-        }
+    def kwargs(self) -> dict[str,]:
+        return { "n_added": self.n }
+    
 
 class PadObservations(RLEnvWrapper):
     """RLEnv wrapper that adds extra zeros at the end of the observation data."""
@@ -52,9 +50,6 @@ class PadObservations(RLEnvWrapper):
     def _add_obs(self, obs: Observation) -> Observation:
         obs.data = np.concatenate([obs.data, np.zeros((obs.n_agents, self.n))], axis=-1)
         return obs
-    
-    def summary(self) -> dict[str, str]:
-        return {
-            **super().summary(),
-            self.__class__.__name__: { "n_added": self.n }
-        }
+
+    def kwargs(self) -> dict[str,]:
+        return { "n_added": self.n }

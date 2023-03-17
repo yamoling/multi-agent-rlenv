@@ -22,6 +22,9 @@ class RLEnv(ABC):
         """Set the environment seed"""
         raise NotImplementedError("Method not implemented")
 
+    def kwargs(self) -> dict[str, ]:
+        """The constructor arguments"""
+        return {}
 
     @property
     @abstractmethod
@@ -45,7 +48,7 @@ class RLEnv(ABC):
 
     @property
     def name(self) -> str:
-        """The environment name"""
+        """The environment unique name"""
         return self.__class__.__name__
 
     @abstractmethod
@@ -67,13 +70,19 @@ class RLEnv(ABC):
         When calling with 'rgb_array', returns the rgb_array but does not show anything on screen.
         """
 
-    def summary(self) -> dict[str, str]:
-        """Summary of the environment informations"""
+    def summary(self) -> dict[str, ]:
+        """Summary of the environment informations."""
         return {
             "name": self.name,
             "n_actions": int(self.n_actions),
             "n_agents": int(self.n_agents),
             "obs_shape": tuple(int(s) for s in self.observation_shape),
             "extras_shape": tuple(int(s) for s in self.extra_feature_shape),
-            "state_shape": tuple(int(s) for s in self.state_shape)
+            "state_shape": tuple(int(s) for s in self.state_shape),
+            self.__class__.__name__: self.kwargs()
         }
+    
+    @classmethod
+    def from_summary(cls, summary: dict[str, ]):
+        """Restore an environment from its summary"""
+        return cls(**summary[cls.__name__])

@@ -13,10 +13,6 @@ class MockEnv(RLEnv):
         self.t = 0
 
     @property
-    def name(self) -> str:
-        return "mock-env"
-
-    @property
     def n_actions(self) -> int:
         return 5
 
@@ -31,6 +27,9 @@ class MockEnv(RLEnv):
     @property
     def state_shape(self):
         return (0, )
+    
+    def kwargs(self) -> dict[str,]:
+        return { "n_agents": self.n_agents }
 
     def reset(self):
         self.t = 0
