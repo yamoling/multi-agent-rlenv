@@ -62,8 +62,12 @@ class Builder:
     
     def pad(self, to_pad: Literal["obs", "extra"], n: int):
         match to_pad:
-            case "obs": self._env = wrappers.PadObservations(self._env, n)
-            case "extra": self._env = wrappers.PadExtras(self._env, n)
+            case "obs": 
+                self._env = wrappers.PadObservations(self._env, n)
+                self._test_env = wrappers.PadObservations(self._test_env, n)
+            case "extra": 
+                self._env = wrappers.PadExtras(self._env, n)
+                self._test_env = wrappers.PadExtras(self._test_env, n)
             case other: raise ValueError(f"Unknown padding type: {other}")
         return self
     
