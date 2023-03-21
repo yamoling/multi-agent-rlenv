@@ -104,6 +104,10 @@ class Builder:
             case other:
                 raise ValueError(f"'{other}' is not a known extrinsic reward wrapper")
         return self
+    
+    def penalty(self, penalty: float):
+        self.env = wrappers.PenaltyWrapper(self._env, penalty)
+        self.test_env = wrappers.PenaltyWrapper(self._test_env, penalty)
 
     def build(self) -> RLEnv:
         """Build and return the environment"""
