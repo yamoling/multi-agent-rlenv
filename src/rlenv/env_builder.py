@@ -106,8 +106,8 @@ class Builder:
         return self
     
     def penalty(self, penalty: float):
-        self.env = wrappers.PenaltyWrapper(self._env, penalty)
-        self.test_env = wrappers.PenaltyWrapper(self._test_env, penalty)
+        self._env = wrappers.PenaltyWrapper(self._env, penalty)
+        self._test_env = wrappers.PenaltyWrapper(self._test_env, penalty)
         return self
 
     def build(self) -> RLEnv:

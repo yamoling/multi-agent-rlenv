@@ -6,6 +6,7 @@ class MockEnv(RLEnv):
     OBS_SIZE = 10
     N_ACTIONS = 5
     END_GAME = 10
+    REWARD_STEP = 1
 
     def __init__(self, n_agents) -> None:
         super().__init__()
@@ -47,4 +48,4 @@ class MockEnv(RLEnv):
 
     def step(self, action):
         self.t += 1
-        return self.observation(), 1, self.t >= MockEnv.END_GAME, {}
+        return self.observation(), MockEnv.REWARD_STEP, self.t >= MockEnv.END_GAME, {}

@@ -24,3 +24,20 @@ def test_agent_id():
     obs = env.reset()
     assert np.array_equal(obs.extras, np.identity(5, dtype=np.float32))
 
+def test_penalty_wrapper():
+    env = Builder(MockEnv(1)).penalty(0.1).build()
+    done = False
+    while not done:
+       _, reward, done, _ = env.step([0])
+       assert reward == MockEnv.REWARD_STEP - 0.1
+
+
+def test_time_limit_wrapper():
+    MAX_T = 5
+    env = Builder(MockEnv(1)).time_limit(MAX_T).build()
+    done = False
+    t = 0
+    while not done:
+        _, _, done, _ = env.step([0])
+        t += 1
+    assert t == MAX_T
