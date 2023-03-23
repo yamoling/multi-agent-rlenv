@@ -7,8 +7,9 @@ class ForceActionWrapper(RLEnvWrapper):
         self._forced_actions = forced_actions
         self._available_actions_mask = np.ones((self.n_agents, self.n_actions), dtype=np.int32)
         for index, action in forced_actions.items():
-            self._available_actions_mask[index, :] = 0
-            self._available_actions_mask[index, action] = 1
+            # The int cast is needed because of the deserialization from summary
+            self._available_actions_mask[int(index), :] = 0
+            self._available_actions_mask[int(index), action] = 1
 
     def get_avail_actions(self):
         available = super().get_avail_actions()
