@@ -25,7 +25,7 @@ def test_agent_id():
     assert np.array_equal(obs.extras, np.identity(5, dtype=np.float32))
 
 def test_penalty_wrapper():
-    env = Builder(MockEnv(1)).penalty(0.1).build()
+    env = Builder(MockEnv(1)).time_penalty(0.1).build()
     done = False
     while not done:
        _, reward, done, _ = env.step([0])
@@ -41,3 +41,18 @@ def test_time_limit_wrapper():
         _, _, done, _ = env.step([0])
         t += 1
     assert t == MAX_T
+
+def test_force_actions():
+    forced_actions = {0: 1, 3: 4}
+    env = Builder(MockEnv(5)).force_actions(forced_actions).build()
+    obs = env.reset()
+    done = False
+    while not done:
+        for agent, forced_action in forced_actions.items():
+            for action in range(env.n_actions):
+                if action == forced_action:
+                    assert obs.available_actions[agent, action] == 1
+                else:
+                    assert obs.available_actions[agent, action] == 0
+        obs, _, done, _ = env.step([0, 1, 2, 3, 4])
+    

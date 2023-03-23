@@ -105,9 +105,14 @@ class Builder:
                 raise ValueError(f"'{other}' is not a known extrinsic reward wrapper")
         return self
     
-    def penalty(self, penalty: float):
-        self._env = wrappers.PenaltyWrapper(self._env, penalty)
-        self._test_env = wrappers.PenaltyWrapper(self._test_env, penalty)
+    def time_penalty(self, penalty: float):
+        self._env = wrappers.TimePenaltyWrapper(self._env, penalty)
+        self._test_env = wrappers.TimePenaltyWrapper(self._test_env, penalty)
+        return self
+
+    def force_actions(self, agent_actions: dict[int, int]):
+        self._env = wrappers.ForceActionWrapper(self._env, agent_actions)
+        self._test_env = wrappers.ForceActionWrapper(self._test_env, agent_actions)
         return self
 
     def build(self) -> RLEnv:

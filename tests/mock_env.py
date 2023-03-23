@@ -12,6 +12,7 @@ class MockEnv(RLEnv):
         super().__init__()
         self._n_agents = n_agents
         self.t = 0
+        self.actions_history = []
 
     @property
     def n_actions(self) -> int:
@@ -48,4 +49,5 @@ class MockEnv(RLEnv):
 
     def step(self, action):
         self.t += 1
+        self.actions_history.append(action)
         return self.observation(), MockEnv.REWARD_STEP, self.t >= MockEnv.END_GAME, {}

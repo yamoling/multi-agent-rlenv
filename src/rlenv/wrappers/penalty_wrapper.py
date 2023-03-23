@@ -1,7 +1,7 @@
 from .rlenv_wrapper import RLEnvWrapper, RLEnv
 
 
-class PenaltyWrapper(RLEnvWrapper):
+class TimePenaltyWrapper(RLEnvWrapper):
     def __init__(self, env: RLEnv, penalty: float) -> None:
         super().__init__(env)
         self.penalty = penalty
