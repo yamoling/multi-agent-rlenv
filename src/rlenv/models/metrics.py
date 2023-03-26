@@ -91,14 +91,8 @@ class Measurement:
         return Measurement(self.value/divider, self.fmt, self.unit)
 
 
-class Metrics(dict[str, Measurement]):
-    """Metrics are just a dictionary of type [str, Measurement] with facilities such as adding, dividing and averaging methods."""
-
-    def __init__(self, **kwargs) -> None:
-        for key, value in kwargs.items():
-            if not isinstance(value, Measurement):
-                kwargs[key] = Measurement(value)
-        super().__init__(**kwargs)
+class Metrics(dict[str, float]):
+    """Metrics are just a dictionary of type [str, float] with facilities such as adding, dividing and averaging methods."""
 
     def __truediv__(self, divider: float) -> "Metrics":
         res = Metrics(**self)
@@ -116,24 +110,18 @@ class Metrics(dict[str, Measurement]):
                 res[key] += other[key]
         return res
 
-    def __getitem__(self, key: str) -> Measurement:
-        # pylint: disable = W0235
+    def __getitem__(self, key: str) -> float:
         """Just for type hinting"""
         return super().__getitem__(key)
 
-    def __setitem__(self, key: str, value: Measurement | float | int) -> None:
-        if not isinstance(value, Measurement):
-            value = Measurement(value)
-        return super().__setitem__(key, value)
-
-    def items(self) -> Iterable[tuple[str, Measurement]]:
+    def items(self) -> Iterable[tuple[str, float]]:
         """Just for type hinting"""
         return super().items()
 
     @staticmethod
     def agregate(all_metrics: list["Metrics"]) -> "Metrics":
         """Aggregate a list of metrics into min, max, avg and std."""
-        all_values: dict[str, list[Measurement]] = {}
+        all_values: dict[str, list[float]] = {}
         for metrics in all_metrics:
             for key, value in metrics.items():
                 if key not in all_values:
@@ -141,13 +129,11 @@ class Metrics(dict[str, Measurement]):
                 all_values[key].append(value)
         res = Metrics()
         for key, values in all_values.items():
-            unit = values[0].unit
-            fmt = values[0].fmt
-            values = np.array([v.value for v in values])
-            res[f"avg_{key}"] = Measurement(np.average(values), fmt, unit)
-            res[f"std_{key}"] = Measurement(np.std(values), fmt, unit)
-            res[f"min_{key}"] = Measurement(values.min(), fmt, unit)
-            res[f"max_{key}"] = Measurement(values.max(), fmt, unit)
+            values = np.array(values)
+            res[f"avg_{key}"] = np.average(values)
+            res[f"std_{key}"] = np.std(values)
+            res[f"min_{key}"] = values.min()
+            res[f"max_{key}"] = values.max()
         return res
 
     @property
@@ -159,6 +145,4 @@ class Metrics(dict[str, Measurement]):
             return self["avg_score"].value
 
     def to_json(self) -> dict[str, float]:
-        return {
-            key: float(measurement.value) for key, measurement in self.items()
-        }
+        return self
