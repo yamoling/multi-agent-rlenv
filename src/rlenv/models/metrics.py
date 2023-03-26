@@ -119,7 +119,7 @@ class Metrics(dict[str, float]):
         return super().items()
 
     @staticmethod
-    def agregate(all_metrics: list["Metrics"]) -> "Metrics":
+    def agregate(all_metrics: list["Metrics"], only_avg=False) -> "Metrics":
         """Aggregate a list of metrics into min, max, avg and std."""
         all_values: dict[str, list[float]] = {}
         for metrics in all_metrics:
@@ -128,12 +128,16 @@ class Metrics(dict[str, float]):
                     all_values[key] = []
                 all_values[key].append(value)
         res = Metrics()
-        for key, values in all_values.items():
-            values = np.array(values)
-            res[f"avg_{key}"] = np.average(values)
-            res[f"std_{key}"] = np.std(values)
-            res[f"min_{key}"] = values.min()
-            res[f"max_{key}"] = values.max()
+        if only_avg:
+            for key, values in all_values.items():
+                res[key] = np.average(np.array(values))
+        else:
+            for key, values in all_values.items():
+                values = np.array(values)
+                res[f"avg_{key}"] = np.average(values)
+                res[f"std_{key}"] = np.std(values)
+                res[f"min_{key}"] = values.min()
+                res[f"max_{key}"] = values.max()
         return res
 
     @property
