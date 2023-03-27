@@ -176,7 +176,7 @@ class EpisodeBuilder:
 
     def build(self, extra_metrics: dict[str, float]=None) -> Episode:
         """Build the Episode"""
-        self.metrics["score"] = np.sum(self.rewards)
+        self.metrics["score"] = float(np.sum(self.rewards))
         self.metrics["episode_length"] = self.episode_len
         if extra_metrics is not None:
             self.metrics.update(extra_metrics)
