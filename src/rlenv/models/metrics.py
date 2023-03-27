@@ -130,14 +130,14 @@ class Metrics(dict[str, float]):
         res = Metrics()
         if only_avg:
             for key, values in all_values.items():
-                res[key] = np.average(np.array(values))
+                res[key] = float(np.average(np.array(values)))
         else:
             for key, values in all_values.items():
                 values = np.array(values)
-                res[f"avg_{key}"] = np.average(values)
-                res[f"std_{key}"] = np.std(values)
-                res[f"min_{key}"] = values.min()
-                res[f"max_{key}"] = values.max()
+                res[f"avg_{key}"] = float(np.average(values))
+                res[f"std_{key}"] = float(np.std(values))
+                res[f"min_{key}"] = float(values.min())
+                res[f"max_{key}"] = float(values.max())
         return res
 
     @property
