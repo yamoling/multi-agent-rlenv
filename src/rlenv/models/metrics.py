@@ -144,9 +144,9 @@ class Metrics(dict[str, float]):
     def score(self) -> float:
         """Score"""
         try:
-            return self["score"].value
+            return self["score"]
         except KeyError:
-            return self["avg_score"].value
+            return self["avg_score"]
 
     def to_json(self) -> dict[str, float]:
         return self
