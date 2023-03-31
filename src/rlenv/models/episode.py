@@ -133,6 +133,14 @@ class Episode:
             "states": self.states.tolist(),
             "metrics": self.metrics.to_json()
         }
+    
+    def compute_returns(self, discount: float = 1.0) -> np.ndarray[np.float32]:
+        """Compute the returns (discounted sum of future rewards) of the episode at each time step"""
+        returns = np.zeros_like(self.rewards)
+        returns[-1] = self.rewards[-1]
+        for t in range(len(self.rewards) - 2, -1, -1):
+            returns[t] = self.rewards[t] + discount * returns[t + 1]
+        return returns
 
 
 class EpisodeBuilder:
