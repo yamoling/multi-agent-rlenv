@@ -1,18 +1,25 @@
+from typing import TypeVar
 from gymnasium.core import Env
+from gymnasium import spaces
 import numpy as np
-from rlenv.models import RLEnv, Observation
+from rlenv.models import RLEnv, Observation, ActionSpace, DiscreteActionSpace, ContinuousActionSpace
+
+A = TypeVar("A", bound=ActionSpace)
 
 
-class GymAdapter(RLEnv):
+class GymAdapter(RLEnv[A]):
     """Wraps a gym envronment in an RLEnv"""
 
     def __init__(self, env: Env) -> None:
-        super().__init__()
+        match env.action_space:
+            case spaces.Discrete() as s:
+                space = DiscreteActionSpace(1, s.n)
+            case spaces.Box() as s:
+                space = ContinuousActionSpace(1, s.shape[0], low=s.low, high=s.high)
+            case other:
+                raise NotImplementedError(f"Action space {other} not supported")
+        super().__init__(space)
         self.env = env
-
-    @property
-    def n_actions(self) -> int:
-        return self.env.action_space.n
 
     @property
     def n_agents(self) -> int:
