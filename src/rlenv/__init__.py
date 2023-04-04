@@ -3,9 +3,9 @@ RLEnv is a strongly typed library for reinforcement learning.
 
 RLEnv 
     - works with gym(-nasium), pettingzoo and SMAC 
-    - provides helpful wrappers to add extrinsic rewards, agent ids, record videos, ...
+    - provides helpful wrappers to add intrinsic rewards, agent ids, record videos, ...
 """
-__version__ = "0.2.6"
+__version__ = "0.2.7"
 
 from . import models
 from . import wrappers

@@ -1,11 +1,14 @@
+from typing import TypeVar
+from rlenv.models import ActionSpace
 from .rlenv_wrapper import RLEnvWrapper, RLEnv
 
-class TimeLimitWrapper(RLEnvWrapper):
-    def __init__(self, env: RLEnv, step_limit: int) -> None:
+A  = TypeVar("A", bound=ActionSpace)
+
+class TimeLimitWrapper(RLEnvWrapper[A]):
+    def __init__(self, env: RLEnv[A], step_limit: int) -> None:
         super().__init__(env)
         self._step_limit = step_limit
         self._current_step = 0
-
 
     def reset(self):
         self._current_step = 0

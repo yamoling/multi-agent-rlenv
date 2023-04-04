@@ -1,26 +1,19 @@
 import numpy as np
 from rlenv import RLEnv, Observation
+from rlenv.models import DiscreteActionSpace
 
 
-class MockEnv(RLEnv):
+class MockEnv(RLEnv[DiscreteActionSpace]):
     OBS_SIZE = 10
     N_ACTIONS = 5
     END_GAME = 10
     REWARD_STEP = 1
 
     def __init__(self, n_agents) -> None:
-        super().__init__()
+        super().__init__(DiscreteActionSpace(n_agents, MockEnv.N_ACTIONS))
         self._n_agents = n_agents
         self.t = 0
         self.actions_history = []
-
-    @property
-    def n_actions(self) -> int:
-        return 5
-
-    @property
-    def n_agents(self) -> int:
-        return self._n_agents
 
     @property
     def observation_shape(self):

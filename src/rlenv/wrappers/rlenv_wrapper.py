@@ -1,21 +1,15 @@
+from typing import TypeVar
 from abc import ABC
 import numpy as np
-from rlenv.models import RLEnv, Observation
+from rlenv.models import RLEnv, Observation, ActionSpace
 
+A = TypeVar("A", bound=ActionSpace)
 
-class RLEnvWrapper(RLEnv, ABC):
+class RLEnvWrapper(RLEnv[A], ABC):
     """Parent class for all RLEnv wrappers"""
-    def __init__(self, env: RLEnv) -> None:
-        super().__init__()
+    def __init__(self, env: RLEnv[A]) -> None:
+        super().__init__(env.action_space)
         self.env = env
-
-    @property
-    def n_actions(self):
-        return self.env.n_actions
-
-    @property
-    def n_agents(self):
-        return self.env.n_agents
 
     @property
     def state_shape(self):

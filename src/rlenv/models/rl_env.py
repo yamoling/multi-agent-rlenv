@@ -1,13 +1,19 @@
 from abc import ABC, abstractmethod
-from typing import Literal
+from typing import Literal, Generic, TypeVar
 import numpy as np
 
 
+from .spaces import ActionSpace
 from .observation import Observation
 
+A = TypeVar("A", bound=ActionSpace)
 
-class RLEnv(ABC):
+
+class RLEnv(ABC, Generic[A]):
     """This interface defines the attributes and methods that must be implemented to work with this framework"""
+    def __init__(self, action_space: A):
+        super().__init__()
+        self.action_space = action_space
 
     @property
     def extra_feature_shape(self) -> tuple[int, ...]:
@@ -15,7 +21,11 @@ class RLEnv(ABC):
         return (0, )
 
     def get_avail_actions(self) -> np.ndarray[np.int32]:
-        """Get the currently available actions"""
+        """
+        Get the currently available actions for each agent.
+        
+        The output array has shape (n_agents, n_actions) and contains 1 if the action is available and 0 otherwise.
+        """
         return np.ones((self.n_agents, self.n_actions), dtype=np.int64)
 
     def seed(self, seed_value: int):
@@ -27,14 +37,14 @@ class RLEnv(ABC):
         return {}
 
     @property
-    @abstractmethod
     def n_actions(self) -> int:
         """The number of actions that an agent can take."""
+        return self.action_space.n_actions
 
     @property
-    @abstractmethod
     def n_agents(self) -> int:
         """The number of agents in the environment."""
+        return self.action_space.n_agents
 
     @property
     @abstractmethod
