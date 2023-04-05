@@ -90,6 +90,12 @@ class Builder:
             folder = os.path.join(folder, "test")
         self._test_env = wrappers.VideoRecorder(self._test_env, folder, video_encoding=encoding)
         return self
+    
+    def available_actions(self):
+        """Adds the available actions to the observations extras"""
+        self._env = wrappers.AvailableActionsWrapper(self._env)
+        self._test_env = wrappers.AvailableActionsWrapper(self._test_env)
+        return self
 
     def intrinsic_reward(self, method: Literal["linear", "exp"], initial_reward: float, anneal: float, also_for_testing=False):
         match method:

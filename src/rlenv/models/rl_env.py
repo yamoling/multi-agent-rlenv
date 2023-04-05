@@ -13,13 +13,13 @@ class RLEnv(ABC, Generic[A]):
     """This interface defines the attributes and methods that must be implemented to work with this framework"""
     def __init__(self, action_space: A):
         super().__init__()
-        self.action_space = action_space
+        self._action_space = action_space
 
     @property
     def extra_feature_shape(self) -> tuple[int, ...]:
         """The shape of extra features"""
         return (0, )
-
+    
     def get_avail_actions(self) -> np.ndarray[np.int32]:
         """
         Get the currently available actions for each agent.
@@ -39,12 +39,16 @@ class RLEnv(ABC, Generic[A]):
     @property
     def n_actions(self) -> int:
         """The number of actions that an agent can take."""
-        return self.action_space.n_actions
+        return self._action_space.n_actions
 
     @property
     def n_agents(self) -> int:
         """The number of agents in the environment."""
-        return self.action_space.n_agents
+        return self._action_space.n_agents
+
+    @property
+    def action_space(self) -> A:
+        return self._action_space
 
     @property
     @abstractmethod

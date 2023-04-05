@@ -15,6 +15,17 @@ def test_padding():
     assert env.observation_shape == (12, )   
 
 
+def test_available_actions():
+    N_AGENTS = 5
+    env = (Builder(MockEnv(N_AGENTS))
+           .available_actions()
+           .build())
+
+    assert env.extra_feature_shape == (5, )
+    obs = env.reset()
+    assert np.array_equal(obs.extras, np.ones((N_AGENTS, MockEnv.N_ACTIONS), dtype=np.float32))
+
+
 def test_agent_id():
     env = (Builder(MockEnv(5))
            .agent_id()
