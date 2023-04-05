@@ -13,11 +13,11 @@ class AvailableActionsWrapper(RLEnvWrapper[A]):
     
     def reset(self):
         obs = self.env.reset()
-        obs.extras = np.concatenate([obs.extras, self.get_avail_actions()], axis=-1)
+        obs.extras = np.concatenate([obs.extras, self.get_avail_actions().astype(np.float32)], axis=-1)
         return obs
 
 
     def step(self, actions: np.ndarray[np.int32]) -> tuple[Observation, float, bool, dict]:
         obs, *rest = self.env.step(actions)
-        obs.extras = np.concatenate([obs.extras, self.get_avail_actions()], axis=-1)
+        obs.extras = np.concatenate([obs.extras, self.get_avail_actions().astype(np.float32)], axis=-1)
         return obs, *rest
