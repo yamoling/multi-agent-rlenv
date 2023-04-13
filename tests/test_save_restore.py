@@ -27,6 +27,29 @@ def test_registry_gym():
     assert restored_env.n_actions == env.n_actions
     assert env.summary() == restored_env.summary()
 
+def test_unregistered_environment():
+    from rlenv.exceptions import UnknownEnvironmentException
+    env = MockEnv(4)
+    summary = env.summary()
+    try:
+        rlenv.from_summary(summary)
+        assert False
+    except UnknownEnvironmentException:
+        assert True
+
+
+def test_registry_wrapper():
+    env = rlenv.Builder(MockEnv(4)).agent_id().time_limit(10).build()
+    rlenv.register(MockEnv)
+    summary = env.summary()
+    restored_env = rlenv.from_summary(summary)
+    assert restored_env.n_agents == env.n_agents
+    assert restored_env.observation_shape == env.observation_shape
+    assert restored_env.state_shape == env.state_shape
+    assert restored_env.extra_feature_shape == env.extra_feature_shape
+    assert restored_env.n_actions == env.n_actions
+    assert env.summary() == restored_env.summary()
+
 def test_env_to_summary():
     env = MockEnv(4)
     summary = env.summary()

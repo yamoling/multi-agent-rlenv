@@ -13,4 +13,4 @@ from . import adapters
 
 from .env_builder import make, Builder
 from .models import RLEnv, Observation, Episode, Transition
-from .registry import register, from_summary
+from .registry import register, register_wrapper, from_summary
