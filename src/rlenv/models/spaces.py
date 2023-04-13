@@ -7,8 +7,8 @@ ActionType = TypeVar("ActionType", bound=np.ndarray)
 
 class ActionSpace(ABC, Generic[ActionType]):
     def __init__(self, n_agents: int, n_actions: int):
-        self._n_agents = n_agents
-        self._n_actions = n_actions
+        self._n_agents = int(n_agents)
+        self._n_actions = int(n_actions)
 
     @abstractmethod
     def sample(self) -> ActionType:
@@ -66,7 +66,7 @@ class ContinuousActionSpace(ActionSpace[np.ndarray[float]]):
         if isinstance(high, float):
             high = [high] * n_actions
         self._high = np.array(high, dtype=np.float32)
-        self.shape = (n_agents, n_actions)
+        self.shape = (int(n_agents), int(n_actions))
 
     def sample(self) -> np.ndarray[np.float32]:
         return np.random.random(self.shape) * (self._high - self._low) + self._low
