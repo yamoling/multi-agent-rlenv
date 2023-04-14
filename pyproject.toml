@@ -10,7 +10,7 @@ readme = "readme.md"
 python = ">=3.10,<3.11"
 numpy = "^1.23.4"
 smac = {git = "https://github.com/oxwhirl/smac.git"}
-gymnasium = {extras = ["atari"], version = "^0.28.1"}
+gymnasium = {extras = ["atari", "accept-rom-license"], version = "^0.28.1"}
 opencv-python = "^4.6.0.66"
 pettingzoo = "^1.22.3"
 
