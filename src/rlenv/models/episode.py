@@ -8,12 +8,14 @@ from .transition import Transition
 @dataclass
 class Episode:
     """Episode model made of observations, actions, rewards, ..."""
+
     _observations: np.ndarray[np.float32]
     _extras: np.ndarray[np.float32]
     actions: np.ndarray[np.int64]
     rewards: np.ndarray[np.float32]
     _available_actions: np.ndarray[np.int64]
     states: np.ndarray[np.float32]
+    actions_probs: np.ndarray[np.float32] | None
     metrics: Metrics
     episode_len: int
 
@@ -32,15 +34,20 @@ class Episode:
         rewards = np.concatenate([self.rewards, np.zeros(rewards_padding_shape, dtype=np.float32)])
         availables = np.concatenate([self._available_actions, np.ones((padding_size, self.n_agents, self.n_actions), dtype=np.float32)])
         states = np.concatenate([self.states, np.zeros((padding_size, *self.states.shape[1:]), dtype=np.float32)])
+        if self.actions_probs is not None:
+            actions_probs = np.concatenate([self.actions_probs, np.zeros((padding_size, self.n_agents, self.n_actions), dtype=np.float32)])
+        else:
+            actions_probs = None
         return Episode(
             _observations=obs,
             actions=actions,
             rewards=rewards,
             states=states,
-            metrics= self.metrics,
+            metrics=self.metrics,
             episode_len=self.episode_len,
             _available_actions=availables,
-            _extras=extras
+            _extras=extras,
+            actions_probs=actions_probs,
         )
 
     @property
@@ -131,9 +138,9 @@ class Episode:
             "rewards": self.rewards.tolist(),
             "available_actions": self._available_actions.tolist(),
             "states": self.states.tolist(),
-            "metrics": self.metrics.to_json()
+            "metrics": self.metrics.to_json(),
         }
-    
+
     def compute_returns(self, discount: float = 1.0) -> np.ndarray[np.float32]:
         """Compute the returns (discounted sum of future rewards) of the episode at each time step"""
         returns = np.zeros_like(self.rewards)
@@ -145,6 +152,7 @@ class Episode:
 
 class EpisodeBuilder:
     """EpisodeBuilder gives away the complexity of building an Episode to another class"""
+
     def __init__(self) -> None:
         self.observations = []
         self.extras = []
@@ -152,6 +160,7 @@ class EpisodeBuilder:
         self.rewards = []
         self.available_actions = []
         self.states = []
+        self.action_probs = []
         self.episode_len = 0
         self.is_done = False
         self.metrics = Metrics()
@@ -170,6 +179,7 @@ class EpisodeBuilder:
         self.rewards.append(transition.reward)
         self.available_actions.append(transition.obs.available_actions)
         self.states.append(transition.obs.state)
+        self.action_probs.append(transition.action_probs)
         if transition.is_done:
             # Add metrics that can be plotted
             for key, value in transition.info.items():
@@ -182,7 +192,7 @@ class EpisodeBuilder:
             self.available_actions.append(np.ones_like(self.available_actions[-1]))
             self.states.append(np.zeros_like(self.states[-1]))
 
-    def build(self, extra_metrics: dict[str, float]=None) -> Episode:
+    def build(self, extra_metrics: dict[str, float] = None) -> Episode:
         """Build the Episode"""
         self.metrics["score"] = float(np.sum(self.rewards))
         self.metrics["episode_length"] = self.episode_len
@@ -196,7 +206,8 @@ class EpisodeBuilder:
             states=np.array(self.states),
             metrics=self.metrics,
             episode_len=self.episode_len,
-            _available_actions=np.array(self.available_actions)
+            _available_actions=np.array(self.available_actions),
+            actions_probs=np.array(self.action_probs)
         )
 
     def __len__(self) -> int:

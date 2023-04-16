@@ -13,6 +13,7 @@ class Transition:
     done: bool
     info: dict[str, Any]
     obs_: Observation
+    action_probs: np.ndarray[np.float32] = None
 
     @property
     def is_done(self) -> bool:

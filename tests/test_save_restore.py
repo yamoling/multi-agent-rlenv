@@ -30,6 +30,7 @@ def test_registry_gym():
 def test_unregistered_environment():
     from rlenv.exceptions import UnknownEnvironmentException
     env = MockEnv(4)
+    rlenv.registry.ENV_REGISTRY.pop(MockEnv.__name__)
     summary = env.summary()
     try:
         rlenv.from_summary(summary)
