@@ -67,3 +67,24 @@ def test_force_actions():
                     assert obs.available_actions[agent, action] == 0
         obs, _, done, _ = env.step([0, 1, 2, 3, 4])
     
+
+
+def test_restore_custom_wrapper():
+    import rlenv
+    from rlenv import wrappers, RLEnv
+    class MyWrapper(wrappers.RLEnvWrapper):
+        def __init__(self, env: RLEnv, **kwargs):
+            super().__init__(env)
+            self._kwargs = kwargs
+
+        def kwargs(self):
+            return self._kwargs
+
+    rlenv.register(MockEnv)
+    rlenv.register_wrapper(MyWrapper) 
+    env = MyWrapper(MockEnv(1), a=1, b=2)
+    s = env.summary()
+    restored = rlenv.from_summary(s)
+    assert isinstance(restored, MyWrapper)
+    assert restored.kwargs() == {"a": 1, "b": 2}
+    assert restored.n_agents == 1
