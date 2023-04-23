@@ -19,7 +19,7 @@ class Episode:
     metrics: Metrics
     episode_len: int
 
-    def padded(self, target_len) -> "Episode":
+    def padded(self, target_len: int) -> "Episode":
         """Copy of the episode, padded with zeros to the target length"""
         padding_size = target_len - self.episode_len
         if padding_size == 0:

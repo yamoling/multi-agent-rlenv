@@ -37,6 +37,6 @@ def register(env: Type[RLEnv]):
     ENV_REGISTRY[env.__name__] = env
 
 def register_wrapper(wrapper: Type[RLEnvWrapper]):
-    ENV_REGISTRY[wrapper.__name__] = wrapper
+    WRAPPER_REGISTRY[wrapper.__name__] = wrapper
 
 

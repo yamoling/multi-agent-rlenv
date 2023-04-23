@@ -17,7 +17,7 @@ def test_registry():
 
 
 def test_registry_gym():
-    env = rlenv.make("CartPole-v0")
+    env = rlenv.make("CartPole-v1")
     summary = env.summary()
     restored_env = rlenv.from_summary(summary)
     assert restored_env.n_agents == env.n_agents
