@@ -1,4 +1,4 @@
-from typing import TypeVar
+from typing import TypeVar, Literal
 from abc import ABC
 import numpy as np
 from rlenv.models import RLEnv, Observation, ActionSpace
@@ -44,7 +44,7 @@ class RLEnvWrapper(RLEnv[A], ABC):
     def get_avail_actions(self):
         return self.wrapped.get_avail_actions()
 
-    def render(self, mode: str = "human"):
+    def render(self, mode: Literal["human", "rgb_array"] = "human"):
         return self.wrapped.render(mode)
 
     def seed(self, seed_value: int):
