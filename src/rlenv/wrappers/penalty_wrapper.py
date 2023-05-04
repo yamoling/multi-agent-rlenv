@@ -7,9 +7,9 @@ class TimePenaltyWrapper(RLEnvWrapper):
         self.penalty = penalty
 
     def step(self, action: int) -> tuple:
-        obs, reward, done, info = self.env.step(action)
+        obs, reward, done, info = self.wrapped.step(action)
         reward -= self.penalty
         return obs, reward, done, info
 
     def kwargs(self) -> dict[str,]:
-        return { "penalty": self.penalty }
+        return {"penalty": self.penalty}
