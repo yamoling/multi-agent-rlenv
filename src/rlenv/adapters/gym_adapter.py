@@ -35,7 +35,7 @@ class GymAdapter(RLEnv[A]):
 
     @property
     def name(self) -> str:
-        return self.env.spec.id
+        return self.env.unwrapped.__class__.__name__
 
     def step(self, actions) -> tuple[Observation, float, bool, dict]:
         obs_, reward, done, truncated, info = self.env.step(actions[0])
