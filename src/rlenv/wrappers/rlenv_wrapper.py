@@ -47,6 +47,10 @@ class RLEnvWrapper(RLEnv[A], ABC):
     def render(self, mode: Literal["human", "rgb_array"] = "human"):
         return self.wrapped.render(mode)
 
+    @property
+    def action_meanings(self) -> list[str]:
+        return self.wrapped.action_meanings
+
     def seed(self, seed_value: int):
         return self.wrapped.seed(seed_value)
 
