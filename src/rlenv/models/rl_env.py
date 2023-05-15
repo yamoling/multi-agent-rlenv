@@ -11,6 +11,7 @@ A = TypeVar("A", bound=ActionSpace)
 
 class RLEnv(ABC, Generic[A]):
     """This interface defines the attributes and methods that must be implemented to work with this framework"""
+
     def __init__(self, action_space: A):
         super().__init__()
         self._action_space = action_space
@@ -18,12 +19,12 @@ class RLEnv(ABC, Generic[A]):
     @property
     def extra_feature_shape(self) -> tuple[int, ...]:
         """The shape of extra features"""
-        return (0, )
-    
+        return (0,)
+
     def get_avail_actions(self) -> np.ndarray[np.int32]:
         """
         Get the currently available actions for each agent.
-        
+
         The output array has shape (n_agents, n_actions) and contains 1 if the action is available and 0 otherwise.
         """
         return np.ones((self.n_agents, self.n_actions), dtype=np.int64)
@@ -32,7 +33,7 @@ class RLEnv(ABC, Generic[A]):
         """Set the environment seed"""
         raise NotImplementedError("Method not implemented")
 
-    def kwargs(self) -> dict[str, ]:
+    def kwargs(self) -> dict[str,]:
         """The constructor arguments"""
         return {}
 
@@ -49,6 +50,11 @@ class RLEnv(ABC, Generic[A]):
     @property
     def action_space(self) -> A:
         return self._action_space
+
+    @property
+    def action_meanings(self) -> list[str]:
+        """The meaning of each action."""
+        return [f"Action {i}" for i in range(self.n_actions)]
 
     @property
     @abstractmethod
@@ -78,13 +84,13 @@ class RLEnv(ABC, Generic[A]):
         """Reset the environment."""
 
     @abstractmethod
-    def render(self, mode: Literal["human", "rgb_array"]="human") -> None | np.ndarray:
+    def render(self, mode: Literal["human", "rgb_array"] = "human") -> None | np.ndarray:
         """
         Render the environment.
         When calling with 'rgb_array', returns the rgb_array but does not show anything on screen.
         """
 
-    def summary(self) -> dict[str, ]:
+    def summary(self) -> dict[str,]:
         """Summary of the environment informations."""
         return {
             "name": self.name,
@@ -93,10 +99,10 @@ class RLEnv(ABC, Generic[A]):
             "obs_shape": tuple(int(s) for s in self.observation_shape),
             "extras_shape": tuple(int(s) for s in self.extra_feature_shape),
             "state_shape": tuple(int(s) for s in self.state_shape),
-            self.__class__.__name__: self.kwargs()
+            self.__class__.__name__: self.kwargs(),
         }
-    
+
     @classmethod
-    def from_summary(cls, summary: dict[str, ]):
+    def from_summary(cls, summary: dict[str,]):
         """Restore an environment from its summary"""
         return cls(**summary[cls.__name__])

@@ -18,12 +18,11 @@ class ActionSpace(ABC, Generic[ActionType]):
     def n_actions(self) -> int:
         """Number of actions that an agent can perform."""
         return self._n_actions
-    
+
     @property
     def n_agents(self) -> int:
         """Number of agents."""
         return self._n_agents
-
 
 
 class DiscreteActionSpace(ActionSpace[np.ndarray[np.int32]]):
@@ -39,26 +38,24 @@ class DiscreteActionSpace(ActionSpace[np.ndarray[np.int32]]):
         for action, available in zip(self._actions, action_probs):
             res.append(np.random.choice(action, p=available))
         return np.array(res, dtype=np.int32)
-        
+
 
 class ContinuousActionSpace(ActionSpace[np.ndarray[float]]):
-    def __init__(
-            self, 
-            n_agents: int, 
-            n_actions: int, 
-            low: float|list[float]=0., 
-            high: float|list[float]=1.
-        ):
+    def __init__(self, n_agents: int, n_actions: int, low: float | list[float] = 0.0, high: float | list[float] = 1.0):
         """Continuous action space.
-        
+
         Args:
             n_agents (int): Number of agents.
             n_actions (int): Number of actions per agent.
             low (float|list[float]): Lower bound of the action space. If a float is provided, the same value is used for all actions.
             high (float|list[float]): Upper bound of the action space. If a float is provided, the same value is used for all actions.
         """
-        assert isinstance(low, (float)) or len(low) == n_actions, "'low' parameter must be a float or a list of floats with length equal to the number of actions."
-        assert isinstance(high, (float)) or len(high) == n_actions, "'high' parameter must be a float or a list of floats with length equal to the number of actions."
+        assert (
+            isinstance(low, (float)) or len(low) == n_actions
+        ), "'low' parameter must be a float or a list of floats with length equal to the number of actions."
+        assert (
+            isinstance(high, (float)) or len(high) == n_actions
+        ), "'high' parameter must be a float or a list of floats with length equal to the number of actions."
         super().__init__(n_agents, n_actions)
         if isinstance(low, float):
             low = [low] * n_actions
@@ -70,4 +67,3 @@ class ContinuousActionSpace(ActionSpace[np.ndarray[float]]):
 
     def sample(self) -> np.ndarray[np.float32]:
         return np.random.random(self.shape) * (self._high - self._low) + self._low
-
