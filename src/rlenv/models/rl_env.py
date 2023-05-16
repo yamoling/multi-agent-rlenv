@@ -90,7 +90,7 @@ class RLEnv(ABC, Generic[A]):
         When calling with 'rgb_array', returns the rgb_array but does not show anything on screen.
         """
 
-    def summary(self) -> dict[str,]:
+    def summary(self, **kwargs) -> dict[str,]:
         """Summary of the environment informations."""
         return {
             "name": self.name,

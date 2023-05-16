@@ -54,9 +54,9 @@ class RLEnvWrapper(RLEnv[A], ABC):
     def seed(self, seed_value: int):
         return self.wrapped.seed(seed_value)
 
-    def summary(self) -> dict[str, str]:
+    def summary(self, **kwargs) -> dict[str, str]:
         # Get the env summary, and add the wrapper to the wrappers list + the wrapper's kwargs
-        summary = self.wrapped.summary()
+        summary = self.wrapped.summary(**kwargs)
         wrappers = summary.get("wrappers", [])
         wrappers.append(self.__class__.__name__)
         return {
