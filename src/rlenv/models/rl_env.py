@@ -54,7 +54,7 @@ class RLEnv(ABC, Generic[A]):
     @property
     def action_meanings(self) -> list[str]:
         """The meaning of each action."""
-        return [f"Action {i}" for i in range(self.n_actions)]
+        return self.action_space.action_names
 
     @property
     @abstractmethod
