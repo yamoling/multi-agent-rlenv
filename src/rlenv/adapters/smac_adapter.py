@@ -7,12 +7,11 @@ from rlenv.models import RLEnv, Observation, DiscreteActionSpace
 class SMACAdapter(RLEnv):
     """Wrapper for the SMAC environment to work with this framework"""
 
-    def __init__(self, map_name: str, time_limit=150) -> None:
+    def __init__(self, map_name: str) -> None:
         self._env = StarCraft2Env(map_name=map_name)
         action_space = DiscreteActionSpace(self._env.n_agents, self._env.n_actions)
         super().__init__(action_space)
         self._env_info = self._env.get_env_info()
-        self._time_limit = time_limit
         self._t = 0
         self._seed = self._env.seed()
 
@@ -49,9 +48,6 @@ class SMACAdapter(RLEnv):
         reward, done, info = self._env.step(actions)
         obs = Observation(np.array(self._env.get_obs()), self.get_avail_actions(), self.get_state())
         self._t += 1
-        if not done and self._t >= self._time_limit:
-            done = True
-            info["battle_won"] = False
         return obs, reward, done, info
 
     def get_avail_actions(self):
@@ -62,3 +58,8 @@ class SMACAdapter(RLEnv):
 
     def seed(self, seed_value: int):
         self._env = StarCraft2Env(map_name=self._env.map_name, seed=seed_value)
+
+    def kwargs(self) -> dict[str,]:
+        return {
+            "map_name": self._env.map_name,
+        }
