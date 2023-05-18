@@ -34,10 +34,10 @@ class Episode:
         rewards = np.concatenate([self.rewards, np.zeros(rewards_padding_shape, dtype=np.float32)])
         availables = np.concatenate([self._available_actions, np.ones((padding_size, self.n_agents, self.n_actions), dtype=np.float32)])
         states = np.concatenate([self.states, np.zeros((padding_size, *self.states.shape[1:]), dtype=np.float32)])
-        if self.actions_probs is not None and len(self.actions_probs) > 0:
-            actions_probs = np.concatenate([self.actions_probs, np.zeros((padding_size, self.n_agents, self.n_actions), dtype=np.float32)])
-        else:
-            actions_probs = None
+        # if self.actions_probs is not None and len(self.actions_probs) > 0:
+        #     actions_probs = np.concatenate([self.actions_probs, np.zeros((padding_size, self.n_agents, self.n_actions), dtype=np.float32)])
+        # else:
+        #   actions_probs = None
         return Episode(
             _observations=obs,
             actions=actions,
@@ -47,7 +47,7 @@ class Episode:
             episode_len=self.episode_len,
             _available_actions=availables,
             _extras=extras,
-            actions_probs=actions_probs,
+            actions_probs=None,
         )
 
     @property
@@ -207,7 +207,7 @@ class EpisodeBuilder:
             metrics=self.metrics,
             episode_len=self.episode_len,
             _available_actions=np.array(self.available_actions),
-            actions_probs=np.array(self.action_probs)
+            actions_probs=np.array(self.action_probs),
         )
 
     def __len__(self) -> int:
