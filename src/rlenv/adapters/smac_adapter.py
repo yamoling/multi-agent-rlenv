@@ -1,15 +1,16 @@
 import numpy as np
 from smac.env import StarCraft2Env
 
-from rlenv.models import RLEnv, Observation
+from rlenv.models import RLEnv, Observation, DiscreteActionSpace
 
 
 class SMACAdapter(RLEnv):
     """Wrapper for the SMAC environment to work with this framework"""
 
     def __init__(self, map_name: str, time_limit=150) -> None:
-        super().__init__()
         self._env = StarCraft2Env(map_name=map_name)
+        action_space = DiscreteActionSpace(self._env.n_agents, self._env.n_actions)
+        super().__init__(action_space)
         self._env_info = self._env.get_env_info()
         self._time_limit = time_limit
         self._t = 0
@@ -25,11 +26,11 @@ class SMACAdapter(RLEnv):
 
     @property
     def state_shape(self):
-        return (self._env_info["state_shape"], )
+        return (self._env_info["state_shape"],)
 
     @property
     def observation_shape(self):
-        return (self._env_info["obs_shape"], )
+        return (self._env_info["obs_shape"],)
 
     @property
     def name(self) -> str:
@@ -56,7 +57,7 @@ class SMACAdapter(RLEnv):
     def get_avail_actions(self):
         return np.array(self._env.get_avail_actions())
 
-    def render(self, mode: str="human"):
+    def render(self, mode: str = "human"):
         return self._env.render(mode)
 
     def seed(self, seed_value: int):
