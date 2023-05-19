@@ -48,7 +48,7 @@ class SMACAdapter(RLEnv):
         reward, done, info = self._env.step(actions)
         obs = Observation(np.array(self._env.get_obs()), self.get_avail_actions(), self.get_state())
         self._t += 1
-        return obs, reward, done, info
+        return obs, reward, done, False, info
 
     def get_avail_actions(self):
         return np.array(self._env.get_avail_actions())

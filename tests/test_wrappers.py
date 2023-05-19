@@ -33,17 +33,18 @@ def test_penalty_wrapper():
     env = Builder(MockEnv(1)).time_penalty(0.1).build()
     done = False
     while not done:
-        _, reward, done, _ = env.step([0])
+        _, reward, done, *_ = env.step([0])
         assert reward == MockEnv.REWARD_STEP - 0.1
 
 
 def test_time_limit_wrapper():
     MAX_T = 5
     env = Builder(MockEnv(1)).time_limit(MAX_T).build()
-    done = False
+    stop = False
     t = 0
-    while not done:
-        _, _, done, _ = env.step([0])
+    while not stop:
+        _, _, done, truncated, _ = env.step([0])
+        stop = done or truncated
         t += 1
     assert t == MAX_T
 
@@ -60,7 +61,7 @@ def test_force_actions():
                     assert obs.available_actions[agent, action] == 1
                 else:
                     assert obs.available_actions[agent, action] == 0
-        obs, _, done, _ = env.step([0, 1, 2, 3, 4])
+        obs, _, done, *_ = env.step([0, 1, 2, 3, 4])
 
 
 def test_restore_custom_wrapper():
@@ -89,7 +90,7 @@ def test_blind_wrapper():
     def test(env: rlenv.RLEnv):
         obs = env.reset()
         assert np.any(obs.data != 0)
-        obs, r, done, info = env.step(env.action_space.sample())
+        obs, r, done, truncated,  info = env.step(env.action_space.sample())
         assert np.all(obs.data == 0)
 
     env = rlenv.Builder(MockEnv(5)).blind(p=1).build()

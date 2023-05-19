@@ -14,8 +14,8 @@ class BlindWrapper(RLEnvWrapper[A]):
         super().__init__(env)
         self.p = p
 
-    def step(self, actions: np.ndarray[np.int32,]) -> tuple[Observation, float, bool, dict]:
-        obs, r, done, info = super().step(actions)
+    def step(self, actions: np.ndarray[np.int32,]) -> tuple[Observation, float, bool, bool, dict]:
+        obs, r, done, trunc, info = super().step(actions)
         if random.random() < self.p:
             obs.data = np.zeros_like(obs.data)
-        return obs, r, done, info
+        return obs, r, done, trunc, info

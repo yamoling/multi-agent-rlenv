@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "rlenv"
-version = "0.2.8"
+version = "0.3.0"
 description = "A strongly typed Reinforcement Learning framework"
 authors = ["Yannick Molinghen <yannick.molinghen@ulb.be>"]
 license = "MIT"
@@ -13,6 +13,7 @@ smac = {git = "https://github.com/oxwhirl/smac.git"}
 gymnasium = {extras = ["atari", "accept-rom-license"], version = "^0.28.1"}
 opencv-python = "^4.6.0.66"
 pettingzoo = "^1.22.3"
+pytest-cov = "^4.0.0"
 
 
 [build-system]

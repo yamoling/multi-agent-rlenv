@@ -16,7 +16,7 @@ class AvailableActionsWrapper(RLEnvWrapper[A]):
         obs.extras = np.concatenate([obs.extras, self.get_avail_actions().astype(np.float32)], axis=-1)
         return obs
 
-    def step(self, actions: np.ndarray[np.int32]) -> tuple[Observation, float, bool, dict]:
+    def step(self, actions: np.ndarray[np.int32]) -> tuple[Observation, float, bool, bool, dict]:
         obs, *rest = self.wrapped.step(actions)
         obs.extras = np.concatenate([obs.extras, self.get_avail_actions().astype(np.float32)], axis=-1)
         return obs, *rest

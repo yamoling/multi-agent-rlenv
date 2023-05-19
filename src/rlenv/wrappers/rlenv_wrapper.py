@@ -32,7 +32,7 @@ class RLEnvWrapper(RLEnv[A], ABC):
     def kwargs(self) -> dict[str,]:
         return {}
 
-    def step(self, actions: np.ndarray[np.int32]) -> tuple[Observation, float, bool, dict]:
+    def step(self, actions: np.ndarray[np.int32]) -> tuple[Observation, float, bool, bool, dict]:
         return self.wrapped.step(actions)
 
     def reset(self):

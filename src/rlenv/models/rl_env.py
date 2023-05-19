@@ -76,8 +76,16 @@ class RLEnv(ABC, Generic[A]):
         """Retrieve the current state of the environment."""
 
     @abstractmethod
-    def step(self, actions: np.ndarray[np.int32]) -> tuple[Observation, float, bool, dict]:
-        """Perform a step in the environment."""
+    def step(self, actions: np.ndarray[np.int32]) -> tuple[Observation, float, bool, bool, dict]:
+        """Perform a step in the environment.
+
+        Returns:
+        - observations: The observations for each agent.
+        - rewards: The team reward
+        - done: Whether the episode is over
+        - truncated: Whether the episode is truncated
+        - info: Extra information
+        """
 
     @abstractmethod
     def reset(self) -> Observation:

@@ -43,4 +43,4 @@ class MockEnv(RLEnv[DiscreteActionSpace]):
     def step(self, action):
         self.t += 1
         self.actions_history.append(action)
-        return self.observation(), MockEnv.REWARD_STEP, self.t >= MockEnv.END_GAME, {}
+        return self.observation(), MockEnv.REWARD_STEP, self.t >= MockEnv.END_GAME, False, {}

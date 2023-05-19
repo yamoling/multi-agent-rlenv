@@ -37,11 +37,10 @@ class GymAdapter(RLEnv[A]):
     def name(self) -> str:
         return self.env.unwrapped.spec.id
 
-    def step(self, actions) -> tuple[Observation, float, bool, dict]:
+    def step(self, actions) -> tuple[Observation, float, bool, bool, dict]:
         obs_, reward, done, truncated, info = self.env.step(actions[0])
-        done = done or truncated
         obs_ = Observation(np.array([obs_], dtype=np.float32), self.get_avail_actions(), self.get_state())
-        return obs_, reward, done, info
+        return obs_, reward, done, truncated, info
 
     def get_state(self):
         return np.zeros(1, dtype=np.float32)
