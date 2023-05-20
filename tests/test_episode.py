@@ -112,6 +112,15 @@ def test_truncated_and_done():
     assert episode.dones[-1] == 1
 
 
+def test_masks():
+    env = wrappers.TimeLimitWrapper(MockEnv(2), 10)
+    episode = generate_episode(env)
+    assert np.all(episode.mask == 1)
+    padded = episode.padded(25)
+    assert np.all(padded.mask[:10] == 1)
+    assert np.all(padded.mask[10:] == 0)
+
+
 def test_padded_raises_error_with_too_small_size():
     env = MockEnv(2)
     episode = generate_episode(env)

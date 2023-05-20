@@ -53,11 +53,9 @@ class Episode:
     @property
     def mask(self) -> np.ndarray:
         """Get the mask for the current episide (when padded)"""
-        ones_shape = list(self.rewards.shape)
-        ones_shape[0] = self.episode_len
-        zeros_shape = list(self.rewards.shape)
-        zeros_shape[0] -= self.episode_len
-        return np.concatenate([np.ones(ones_shape, dtype=np.float32), np.zeros(zeros_shape, dtype=np.float32)])
+        mask = np.ones_like(self.rewards, dtype=np.float32)
+        mask[self.episode_len :] = 0
+        return mask
 
     @property
     def obs(self) -> np.ndarray:
