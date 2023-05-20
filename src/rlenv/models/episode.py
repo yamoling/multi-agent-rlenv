@@ -18,12 +18,15 @@ class Episode:
     actions_probs: np.ndarray[np.float32] | None
     metrics: Metrics
     episode_len: int
+    truncated: bool
 
     def padded(self, target_len: int) -> "Episode":
         """Copy of the episode, padded with zeros to the target length"""
         padding_size = target_len - self.episode_len
         if padding_size == 0:
             return self
+        if padding_size < 0:
+            raise ValueError(f"Cannot pad episode to a smaller size: {target_len} < {self.episode_len}")
         obs = np.concatenate([self._observations, np.zeros((padding_size, self.n_agents, self.obs_size), dtype=np.float32)])
         extras_shape = list(self._extras.shape)
         extras_shape[0] = padding_size
@@ -48,6 +51,7 @@ class Episode:
             _available_actions=availables,
             _extras=extras,
             actions_probs=None,
+            truncated=self.truncated,
         )
 
     @property
@@ -107,12 +111,15 @@ class Episode:
     @property
     def dones(self) -> np.ndarray:
         """The done flags for each transition"""
-        physical_size = len(self.actions)
-        zeros_shape = list(self.rewards.shape)
-        zeros_shape[0] = self.episode_len - 1
-        ones_shape = list(self.rewards.shape)
-        ones_shape[0] = physical_size - self.episode_len + 1
-        dones = np.concatenate([np.zeros(zeros_shape, dtype=np.float32), np.ones(ones_shape, dtype=np.float32)])
+        dones = np.zeros_like(self.rewards, dtype=np.float32)
+        if not self.truncated:
+            dones[len(self) - 1 :] = 1.0
+        # physical_size = len(self.actions)
+        # zeros_shape = list(self.rewards.shape)
+        # zeros_shape[0] = self.episode_len - 1
+        # ones_shape = list(self.rewards.shape)
+        # ones_shape[0] = physical_size - self.episode_len + 1
+        # dones = np.concatenate([np.zeros(zeros_shape, dtype=np.float32), np.ones(ones_shape, dtype=np.float32)])
         return dones
 
     @staticmethod
@@ -164,6 +171,7 @@ class EpisodeBuilder:
         self.episode_len = 0
         self.is_done = False
         self.metrics = Metrics()
+        self._truncated = False
 
     @property
     def t(self) -> int:
@@ -179,8 +187,9 @@ class EpisodeBuilder:
         self.rewards.append(transition.reward)
         self.available_actions.append(transition.obs.available_actions)
         self.states.append(transition.obs.state)
-        self.action_probs.append(transition.action_probs)
-        if transition.is_done:
+        if transition.is_done or transition.truncated:
+            # Only set the truncated flag if the episode is not done
+            self._truncated = transition.truncated and not transition.is_done
             # Add metrics that can be plotted
             for key, value in transition.info.items():
                 if isinstance(value, bool):
@@ -208,6 +217,7 @@ class EpisodeBuilder:
             episode_len=self.episode_len,
             _available_actions=np.array(self.available_actions),
             actions_probs=np.array(self.action_probs),
+            truncated=self._truncated,
         )
 
     def __len__(self) -> int:

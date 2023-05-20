@@ -4,16 +4,18 @@ import numpy as np
 
 from .observation import Observation
 
+
 @dataclass
 class Transition:
     """Transition model"""
+
     obs: Observation
     action: np.ndarray[np.int32]
     reward: float
     done: bool
     info: dict[str, Any]
     obs_: Observation
-    action_probs: np.ndarray[np.float32] = None
+    truncated: bool = False
 
     @property
     def is_done(self) -> bool:
@@ -36,5 +38,5 @@ class Transition:
             "obs_": self.obs_.to_json(),
             "action": self.action.tolist(),
             "reward": self.reward,
-            "done": self.done
+            "done": self.done,
         }

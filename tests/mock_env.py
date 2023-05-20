@@ -4,9 +4,9 @@ from rlenv.models import DiscreteActionSpace
 
 
 class MockEnv(RLEnv[DiscreteActionSpace]):
-    OBS_SIZE = 10
+    OBS_SIZE = 42
     N_ACTIONS = 5
-    END_GAME = 10
+    END_GAME = 30
     REWARD_STEP = 1
 
     def __init__(self, n_agents) -> None:
@@ -17,14 +17,14 @@ class MockEnv(RLEnv[DiscreteActionSpace]):
 
     @property
     def observation_shape(self):
-        return (MockEnv.OBS_SIZE, )
+        return (MockEnv.OBS_SIZE,)
 
     @property
     def state_shape(self):
-        return (0, )
-    
+        return (0,)
+
     def kwargs(self) -> dict[str,]:
-        return { "n_agents": self.n_agents }
+        return {"n_agents": self.n_agents}
 
     def reset(self):
         self.t = 0

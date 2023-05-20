@@ -5,11 +5,12 @@ from .mock_env import MockEnv
 
 
 def test_padding():
-    env = Builder(MockEnv(5)).pad("extra", 2).build()
-    assert env.extra_feature_shape == (2,)
+    PAD_SIZE = 2
+    env = Builder(MockEnv(5)).pad("extra", PAD_SIZE).build()
+    assert env.extra_feature_shape == (PAD_SIZE,)
 
-    env = Builder(MockEnv(5)).pad("obs", 2).build()
-    assert env.observation_shape == (12,)
+    env = Builder(MockEnv(5)).pad("obs", PAD_SIZE).build()
+    assert env.observation_shape == (MockEnv.OBS_SIZE + PAD_SIZE,)
 
 
 def test_available_actions():
@@ -90,7 +91,7 @@ def test_blind_wrapper():
     def test(env: rlenv.RLEnv):
         obs = env.reset()
         assert np.any(obs.data != 0)
-        obs, r, done, truncated,  info = env.step(env.action_space.sample())
+        obs, r, done, truncated, info = env.step(env.action_space.sample())
         assert np.all(obs.data == 0)
 
     env = rlenv.Builder(MockEnv(5)).blind(p=1).build()
