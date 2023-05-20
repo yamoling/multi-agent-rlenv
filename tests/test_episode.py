@@ -8,12 +8,49 @@ from .mock_env import MockEnv
 def generate_episode(env: RLEnv) -> Episode:
     obs = env.reset()
     episode = EpisodeBuilder()
-    while not episode.is_done:
+    while not episode.is_finished:
         action = env.action_space.sample()
         next_obs, r, done, truncated, info = env.step(action)
         episode.add(Transition(obs, action, r, done, info, next_obs, truncated))
         obs = next_obs
     return episode.build()
+
+
+def test_episode_builder_is_done():
+    env = MockEnv(2)
+    obs = env.reset()
+    # Set the 'done' flag
+    builder = EpisodeBuilder()
+    assert not builder.is_finished
+    builder.add(Transition(obs, [0, 0], 0, False, {}, obs))
+    assert not builder.is_finished
+    builder.add(Transition(obs, [0, 0], 0, True, {}, obs))
+    assert builder.is_finished
+
+    # Set the 'truncated' flag
+    builder = EpisodeBuilder()
+    assert not builder.is_finished
+    builder.add(Transition(obs, [0, 0], 0, False, {}, obs))
+    assert not builder.is_finished
+    builder.add(Transition(obs, [0, 0], 0, False, {}, obs, truncated=True))
+    assert builder.is_finished
+
+
+def test_build_not_finished_episode_fails():
+    builder = EpisodeBuilder()
+    try:
+        builder.build()
+        assert False, "Should have raised an AssertionError"
+    except AssertionError:
+        pass
+    env = MockEnv(2)
+    obs = env.reset()
+    builder.add(Transition(obs=obs, action=[0, 0], reward=0, done=False, info={}, obs_=obs))
+    try:
+        builder.build()
+        assert False, "Should have raised an AssertionError"
+    except AssertionError:
+        pass
 
 
 def test_returns():
@@ -63,7 +100,7 @@ def test_truncated_and_done():
     env = wrappers.TimeLimitWrapper(MockEnv(2), MockEnv.END_GAME)
     obs = env.reset()
     episode = EpisodeBuilder()
-    while not episode.is_done:
+    while not episode.is_finished:
         action = env.action_space.sample()
         next_obs, r, done, truncated, info = env.step(action)
         episode.add(Transition(obs, action, r, done, info, next_obs, truncated))

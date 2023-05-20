@@ -18,7 +18,7 @@ class Episode:
     actions_probs: np.ndarray[np.float32] | None
     metrics: Metrics
     episode_len: int
-    truncated: bool
+    is_finished: bool
 
     def padded(self, target_len: int) -> "Episode":
         """Copy of the episode, padded with zeros to the target length"""
@@ -37,10 +37,6 @@ class Episode:
         rewards = np.concatenate([self.rewards, np.zeros(rewards_padding_shape, dtype=np.float32)])
         availables = np.concatenate([self._available_actions, np.ones((padding_size, self.n_agents, self.n_actions), dtype=np.float32)])
         states = np.concatenate([self.states, np.zeros((padding_size, *self.states.shape[1:]), dtype=np.float32)])
-        # if self.actions_probs is not None and len(self.actions_probs) > 0:
-        #     actions_probs = np.concatenate([self.actions_probs, np.zeros((padding_size, self.n_agents, self.n_actions), dtype=np.float32)])
-        # else:
-        #   actions_probs = None
         return Episode(
             _observations=obs,
             actions=actions,
@@ -51,7 +47,7 @@ class Episode:
             _available_actions=availables,
             _extras=extras,
             actions_probs=None,
-            truncated=self.truncated,
+            is_finished=self.is_finished,
         )
 
     @property
@@ -112,14 +108,8 @@ class Episode:
     def dones(self) -> np.ndarray:
         """The done flags for each transition"""
         dones = np.zeros_like(self.rewards, dtype=np.float32)
-        if not self.truncated:
-            dones[len(self) - 1 :] = 1.0
-        # physical_size = len(self.actions)
-        # zeros_shape = list(self.rewards.shape)
-        # zeros_shape[0] = self.episode_len - 1
-        # ones_shape = list(self.rewards.shape)
-        # ones_shape[0] = physical_size - self.episode_len + 1
-        # dones = np.concatenate([np.zeros(zeros_shape, dtype=np.float32), np.ones(ones_shape, dtype=np.float32)])
+        if self.is_finished:
+            dones[self.episode_len - 1 :] = 1.0
         return dones
 
     @staticmethod
@@ -169,9 +159,13 @@ class EpisodeBuilder:
         self.states = []
         self.action_probs = []
         self.episode_len = 0
-        self.is_done = False
         self.metrics = Metrics()
+        self._done = False
         self._truncated = False
+
+    @property
+    def is_finished(self) -> bool:
+        return self._done or self._truncated
 
     @property
     def t(self) -> int:
@@ -187,15 +181,15 @@ class EpisodeBuilder:
         self.rewards.append(transition.reward)
         self.available_actions.append(transition.obs.available_actions)
         self.states.append(transition.obs.state)
-        if transition.is_done or transition.truncated:
-            # Only set the truncated flag if the episode is not done
-            self._truncated = transition.truncated and not transition.is_done
+        if transition.is_terminal or transition.truncated:
+            # Only set the truncated flag if the episode is not done (both could happen with a time limit)
+            self._truncated = transition.truncated
+            self._done = transition.is_terminal
             # Add metrics that can be plotted
             for key, value in transition.info.items():
                 if isinstance(value, bool):
                     value = int(value)
                 self.metrics[key] = value
-            self.is_done = True
             self.observations.append(transition.obs_.data)
             self.extras.append(transition.obs_.extras)
             self.available_actions.append(np.ones_like(self.available_actions[-1]))
@@ -203,6 +197,9 @@ class EpisodeBuilder:
 
     def build(self, extra_metrics: dict[str, float] = None) -> Episode:
         """Build the Episode"""
+        assert (
+            self.is_finished
+        ), "Cannot build an episode that is not finished. Set truncated=True when adding the last transition of the episode."
         self.metrics["score"] = float(np.sum(self.rewards))
         self.metrics["episode_length"] = self.episode_len
         if extra_metrics is not None:
@@ -217,7 +214,7 @@ class EpisodeBuilder:
             episode_len=self.episode_len,
             _available_actions=np.array(self.available_actions),
             actions_probs=np.array(self.action_probs),
-            truncated=self._truncated,
+            is_finished=self._done,
         )
 
     def __len__(self) -> int:

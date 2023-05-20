@@ -18,7 +18,7 @@ class Transition:
     truncated: bool = False
 
     @property
-    def is_done(self) -> bool:
+    def is_terminal(self) -> bool:
         """Whether the transition is the last one"""
         return self.done
 
