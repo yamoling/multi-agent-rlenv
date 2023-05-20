@@ -93,6 +93,7 @@ def test_padded():
         episode = generate_episode(env)
         assert len(episode) == i
         padded = episode.padded(10)
+        assert padded._observations.shape[0] == 11
         assert padded.obs.shape[0] == 10
         assert padded.obs_.shape[0] == 10
         assert padded.actions.shape[0] == 10

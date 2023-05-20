@@ -22,11 +22,11 @@ class Episode:
 
     def padded(self, target_len: int) -> "Episode":
         """Copy of the episode, padded with zeros to the target length"""
-        padding_size = target_len - self.episode_len
-        if padding_size == 0:
+        if target_len == self.episode_len:
             return self
-        if padding_size < 0:
+        if target_len < self.episode_len:
             raise ValueError(f"Cannot pad episode to a smaller size: {target_len} < {self.episode_len}")
+        padding_size = target_len - self.episode_len
         obs = np.concatenate([self._observations, np.zeros((padding_size, self.n_agents, self.obs_size), dtype=np.float32)])
         extras_shape = list(self._extras.shape)
         extras_shape[0] = padding_size
