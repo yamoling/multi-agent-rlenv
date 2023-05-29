@@ -179,10 +179,10 @@ class EpisodeBuilder:
         self.rewards.append(transition.reward)
         self.available_actions.append(transition.obs.available_actions)
         self.states.append(transition.obs.state)
-        if transition.is_terminal or transition.truncated:
+        if transition.is_terminal:
             # Only set the truncated flag if the episode is not done (both could happen with a time limit)
             self._truncated = transition.truncated
-            self._done = transition.is_terminal
+            self._done = transition.done
             # Add metrics that can be plotted
             for key, value in transition.info.items():
                 if isinstance(value, bool):

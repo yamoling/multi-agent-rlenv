@@ -22,17 +22,17 @@ def test_episode_builder_is_done():
     # Set the 'done' flag
     builder = EpisodeBuilder()
     assert not builder.is_finished
-    builder.add(Transition(obs, [0, 0], 0, False, {}, obs))
+    builder.add(Transition(obs, [0, 0], 0, False, {}, obs, False))
     assert not builder.is_finished
-    builder.add(Transition(obs, [0, 0], 0, True, {}, obs))
+    builder.add(Transition(obs, [0, 0], 0, True, {}, obs, False))
     assert builder.is_finished
 
     # Set the 'truncated' flag
     builder = EpisodeBuilder()
     assert not builder.is_finished
-    builder.add(Transition(obs, [0, 0], 0, False, {}, obs))
+    builder.add(Transition(obs, [0, 0], 0, False, {}, obs, False))
     assert not builder.is_finished
-    builder.add(Transition(obs, [0, 0], 0, False, {}, obs, truncated=True))
+    builder.add(Transition(obs, [0, 0], 0, False, {}, obs, True))
     assert builder.is_finished
 
 
@@ -45,7 +45,7 @@ def test_build_not_finished_episode_fails():
         pass
     env = MockEnv(2)
     obs = env.reset()
-    builder.add(Transition(obs=obs, action=[0, 0], reward=0, done=False, info={}, obs_=obs))
+    builder.add(Transition(obs=obs, action=[0, 0], reward=0, done=False, info={}, obs_=obs, truncated=False))
     try:
         builder.build()
         assert False, "Should have raised an AssertionError"
@@ -64,7 +64,7 @@ def test_returns():
         done = i == n_steps - 1
         r = random.random()
         rewards.append(r)
-        builder.add(Transition(obs, [0, 0], r, done, {}, obs))
+        builder.add(Transition(obs, [0, 0], r, done, {}, obs, False))
     episode = builder.build()
     returns = episode.compute_returns(discount=gamma)
     for i, r in enumerate(returns):

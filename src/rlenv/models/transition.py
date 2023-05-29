@@ -15,12 +15,12 @@ class Transition:
     done: bool
     info: dict[str, Any]
     obs_: Observation
-    truncated: bool = False
+    truncated: bool
 
     @property
     def is_terminal(self) -> bool:
         """Whether the transition is the last one"""
-        return self.done
+        return self.done or self.truncated
 
     @property
     def n_agents(self) -> int:
