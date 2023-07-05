@@ -41,4 +41,4 @@ class TimeLimitWrapper(RLEnvWrapper[A]):
         return obs
 
     def kwargs(self) -> dict[str,]:
-        return {"step_limit": self._step_limit}
+        return {"step_limit": self._step_limit, "add_extra": self._add_extra}
