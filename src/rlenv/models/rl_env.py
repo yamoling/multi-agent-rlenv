@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Literal, Generic, TypeVar
+from typing import Literal, Generic, TypeVar, overload
 import numpy as np
 
 
@@ -91,12 +91,16 @@ class RLEnv(ABC, Generic[A]):
     def reset(self) -> Observation:
         """Reset the environment."""
 
+    @overload
+    def render(self, mode: Literal["human"]) -> None:
+        """Render the environment in a window"""
+
+    @overload
+    def render(self, mode: Literal["rgb_array"]) -> np.ndarray[np.uint8]:
+        """Retrieve an image of the environment"""
+
     @abstractmethod
-    def render(self, mode: Literal["human", "rgb_array"] = "human") -> None | np.ndarray:
-        """
-        Render the environment.
-        When calling with 'rgb_array', returns the rgb_array but does not show anything on screen.
-        """
+    def render(self, mode): ...
 
     def summary(self, **kwargs) -> dict[str,]:
         """Summary of the environment informations."""

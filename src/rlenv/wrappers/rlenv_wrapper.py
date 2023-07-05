@@ -1,4 +1,4 @@
-from typing import TypeVar, Literal
+from typing import TypeVar, Literal, overload
 from abc import ABC
 import numpy as np
 from rlenv.models import RLEnv, Observation, ActionSpace
@@ -44,7 +44,15 @@ class RLEnvWrapper(RLEnv[A], ABC):
     def get_avail_actions(self):
         return self.wrapped.get_avail_actions()
 
-    def render(self, mode: Literal["human", "rgb_array"] = "human"):
+    @overload
+    def render(self, mode: Literal["human"]) -> None:
+        """Render the environment in a window"""
+
+    @overload
+    def render(self, mode: Literal["rgb_array"]) -> np.ndarray:
+        """Retrieve an image of the environment"""
+
+    def render(self, mode):
         return self.wrapped.render(mode)
 
     @property
