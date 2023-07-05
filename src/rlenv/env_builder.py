@@ -50,17 +50,10 @@ class Builder:
             map_name = "3m"
         return adapters.SMACAdapter(map_name=map_name)
 
-    def time_limit(self, n_steps: int):
+    def time_limit(self, n_steps: int, add_extra: bool = False):
         """Set the time limit (horizon) of the environment (train & test)"""
-        if hasattr(self._env, "horizon"):
-            setattr(self._env, "horizon", n_steps)
-            setattr(self._test_env, "horizon", n_steps)
-        elif hasattr(self._env, "time_limit"):
-            setattr(self._env, "time_limit", n_steps)
-            setattr(self._test_env, "time_limit", n_steps)
-        else:
-            self._env = wrappers.TimeLimitWrapper(self._env, n_steps)
-            self._test_env = wrappers.TimeLimitWrapper(self._test_env, n_steps)
+        self._env = wrappers.TimeLimitWrapper(self._env, n_steps, add_extra)
+        self._test_env = wrappers.TimeLimitWrapper(self._test_env, n_steps, add_extra)
         return self
 
     def pad(self, to_pad: Literal["obs", "extra"], n: int):

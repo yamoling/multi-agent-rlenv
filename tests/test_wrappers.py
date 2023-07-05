@@ -41,6 +41,7 @@ def test_penalty_wrapper():
 def test_time_limit_wrapper():
     MAX_T = 5
     env = Builder(MockEnv(1)).time_limit(MAX_T).build()
+    assert env.extra_feature_shape == (0,)
     stop = False
     t = 0
     while not stop:
@@ -48,6 +49,21 @@ def test_time_limit_wrapper():
         stop = done or truncated
         t += 1
     assert t == MAX_T
+
+
+def test_time_limit_wrapper_with_extra():
+    MAX_T = 5
+    env = Builder(MockEnv(1)).time_limit(MAX_T, add_extra=True).build()
+    env.reset()
+    assert env.extra_feature_shape == (1,)
+    stop = False
+    t = 0
+    while not stop:
+        obs, _, done, truncated, _ = env.step([0])
+        stop = done or truncated
+        t += 1
+    assert t == MAX_T
+    assert np.all(obs.extras[0] == 1)
 
 
 def test_force_actions():
