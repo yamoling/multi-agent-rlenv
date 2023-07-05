@@ -17,7 +17,7 @@ class TimeLimitWrapper(RLEnvWrapper[A]):
     @property
     def extra_feature_shape(self):
         assert len(self.wrapped.extra_feature_shape) == 1
-        dims, *_ = self.wrapped.extra_feature_shape
+        dims = self.wrapped.extra_feature_shape[0]
         if self._add_extra:
             return (dims + 1,)
         return dims
@@ -36,7 +36,7 @@ class TimeLimitWrapper(RLEnvWrapper[A]):
 
     def add_time_extra(self, obs: Observation) -> Observation:
         if self._add_extra:
-            time_ratio = [[self._current_step / self._step_limit] * obs.n_agents]
+            time_ratio = np.full((self.n_agents, 1), self._current_step / self._step_limit, dtype=np.float32)
             obs.extras = np.concatenate([obs.extras, time_ratio], axis=-1)
         return obs
 
