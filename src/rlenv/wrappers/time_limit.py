@@ -17,10 +17,10 @@ class TimeLimitWrapper(RLEnvWrapper[A]):
     @property
     def extra_feature_shape(self):
         assert len(self.wrapped.extra_feature_shape) == 1
+        if not self._add_extra:
+            return self.wrapped.extra_feature_shape
         dims = self.wrapped.extra_feature_shape[0]
-        if self._add_extra:
-            return (dims + 1,)
-        return dims
+        return (dims + 1,)
 
     def reset(self):
         self._current_step = 0
