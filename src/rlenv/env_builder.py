@@ -2,10 +2,13 @@ import os
 from copy import deepcopy
 from dataclasses import dataclass
 from typing import Literal, TypeVar
-from pettingzoo import ParallelEnv
+
+try:
+    from pettingzoo import ParallelEnv
+except ImportError:
+    ParallelEnv = None
 
 from .models import RLEnv, ActionSpace
-from . import adapters
 from . import wrappers
 
 A = TypeVar("A", bound=ActionSpace)
@@ -23,14 +26,18 @@ class Builder:
     _env: RLEnv[A]
     _test_env: RLEnv[A]
 
-    def __init__(self, env: str | RLEnv[A] | ParallelEnv) -> None:
+    def __init__(self, env: str | RLEnv[A] | ParallelEnv):
         match env:
             case str():
                 self._env = self._init_env(env)
             case RLEnv():
                 self._env = env
             case ParallelEnv():
-                self._env = adapters.PettingZooAdapter(env)
+                try:
+                    from rlenv.adapters import PettingZooAdapter
+                except ImportError:
+                    raise ImportError("PettingZoo is not installed")
+                self._env = PettingZooAdapter(env)
             case _:
                 raise NotImplementedError()
         self._test_env = deepcopy(self._env)
@@ -38,17 +45,25 @@ class Builder:
     def _init_env(self, env: str) -> RLEnv:
         if env.lower().startswith("smac"):
             return self._get_smac_env(env)
-        else:
-            import gymnasium as gym
 
-            return adapters.GymAdapter(gym.make(env, render_mode="rgb_array"))
+        try:
+            import gymnasium as gym
+            from rlenv.adapters import GymAdapter
+
+            return GymAdapter(gym.make(env, render_mode="rgb_array"))
+        except ImportError:
+            raise ImportError("Gymnasium is not installed")
 
     def _get_smac_env(self, env_name: str) -> RLEnv:
+        try:
+            from rlenv.adapters import SMACAdapter
+        except ImportError:
+            raise ImportError("SMAC is not installed")
         env_name = env_name.lower()
         map_name = env_name[len("smac:") :]
         if len(map_name) == 0:
             map_name = "3m"
-        return adapters.SMACAdapter(map_name=map_name)
+        return SMACAdapter(map_name=map_name)
 
     def time_limit(self, n_steps: int, add_extra: bool = False):
         """Set the time limit (horizon) of the environment (train & test)"""
