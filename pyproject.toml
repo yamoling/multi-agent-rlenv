@@ -1,16 +1,15 @@
 [tool.poetry]
 name = "rlenv"
-version = "0.3.0"
+version = "0.3.1"
 description = "A strongly typed Reinforcement Learning framework"
 authors = ["Yannick Molinghen <yannick.molinghen@ulb.be>"]
 license = "MIT"
 readme = "readme.md"
 
 [tool.poetry.dependencies]
-python = ">=3.10,<3.11"
-numpy = "^1.23.4"
-opencv-python = "^4.6.0.66"
-pytest-cov = "^4.0.0"
+python = ">=3.10"
+numpy = ">=1.23.4"
+opencv-python = ">=4.6.0.66"
 
 smac = { git = "https://github.com/oxwhirl/smac.git", optional = true }
 gymnasium = { extras = [
@@ -20,9 +19,15 @@ gymnasium = { extras = [
 pettingzoo = { version = "^1.22.3", optional = true }
 
 
-[tool.poetry.extras]
-
+[tool.ruff]
+line-length = 140
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+
+# pytest configuration
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = "src"

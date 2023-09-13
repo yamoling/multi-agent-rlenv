@@ -1,6 +1,5 @@
 import numpy as np
-from rlenv import RLEnv, Observation
-from rlenv.models import DiscreteActionSpace
+from rlenv import RLEnv, Observation, DiscreteActionSpace
 
 
 class MockEnv(RLEnv[DiscreteActionSpace]):
