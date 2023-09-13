@@ -20,13 +20,8 @@ pettingzoo = { version = "^1.22.3", optional = true }
 
 
 [tool.poetry.extras]
-all = [
-    "gymnasium[atari]",
-    "gymnasium[accept-rom-license]",
-    "pettingzoo",
-    "smac",
-]
-atari = ["gymnasium[atari]", "gymnasium[accept-rom-license]"]
+all = ["gymnasium", "pettingzoo", "smac"]
+atari = ["gymnasium"]
 pettingzoo = ["pettingzoo"]
 smac = ["smac"]
 
