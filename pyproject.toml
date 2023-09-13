@@ -8,8 +8,8 @@ readme = "readme.md"
 
 [tool.poetry.dependencies]
 python = ">=3.10"
-numpy = ">=1.23.4"
-opencv-python = ">=4.6.0.66"
+numpy = "^1.23.4"
+opencv-python = "^4.6.0"
 
 smac = { git = "https://github.com/oxwhirl/smac.git", optional = true }
 gymnasium = { extras = [
@@ -18,6 +18,9 @@ gymnasium = { extras = [
 ], version = "^0.28.1", optional = true }
 pettingzoo = { version = "^1.22.3", optional = true }
 
+
+[tool.poetry.dev-dependencies]
+pytest = "^7.4"
 
 [tool.ruff]
 line-length = 140
