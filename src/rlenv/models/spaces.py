@@ -1,4 +1,4 @@
-from typing import Generic, TypeVar
+from typing import Generic, Optional, TypeVar
 from abc import abstractmethod, ABC
 import numpy as np
 
@@ -6,7 +6,7 @@ ActionType = TypeVar("ActionType", bound=np.ndarray)
 
 
 class ActionSpace(ABC, Generic[ActionType]):
-    def __init__(self, n_agents: int, n_actions: int, action_names: list[str] = None):
+    def __init__(self, n_agents: int, n_actions: int, action_names: Optional[list[str]] = None):
         self._n_agents = int(n_agents)
         self._n_actions = int(n_actions)
         if action_names is None:
@@ -35,11 +35,11 @@ class ActionSpace(ABC, Generic[ActionType]):
 
 
 class DiscreteActionSpace(ActionSpace[np.ndarray[np.int32]]):
-    def __init__(self, n_agents: int, n_actions: int, action_names: list[str] = None):
+    def __init__(self, n_agents: int, n_actions: int, action_names: Optional[list[str]] = None):
         super().__init__(n_agents, n_actions, action_names)
         self._actions = np.array([range(n_actions) for _ in range(n_agents)])
 
-    def sample(self, available_actions: np.ndarray[np.int32] = None) -> np.ndarray[np.int32]:
+    def sample(self, available_actions: Optional[np.ndarray[np.int32]] = None) -> np.ndarray[np.int32]:
         if available_actions is None:
             return np.random.randint(0, self.n_actions, self.n_agents)
         action_probs = available_actions / available_actions.sum(axis=1, keepdims=True)
@@ -51,7 +51,12 @@ class DiscreteActionSpace(ActionSpace[np.ndarray[np.int32]]):
 
 class ContinuousActionSpace(ActionSpace[np.ndarray[float]]):
     def __init__(
-        self, n_agents: int, n_actions: int, low: float | list[float] = 0.0, high: float | list[float] = 1.0, action_names: list[str] = None
+        self,
+        n_agents: int,
+        n_actions: int,
+        low: float | list[float] = 0.0,
+        high: float | list[float] = 1.0,
+        action_names: Optional[list[str]] = None,
     ):
         """Continuous action space.
 
