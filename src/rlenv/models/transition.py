@@ -40,3 +40,18 @@ class Transition:
             "reward": self.reward,
             "done": self.done,
         }
+
+    def __hash__(self) -> int:
+        return hash((self.obs, self.action, self.reward, self.done, self.info, self.obs_))
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Transition):
+            return False
+        return (
+            self.obs == other.obs
+            and self.action == other.action
+            and self.reward == other.reward
+            and self.done == other.done
+            and self.info == other.info
+            and self.obs_ == other.obs_
+        )
