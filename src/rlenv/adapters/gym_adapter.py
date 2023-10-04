@@ -39,7 +39,7 @@ class GymAdapter(RLEnv[A]):
 
     def step(self, actions) -> tuple[Observation, float, bool, bool, dict]:
         obs_, reward, done, truncated, info = self.env.step(actions[0])
-        obs_ = Observation(np.array([obs_], dtype=np.float32), self.get_avail_actions(), self.get_state())
+        obs_ = Observation(np.array([obs_], dtype=np.float32), self.available_actions(), self.get_state())
         return obs_, reward, done, truncated, info
 
     def get_state(self):
@@ -47,7 +47,7 @@ class GymAdapter(RLEnv[A]):
 
     def reset(self):
         obs_data, _info = self.env.reset()
-        obs = Observation(np.array([obs_data], dtype=np.float32), self.get_avail_actions(), self.get_state())
+        obs = Observation(np.array([obs_data], dtype=np.float32), self.available_actions(), self.get_state())
         return obs
 
     def render(self, mode: str = "human"):

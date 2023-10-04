@@ -38,7 +38,7 @@ class SMACAdapter(RLEnv):
     def reset(self):
         obs, state = self._env.reset()
         self._t = 0
-        obs = Observation(np.array(obs), self.get_avail_actions(), state)
+        obs = Observation(np.array(obs), self.available_actions(), state)
         return obs
 
     def get_state(self):
@@ -46,11 +46,11 @@ class SMACAdapter(RLEnv):
 
     def step(self, actions):
         reward, done, info = self._env.step(actions)
-        obs = Observation(np.array(self._env.get_obs()), self.get_avail_actions(), self.get_state())
+        obs = Observation(np.array(self._env.get_obs()), self.available_actions(), self.get_state())
         self._t += 1
         return obs, reward, done, False, info
 
-    def get_avail_actions(self):
+    def available_actions(self):
         return np.array(self._env.get_avail_actions())
 
     def render(self, mode: str = "human"):

@@ -31,7 +31,7 @@ class MockEnv(RLEnv[DiscreteActionSpace]):
 
     def observation(self):
         obs_data = np.array([np.arange(self.t + agent, self.t + agent + MockEnv.OBS_SIZE) for agent in range(self.n_agents)])
-        return Observation(obs_data, self.get_avail_actions(), self.get_state())
+        return Observation(obs_data, self.available_actions(), self.get_state())
 
     def get_state(self):
         return np.array([])

@@ -21,7 +21,7 @@ class RLEnv(ABC, Generic[A]):
         """The shape of extra features"""
         return (0,)
 
-    def get_avail_actions(self) -> np.ndarray[np.int32]:
+    def available_actions(self) -> np.ndarray[np.int32]:
         """
         Get the currently available actions for each agent.
 
@@ -100,7 +100,8 @@ class RLEnv(ABC, Generic[A]):
         """Retrieve an image of the environment"""
 
     @abstractmethod
-    def render(self, mode): ...
+    def render(self, mode):
+        ...
 
     def summary(self, **kwargs) -> dict[str,]:
         """Summary of the environment informations."""

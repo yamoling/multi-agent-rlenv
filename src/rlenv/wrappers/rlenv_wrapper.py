@@ -41,8 +41,8 @@ class RLEnvWrapper(RLEnv[A], ABC):
     def get_state(self):
         return self.wrapped.get_state()
 
-    def get_avail_actions(self):
-        return self.wrapped.get_avail_actions()
+    def available_actions(self):
+        return self.wrapped.available_actions()
 
     @overload
     def render(self, mode: Literal["human"]) -> None:
