@@ -20,6 +20,24 @@ def test_obs_eq():
     assert obs1 == obs2
 
 
+def test_obs_eq_extras_none():
+    obs1 = Observation(
+        data=np.arange(20),
+        available_actions=np.ones(5),
+        state=np.ones(10),
+        extras=None,
+    )
+
+    obs2 = Observation(
+        data=np.arange(20),
+        available_actions=np.ones(5),
+        state=np.ones(10),
+        extras=None,
+    )
+
+    assert obs1 == obs2
+
+
 def test_obs_hash():
     obs1 = Observation(
         data=np.arange(20),

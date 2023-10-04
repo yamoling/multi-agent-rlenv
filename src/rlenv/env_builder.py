@@ -1,7 +1,7 @@
 import os
 from copy import deepcopy
 from dataclasses import dataclass
-from typing import Literal, TypeVar
+from typing import Literal, TypeVar, Generic
 
 try:
     from pettingzoo import ParallelEnv
@@ -20,7 +20,7 @@ def make(env: str | ParallelEnv) -> RLEnv[ActionSpace]:
 
 
 @dataclass
-class Builder:
+class Builder(Generic[A]):
     """Builder for environments"""
 
     _env: RLEnv[A]

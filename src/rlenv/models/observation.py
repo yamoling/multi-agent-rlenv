@@ -1,3 +1,4 @@
+from typing import Optional
 from dataclasses import dataclass
 import numpy as np
 
@@ -22,8 +23,8 @@ class Observation:
         data: np.ndarray[np.float32],
         available_actions: np.ndarray[np.int32],
         state: np.ndarray[np.float32],
-        extras: np.ndarray[np.float32] | None = None,
-    ) -> None:
+        extras: Optional[np.ndarray[np.float32]] = None,
+    ):
         self.data = data
         self.available_actions = available_actions
         self.state = state
