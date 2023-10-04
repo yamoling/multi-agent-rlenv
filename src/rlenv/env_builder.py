@@ -14,7 +14,7 @@ from . import wrappers
 A = TypeVar("A", bound=ActionSpace)
 
 
-def make(env: str | ParallelEnv) -> RLEnv:
+def make(env: str | ParallelEnv) -> RLEnv[ActionSpace]:
     """Make an RLEnv from Gym, SMAC or PettingZoo"""
     return Builder(env).build()
 

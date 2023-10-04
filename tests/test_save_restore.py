@@ -27,8 +27,10 @@ def test_registry_gym():
     assert restored_env.n_actions == env.n_actions
     assert env.summary() == restored_env.summary()
 
+
 def test_unregistered_environment():
     from rlenv.exceptions import UnknownEnvironmentException
+
     env = MockEnv(4)
     rlenv.registry.ENV_REGISTRY.pop(MockEnv.__name__)
     summary = env.summary()
@@ -51,25 +53,27 @@ def test_registry_wrapper():
     assert restored_env.n_actions == env.n_actions
     assert env.summary() == restored_env.summary()
 
+
 def test_env_to_summary():
     env = MockEnv(4)
     summary = env.summary()
     assert summary["name"] == "MockEnv"
     assert summary["n_agents"] == 4
-    assert summary["obs_shape"] == (MockEnv.OBS_SIZE, )
-    assert summary["state_shape"] == (0, )
-    assert summary["extras_shape"] == (0, )
+    assert summary["obs_shape"] == (MockEnv.OBS_SIZE,)
+    assert summary["state_shape"] == (0,)
+    assert summary["extras_shape"] == (0,)
     assert summary["n_actions"] == MockEnv.N_ACTIONS
-    assert summary[MockEnv.__name__] == { "n_agents": 4 }
+    assert summary[MockEnv.__name__] == {"n_agents": 4}
+
 
 def test_env_from_summary():
     env = MockEnv(4)
     summary = env.summary()
     env2 = MockEnv.from_summary(summary)
     assert env2.n_agents == 4
-    assert env2.observation_shape == (MockEnv.OBS_SIZE, )
-    assert env2.state_shape == (0, )
-    assert env2.extra_feature_shape == (0, )
+    assert env2.observation_shape == (MockEnv.OBS_SIZE,)
+    assert env2.state_shape == (0,)
+    assert env2.extra_feature_shape == (0,)
     assert env2.n_actions == MockEnv.N_ACTIONS
 
 
@@ -80,14 +84,15 @@ def test_wrapper_to_summary():
     summary = env.summary()
     assert summary["name"] == "MockEnv"
     assert summary["n_agents"] == env.n_agents
-    assert summary["obs_shape"] == (MockEnv.OBS_SIZE, )
-    assert summary["state_shape"] == (0, )
-    assert summary["extras_shape"] == (env.n_agents + 5, )
+    assert summary["obs_shape"] == (MockEnv.OBS_SIZE,)
+    assert summary["state_shape"] == (0,)
+    assert summary["extras_shape"] == (env.n_agents + 5,)
     assert summary["n_actions"] == MockEnv.N_ACTIONS
     assert summary["wrappers"] == [wrappers.AgentIdWrapper.__name__, wrappers.PadExtras.__name__]
-    assert summary[MockEnv.__name__] == { "n_agents": 4 }
+    assert summary[MockEnv.__name__] == {"n_agents": 4}
     assert summary[wrappers.AgentIdWrapper.__name__] == {}
-    assert summary[wrappers.PadExtras.__name__] == { "n_added": 5 }
+    assert summary[wrappers.PadExtras.__name__] == {"n_added": 5}
+
 
 def test_wrapper_from_summary():
     env = MockEnv(4)
@@ -98,8 +103,8 @@ def test_wrapper_from_summary():
     env = wrappers.from_summary(env, summary)
 
     assert env.n_agents == 4
-    assert env.observation_shape == (MockEnv.OBS_SIZE, )
-    assert env.state_shape == (0, )
-    assert env.extra_feature_shape == (env.n_agents + 5, )
+    assert env.observation_shape == (MockEnv.OBS_SIZE,)
+    assert env.state_shape == (0,)
+    assert env.extra_feature_shape == (env.n_agents + 5,)
     assert env.n_actions == MockEnv.N_ACTIONS
     assert env.name == "MockEnv"
