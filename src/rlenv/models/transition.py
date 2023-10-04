@@ -42,16 +42,15 @@ class Transition:
         }
 
     def __hash__(self) -> int:
-        return hash((self.obs, self.action, self.reward, self.done, self.info, self.obs_))
+        return hash((self.obs, self.action.tobytes(), self.reward, self.done, self.obs_))
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Transition):
             return False
         return (
             self.obs == other.obs
-            and self.action == other.action
+            and np.array_equal(self.action, other.action)
             and self.reward == other.reward
             and self.done == other.done
-            and self.info == other.info
             and self.obs_ == other.obs_
         )

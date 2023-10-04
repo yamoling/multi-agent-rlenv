@@ -62,4 +62,7 @@ class Observation:
     def __eq__(self, other):
         if not isinstance(other, Observation):
             return False
-        return self.data == other.data and self.state == other.state and self.extras == other.extras
+
+        return (
+            np.array_equal(self.data, other.data) and np.array_equal(self.state, other.state) and np.array_equal(self.extras, other.extras)
+        )
