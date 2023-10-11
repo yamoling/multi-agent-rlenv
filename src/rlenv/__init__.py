@@ -13,4 +13,3 @@ from . import adapters
 
 from .env_builder import make, Builder
 from .models import RLEnv, Observation, Episode, Transition, DiscreteActionSpace, ContinuousActionSpace
-from .registry import register, register_wrapper, from_summary

@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Literal, Generic, TypeVar, overload
 import numpy as np
+from dataclasses import dataclass
 
 
 from .spaces import ActionSpace
@@ -9,12 +10,11 @@ from .observation import Observation
 A = TypeVar("A", bound=ActionSpace)
 
 
+@dataclass
 class RLEnv(ABC, Generic[A]):
     """This interface defines the attributes and methods that must be implemented to work with this framework"""
 
-    def __init__(self, action_space: A):
-        super().__init__()
-        self._action_space = action_space
+    action_space: A
 
     @property
     def extra_feature_shape(self) -> tuple[int, ...]:
@@ -33,23 +33,15 @@ class RLEnv(ABC, Generic[A]):
         """Set the environment seed"""
         raise NotImplementedError("Method not implemented")
 
-    def kwargs(self) -> dict[str,]:
-        """The constructor arguments"""
-        return {}
-
     @property
     def n_actions(self) -> int:
         """The number of actions that an agent can take."""
-        return self._action_space.n_actions
+        return self.action_space.n_actions
 
     @property
     def n_agents(self) -> int:
         """The number of agents in the environment."""
-        return self._action_space.n_agents
-
-    @property
-    def action_space(self) -> A:
-        return self._action_space
+        return self.action_space.n_agents
 
     @property
     def action_meanings(self) -> list[str]:
@@ -102,20 +94,3 @@ class RLEnv(ABC, Generic[A]):
     @abstractmethod
     def render(self, mode):
         ...
-
-    def summary(self, **kwargs) -> dict[str,]:
-        """Summary of the environment informations."""
-        return {
-            "name": self.name,
-            "n_actions": int(self.n_actions),
-            "n_agents": int(self.n_agents),
-            "obs_shape": tuple(int(s) for s in self.observation_shape),
-            "extras_shape": tuple(int(s) for s in self.extra_feature_shape),
-            "state_shape": tuple(int(s) for s in self.state_shape),
-            self.__class__.__name__: self.kwargs(),
-        }
-
-    @classmethod
-    def from_summary(cls, summary: dict[str,]):
-        """Restore an environment from its summary"""
-        return cls(**summary[cls.__name__])

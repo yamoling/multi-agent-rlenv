@@ -2,14 +2,18 @@ from typing import TypeVar, Literal, overload
 from abc import ABC
 import numpy as np
 from rlenv.models import RLEnv, Observation, ActionSpace
+from dataclasses import dataclass
 
 A = TypeVar("A", bound=ActionSpace)
 
 
+@dataclass
 class RLEnvWrapper(RLEnv[A], ABC):
     """Parent class for all RLEnv wrappers"""
 
-    def __init__(self, env: RLEnv[A]) -> None:
+    wrapped: RLEnv[A]
+
+    def __init__(self, env: RLEnv[A]):
         super().__init__(env.action_space)
         self.wrapped = env
 
@@ -28,9 +32,6 @@ class RLEnvWrapper(RLEnv[A], ABC):
     @property
     def name(self):
         return self.wrapped.name
-
-    def kwargs(self) -> dict[str,]:
-        return {}
 
     def step(self, actions: np.ndarray[np.int32]) -> tuple[Observation, float, bool, bool, dict]:
         return self.wrapped.step(actions)
@@ -61,24 +62,3 @@ class RLEnvWrapper(RLEnv[A], ABC):
 
     def seed(self, seed_value: int):
         return self.wrapped.seed(seed_value)
-
-    def summary(self, **kwargs) -> dict[str, str]:
-        # Get the env summary, and add the wrapper to the wrappers list + the wrapper's kwargs
-        summary = self.wrapped.summary(**kwargs)
-        wrappers = summary.get("wrappers", [])
-        wrappers.append(self.__class__.__name__)
-        return {
-            **summary,
-            "n_actions": self.n_actions,
-            "n_agents": self.n_agents,
-            "obs_shape": self.observation_shape,
-            "extras_shape": self.extra_feature_shape,
-            "state_shape": self.state_shape,
-            "wrappers": wrappers,
-            self.__class__.__name__: self.kwargs(),
-        }
-
-    @classmethod
-    def from_summary(cls, env: RLEnv, summary: dict[str,]) -> "RLEnvWrapper":
-        kwargs = summary.pop(cls.__name__)
-        return cls(env, **kwargs)

@@ -1,6 +1,5 @@
 from typing import TypeVar
-from gymnasium.core import Env
-from gymnasium import spaces
+from gymnasium import Env, spaces
 import numpy as np
 from rlenv.models import RLEnv, Observation, ActionSpace, DiscreteActionSpace, ContinuousActionSpace
 
@@ -10,7 +9,7 @@ A = TypeVar("A", bound=ActionSpace)
 class GymAdapter(RLEnv[A]):
     """Wraps a gym envronment in an RLEnv"""
 
-    def __init__(self, env: Env) -> None:
+    def __init__(self, env: Env):
         match env.action_space:
             case spaces.Discrete() as s:
                 space = DiscreteActionSpace(1, s.n)
