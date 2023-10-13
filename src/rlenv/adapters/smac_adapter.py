@@ -14,6 +14,7 @@ class SMACAdapter(RLEnv):
         self._env_info = self._env.get_env_info()
         self._t = 0
         self._seed = self._env.seed()
+        self.name = f"smac-{self._env.map_name}"
 
     @property
     def n_actions(self) -> int:
@@ -30,10 +31,6 @@ class SMACAdapter(RLEnv):
     @property
     def observation_shape(self):
         return (self._env_info["obs_shape"],)
-
-    @property
-    def name(self) -> str:
-        return f"smac-{self._env.map_name}"
 
     def reset(self):
         obs, state = self._env.reset()
@@ -58,8 +55,3 @@ class SMACAdapter(RLEnv):
 
     def seed(self, seed_value: int):
         self._env = StarCraft2Env(map_name=self._env.map_name, seed=seed_value)
-
-    def kwargs(self) -> dict[str,]:
-        return {
-            "map_name": self._env.map_name,
-        }

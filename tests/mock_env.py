@@ -22,9 +22,6 @@ class MockEnv(RLEnv[DiscreteActionSpace]):
     def state_shape(self):
         return (0,)
 
-    def kwargs(self) -> dict[str,]:
-        return {"n_agents": self.n_agents}
-
     def reset(self):
         self.t = 0
         return self.observation()

@@ -10,6 +10,3 @@ class TimePenaltyWrapper(RLEnvWrapper):
         obs, reward, *rest = self.wrapped.step(action)
         reward -= self.penalty
         return obs, reward, *rest
-
-    def kwargs(self) -> dict[str,]:
-        return {"penalty": self.penalty}

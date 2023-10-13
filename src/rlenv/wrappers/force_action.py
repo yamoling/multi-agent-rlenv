@@ -25,6 +25,3 @@ class ForceActionWrapper(RLEnvWrapper):
         obs = super().reset()
         obs.available_actions = obs.available_actions * self._available_actions_mask
         return obs
-
-    def kwargs(self) -> dict[str,]:
-        return {"forced_actions": self._forced_actions}

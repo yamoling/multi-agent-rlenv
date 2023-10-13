@@ -7,9 +7,10 @@ from .rlenv_wrapper import RLEnvWrapper, RLEnv
 
 class VideoRecorder(RLEnvWrapper):
     """Records a video of the run"""
+
     FPS = 10
 
-    def __init__(self, env: RLEnv, video_folder: str = None, video_encoding: Literal["mp4", "avi"]="mp4") -> None:
+    def __init__(self, env: RLEnv, video_folder: str = None, video_encoding: Literal["mp4", "avi"] = "mp4") -> None:
         super().__init__(env)
         if video_folder is None:
             video_folder = "videos/"
@@ -18,15 +19,12 @@ class VideoRecorder(RLEnvWrapper):
         self._video_count = 0
         self._recorder = None
         match video_encoding:
-            case "mp4": self._four_cc = cv2.VideoWriter_fourcc(*"mp4v")
-            case "avi": self._four_cc = cv2.VideoWriter_fourcc(*"XVID")
-            case other: raise ValueError(f"Unsupported file video encoding: {other}")
-
-    def kwargs(self) -> dict[str,]:
-        return {
-            "video_folder": self.video_folder,
-            "video_encoding": self.video_extension
-        }
+            case "mp4":
+                self._four_cc = cv2.VideoWriter_fourcc(*"mp4v")
+            case "avi":
+                self._four_cc = cv2.VideoWriter_fourcc(*"XVID")
+            case other:
+                raise ValueError(f"Unsupported file video encoding: {other}")
 
     def step(self, actions):
         obs, r, done, info = super().step(actions)

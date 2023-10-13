@@ -39,6 +39,3 @@ class TimeLimitWrapper(RLEnvWrapper[A]):
             time_ratio = np.full((self.n_agents, 1), self._current_step / self._step_limit, dtype=np.float32)
             obs.extras = np.concatenate([obs.extras, time_ratio], axis=-1)
         return obs
-
-    def kwargs(self) -> dict[str,]:
-        return {"step_limit": self._step_limit, "add_extra": self._add_extra}

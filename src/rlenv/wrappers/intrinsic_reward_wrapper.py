@@ -30,9 +30,6 @@ class LinearStateCount(IntrinsicReward):
         self.visit_count[h] = visit_count + 1
         return self.additional_reward * (1 - ((self.anneal_on - visit_count) / self.anneal_on))
 
-    def kwargs(self) -> dict[str,]:
-        return {"additional_reward": self.additional_reward, "anneal_on": self.anneal_on}
-
 
 class DecreasingExpStateCount(IntrinsicReward):
     """
@@ -55,6 +52,3 @@ class DecreasingExpStateCount(IntrinsicReward):
             return 0
         self.visit_count[h] = visit_count + 1
         return self.scale * math.exp(-visit_count / self.anneal)
-
-    def kwargs(self) -> dict[str,]:
-        return {"scale_by": self.scale, "anneal": self.anneal}

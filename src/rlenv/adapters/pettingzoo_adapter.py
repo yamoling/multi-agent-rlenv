@@ -25,10 +25,6 @@ class PettingZooAdapter(RLEnv):
     def observation_shape(self) -> tuple[int, ...]:
         return self._env.observation_space(self.agents[0])._shape
 
-    @property
-    def name(self) -> str:
-        return "Petting Zoo env"
-
     def get_state(self):
         try:
             return self._env.state()

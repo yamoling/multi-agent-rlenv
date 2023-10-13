@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Literal, Generic, TypeVar, overload
 import numpy as np
+from serde import serde
 from dataclasses import dataclass
 
 
@@ -10,16 +11,28 @@ from .observation import Observation
 A = TypeVar("A", bound=ActionSpace)
 
 
+# @serde
 @dataclass
 class RLEnv(ABC, Generic[A]):
     """This interface defines the attributes and methods that must be implemented to work with this framework"""
 
     action_space: A
+    n_agents: int
+    n_actions: int
+    name: str
 
-    @property
-    def extra_feature_shape(self) -> tuple[int, ...]:
-        """The shape of extra features"""
-        return (0,)
+    def __init__(self, action_space: A):
+        super().__init__()
+        self.name = self.__class__.__name__
+        self.action_space = action_space
+        self.n_actions = action_space.n_actions
+        self.n_agents = action_space.n_agents
+
+    # def __init__(self, action_space: A):
+    #     self.name = self.__class__.__name__
+    #     self.action_space = action_space
+    #     self.n_actions = action_space.n_actions
+    #     self.n_agents = action_space.n_agents
 
     def available_actions(self) -> np.ndarray[np.int32]:
         """
@@ -34,19 +47,9 @@ class RLEnv(ABC, Generic[A]):
         raise NotImplementedError("Method not implemented")
 
     @property
-    def n_actions(self) -> int:
-        """The number of actions that an agent can take."""
-        return self.action_space.n_actions
-
-    @property
-    def n_agents(self) -> int:
-        """The number of agents in the environment."""
-        return self.action_space.n_agents
-
-    @property
-    def action_meanings(self) -> list[str]:
-        """The meaning of each action."""
-        return self.action_space.action_names
+    def extra_feature_shape(self) -> tuple[int, ...]:
+        """The shape of the extra features."""
+        return (0,)
 
     @property
     @abstractmethod
@@ -57,11 +60,6 @@ class RLEnv(ABC, Generic[A]):
     @abstractmethod
     def observation_shape(self) -> tuple[int, ...]:
         """The shape of an observation for a single agent."""
-
-    @property
-    def name(self) -> str:
-        """The environment unique name"""
-        return self.__class__.__name__
 
     @abstractmethod
     def get_state(self) -> np.ndarray[np.float32]:
