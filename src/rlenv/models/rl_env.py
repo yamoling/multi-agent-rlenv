@@ -11,7 +11,7 @@ from .observation import Observation
 A = TypeVar("A", bound=ActionSpace)
 
 
-# @serde
+@serde
 @dataclass
 class RLEnv(ABC, Generic[A]):
     """This interface defines the attributes and methods that must be implemented to work with this framework"""

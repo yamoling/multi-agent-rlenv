@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Iterable, Union
+from typing import Iterable, Union, Optional
 import numpy as np
 
 
@@ -9,6 +9,7 @@ class Measurement:
     The `Measurement` class is defined by a value, a unit and a print format. It provides
     arithmetic operators for usability and is mainly used for logging purposes.
     """
+
     value: float
     fmt: str | None
     unit: str | None
@@ -34,7 +35,7 @@ class Measurement:
             other_value = other
         return Measurement(self.value + other_value, fmt, unit)
 
-    def __str__(self)-> str:
+    def __str__(self) -> str:
         return format(self.value, self.fmt) + self.unit
 
     def __lt__(self, other: Union["Measurement", float]) -> bool:
@@ -88,7 +89,7 @@ class Measurement:
         return self.value == value
 
     def __truediv__(self, divider: float):
-        return Measurement(self.value/divider, self.fmt, self.unit)
+        return Measurement(self.value / divider, self.fmt, self.unit)
 
 
 class Metrics(dict[str, float]):
@@ -96,7 +97,7 @@ class Metrics(dict[str, float]):
 
     def __truediv__(self, divider: float) -> "Metrics":
         res = Metrics(**self)
-        for key, value  in self.items():
+        for key, value in self.items():
             res[key] = value / divider
         return res
 
@@ -119,8 +120,10 @@ class Metrics(dict[str, float]):
         return super().items()
 
     @staticmethod
-    def agregate(all_metrics: list["Metrics"], only_avg=False) -> "Metrics":
+    def agregate(all_metrics: list["Metrics"], only_avg=False, skip_keys: Optional[set[str]] = None) -> "Metrics":
         """Aggregate a list of metrics into min, max, avg and std."""
+        if skip_keys is None:
+            skip_keys = {}
         all_values: dict[str, list[float]] = {}
         for metrics in all_metrics:
             for key, value in metrics.items():
@@ -133,11 +136,12 @@ class Metrics(dict[str, float]):
                 res[key] = float(np.average(np.array(values)))
         else:
             for key, values in all_values.items():
-                values = np.array(values)
-                res[f"avg_{key}"] = float(np.average(values))
-                res[f"std_{key}"] = float(np.std(values))
-                res[f"min_{key}"] = float(values.min())
-                res[f"max_{key}"] = float(values.max())
+                if key not in skip_keys:
+                    values = np.array(values)
+                    res[f"avg_{key}"] = float(np.average(values))
+                    res[f"std_{key}"] = float(np.std(values))
+                    res[f"min_{key}"] = float(values.min())
+                    res[f"max_{key}"] = float(values.max())
         return res
 
     @property

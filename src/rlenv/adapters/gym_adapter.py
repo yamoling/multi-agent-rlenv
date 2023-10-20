@@ -15,9 +15,9 @@ class GymAdapter(RLEnv[A]):
     def __init__(self, env: Env):
         match env.action_space:
             case spaces.Discrete() as s:
-                space = DiscreteActionSpace(1, s.n)
+                space = DiscreteActionSpace(1, int(s.n))
             case spaces.Box() as s:
-                space = ContinuousActionSpace(1, s.shape[0], low=s.low, high=s.high)
+                space = ContinuousActionSpace(1, s.shape[0], low=float(s.low), high=float(s.high))
             case other:
                 raise NotImplementedError(f"Action space {other} not supported")
         super().__init__(space)
@@ -50,4 +50,3 @@ class GymAdapter(RLEnv[A]):
 
     def seed(self, seed_value: int):
         self.env.reset(seed=seed_value)
-        self.env.action_space.seed(seed_value)

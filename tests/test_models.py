@@ -1,4 +1,5 @@
 from rlenv import Observation, Transition
+from .mock_env import MockEnv
 import numpy as np
 
 
@@ -142,3 +143,8 @@ def test_transition_hash():
     )
 
     assert hash(t1) == hash(t2)
+
+
+def test_rlenv_available_actions():
+    env = MockEnv(4)
+    assert np.all(env.available_actions() == 1)
