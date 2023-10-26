@@ -14,7 +14,7 @@ A = TypeVar("A", bound=ActionSpace)
 class StepData(tuple[Observation, float, bool, bool, dict[str, Any]]):
     """A tuple containing the data returned by the step method of an environment"""
 
-    def __new__(cls, observation, reward, done, truncated, info):
+    def __new__(cls, observation: Observation, reward: float, done: bool, truncated: bool, info: dict[str, Any]):
         return super().__new__(cls, (observation, reward, done, truncated, info))
 
     @property
