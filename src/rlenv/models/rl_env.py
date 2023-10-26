@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Literal, Generic, TypeVar, overload
+from typing import Literal, Generic, TypeVar, overload, Any
 import numpy as np
 from serde import serde
 from dataclasses import dataclass
@@ -9,6 +9,33 @@ from .spaces import ActionSpace
 from .observation import Observation
 
 A = TypeVar("A", bound=ActionSpace)
+
+
+class StepData(tuple[Observation, float, bool, bool, dict[str, Any]]):
+    """A tuple containing the data returned by the step method of an environment"""
+
+    def __new__(cls, observation, reward, done, truncated, info):
+        return super().__new__(cls, (observation, reward, done, truncated, info))
+
+    @property
+    def observation(self) -> Observation:
+        return self[0]
+
+    @property
+    def reward(self) -> float:
+        return self[1]
+
+    @property
+    def done(self) -> bool:
+        return self[2]
+
+    @property
+    def truncated(self) -> bool:
+        return self[3]
+
+    @property
+    def info(self) -> dict[str, Any]:
+        return self[4]
 
 
 @serde
@@ -27,12 +54,6 @@ class RLEnv(ABC, Generic[A]):
         self.action_space = action_space
         self.n_actions = action_space.n_actions
         self.n_agents = action_space.n_agents
-
-    # def __init__(self, action_space: A):
-    #     self.name = self.__class__.__name__
-    #     self.action_space = action_space
-    #     self.n_actions = action_space.n_actions
-    #     self.n_agents = action_space.n_agents
 
     def available_actions(self) -> np.ndarray[np.int32]:
         """
@@ -66,7 +87,7 @@ class RLEnv(ABC, Generic[A]):
         """Retrieve the current state of the environment."""
 
     @abstractmethod
-    def step(self, actions: np.ndarray[np.int32]) -> tuple[Observation, float, bool, bool, dict]:
+    def step(self, actions: np.ndarray[np.int32]) -> StepData:
         """Perform a step in the environment.
 
         Returns:
