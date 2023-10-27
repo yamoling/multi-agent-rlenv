@@ -1,8 +1,10 @@
 from dataclasses import dataclass
+from typing import Iterable
 import numpy as np
 
 from .metrics import Metrics
 from .transition import Transition
+from .observation import Observation
 
 
 @dataclass
@@ -109,6 +111,32 @@ class Episode:
         if self.is_finished:
             dones[self.episode_len - 1 :] = 1.0
         return dones
+
+    def transitions(self) -> Iterable[Transition]:
+        """The transitions that compose the episode"""
+        for i in range(self.episode_len):
+            yield Transition(
+                obs=Observation(
+                    data=self._observations[i],
+                    available_actions=self._available_actions[i],
+                    extras=self._extras[i],
+                    state=self.states[i],
+                ),
+                action=self.actions[i],
+                reward=self.rewards[i],
+                done=self.dones[i],
+                info={},
+                obs_=Observation(
+                    data=self._observations[i + 1],
+                    available_actions=self._available_actions[i + 1],
+                    extras=self._extras[i + 1],
+                    state=self.states[i + 1],
+                ),
+                truncated=not self.is_finished and i == self.episode_len - 1,
+            )
+
+    def __iter__(self) -> Iterable[Transition]:
+        return self.transitions()
 
     @staticmethod
     def agregate_metrics(episodes: list["Episode"]) -> Metrics:

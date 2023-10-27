@@ -150,3 +150,24 @@ def test_padded():
         assert padded.available_actions.shape[0] == 10
         assert padded.available_actions_.shape[0] == 10
         assert padded.mask.shape[0] == 10
+
+
+def test_retrieve_episode_transitions():
+    env = wrappers.TimeLimitWrapper(MockEnv(2), 10)
+    episode = generate_episode(env)
+    transitions = list(episode.transitions())
+    assert len(transitions) == 10
+    assert all(not t.done for t in transitions)
+    assert all(not t.truncated for t in transitions[:-1])
+    assert transitions[-1].truncated
+
+
+def test_iterate_on_episode():
+    env = wrappers.TimeLimitWrapper(MockEnv(2), 10)
+    episode = generate_episode(env)
+    for i, t in enumerate(episode):
+        assert not t.done
+        if i == 9:
+            assert t.truncated
+        else:
+            assert not t.truncated
