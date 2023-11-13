@@ -1,10 +1,12 @@
 from dataclasses import dataclass
+from serde import serde
 from typing import Any
 import numpy as np
 
 from .observation import Observation
 
 
+@serde
 @dataclass
 class Transition:
     """Transition model"""
@@ -42,7 +44,9 @@ class Transition:
         }
 
     def __hash__(self) -> int:
-        return hash((self.obs, self.action.tobytes(), self.reward, self.done, self.obs_))
+        return hash(
+            (self.obs, self.action.tobytes(), self.reward, self.done, self.obs_)
+        )
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Transition):

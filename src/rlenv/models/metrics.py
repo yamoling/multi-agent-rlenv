@@ -1,8 +1,10 @@
 from dataclasses import dataclass
+from serde import serde
 from typing import Iterable, Union, Optional
 import numpy as np
 
 
+@serde
 @dataclass
 class Measurement:
     """
@@ -25,7 +27,9 @@ class Measurement:
         fmt = self.fmt
         unit = self.unit
         if isinstance(other, Measurement):
-            assert self.unit is None or other.unit is None or self.unit == other.unit, "Cannot add two measurements with different units"
+            assert (
+                self.unit is None or other.unit is None or self.unit == other.unit
+            ), "Cannot add two measurements with different units"
             if fmt is None:
                 fmt = other.fmt
             if unit is None:
@@ -40,58 +44,79 @@ class Measurement:
 
     def __lt__(self, other: Union["Measurement", float]) -> bool:
         if isinstance(other, Measurement):
-            assert self.unit == other.unit, "Can not compare measurements with different units"
+            assert (
+                self.unit == other.unit
+            ), "Can not compare measurements with different units"
             value = other.value
         elif isinstance(other, float):
             value = other
         else:
-            raise NotImplementedError(f"Comparison not implemented against type {type(other)}")
+            raise NotImplementedError(
+                f"Comparison not implemented against type {type(other)}"
+            )
         return self.value < value
 
     def __le__(self, other: Union["Measurement", float]) -> bool:
         if isinstance(other, Measurement):
-            assert self.unit == other.unit, "Can not compare measurements with different units"
+            assert (
+                self.unit == other.unit
+            ), "Can not compare measurements with different units"
             value = other.value
         elif isinstance(other, float):
             value = other
         else:
-            raise NotImplementedError(f"Comparison not implemented against type {type(other)}")
+            raise NotImplementedError(
+                f"Comparison not implemented against type {type(other)}"
+            )
         return self.value <= value
 
     def __gt__(self, other: Union["Measurement", float]) -> bool:
         if isinstance(other, Measurement):
-            assert self.unit == other.unit, "Can not compare measurements with different units"
+            assert (
+                self.unit == other.unit
+            ), "Can not compare measurements with different units"
             value = other.value
         elif isinstance(other, float):
             value = other
         else:
-            raise NotImplementedError(f"Comparison not implemented against type {type(other)}")
+            raise NotImplementedError(
+                f"Comparison not implemented against type {type(other)}"
+            )
         return self.value > value
 
     def __ge__(self, other: Union["Measurement", float]) -> bool:
         if isinstance(other, Measurement):
-            assert self.unit == other.unit, "Can not compare measurements with different units"
+            assert (
+                self.unit == other.unit
+            ), "Can not compare measurements with different units"
             value = other.value
         elif isinstance(other, float):
             value = other
         else:
-            raise NotImplementedError(f"Comparison not implemented against type {type(other)}")
+            raise NotImplementedError(
+                f"Comparison not implemented against type {type(other)}"
+            )
         return self.value >= value
 
     def __eq__(self, other: Union["Measurement", float]) -> bool:
         if isinstance(other, Measurement):
-            assert self.unit == other.unit, "Can not compare measurements with different units"
+            assert (
+                self.unit == other.unit
+            ), "Can not compare measurements with different units"
             value = other.value
         elif isinstance(other, float):
             value = other
         else:
-            raise NotImplementedError(f"Comparison not implemented against type {type(other)}")
+            raise NotImplementedError(
+                f"Comparison not implemented against type {type(other)}"
+            )
         return self.value == value
 
     def __truediv__(self, divider: float):
         return Measurement(self.value / divider, self.fmt, self.unit)
 
 
+@serde
 class Metrics(dict[str, float]):
     """Metrics are just a dictionary of type [str, float] with facilities such as adding, dividing and averaging methods."""
 
@@ -120,7 +145,11 @@ class Metrics(dict[str, float]):
         return super().items()
 
     @staticmethod
-    def agregate(all_metrics: list["Metrics"], only_avg=False, skip_keys: Optional[set[str]] = None) -> "Metrics":
+    def agregate(
+        all_metrics: list["Metrics"],
+        only_avg=False,
+        skip_keys: Optional[set[str]] = None,
+    ) -> "Metrics":
         """Aggregate a list of metrics into min, max, avg and std."""
         if skip_keys is None:
             skip_keys = {}

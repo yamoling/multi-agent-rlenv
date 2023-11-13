@@ -1,8 +1,10 @@
 from typing import Optional
 from dataclasses import dataclass
+from serde import serde
 import numpy as np
 
 
+@serde
 @dataclass
 class Observation:
     """
@@ -65,5 +67,7 @@ class Observation:
             return False
 
         return (
-            np.array_equal(self.data, other.data) and np.array_equal(self.state, other.state) and np.array_equal(self.extras, other.extras)
+            np.array_equal(self.data, other.data)
+            and np.array_equal(self.state, other.state)
+            and np.array_equal(self.extras, other.extras)
         )

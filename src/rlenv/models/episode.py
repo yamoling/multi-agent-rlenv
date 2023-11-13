@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from serde import serde
 from typing import Iterable
 import numpy as np
 
@@ -7,6 +8,7 @@ from .transition import Transition
 from .observation import Observation
 
 
+@serde
 @dataclass
 class Episode:
     """Episode model made of observations, actions, rewards, ..."""
@@ -27,18 +29,45 @@ class Episode:
         if target_len == self.episode_len:
             return self
         if target_len < self.episode_len:
-            raise ValueError(f"Cannot pad episode to a smaller size: {target_len} < {self.episode_len}")
+            raise ValueError(
+                f"Cannot pad episode to a smaller size: {target_len} < {self.episode_len}"
+            )
         padding_size = target_len - self.episode_len
-        obs = np.concatenate([self._observations, np.zeros((padding_size, self.n_agents, self.obs_size), dtype=np.float32)])
+        obs = np.concatenate(
+            [
+                self._observations,
+                np.zeros(
+                    (padding_size, self.n_agents, self.obs_size), dtype=np.float32
+                ),
+            ]
+        )
         extras_shape = list(self._extras.shape)
         extras_shape[0] = padding_size
-        extras = np.concatenate([self._extras, np.zeros(extras_shape, dtype=np.float32)])
-        actions = np.concatenate([self.actions, np.zeros((padding_size, self.n_agents), dtype=np.int64)])
+        extras = np.concatenate(
+            [self._extras, np.zeros(extras_shape, dtype=np.float32)]
+        )
+        actions = np.concatenate(
+            [self.actions, np.zeros((padding_size, self.n_agents), dtype=np.int64)]
+        )
         rewards_padding_shape = list(self.rewards.shape)
         rewards_padding_shape[0] = padding_size
-        rewards = np.concatenate([self.rewards, np.zeros(rewards_padding_shape, dtype=np.float32)])
-        availables = np.concatenate([self._available_actions, np.ones((padding_size, self.n_agents, self.n_actions), dtype=np.float32)])
-        states = np.concatenate([self.states, np.zeros((padding_size, *self.states.shape[1:]), dtype=np.float32)])
+        rewards = np.concatenate(
+            [self.rewards, np.zeros(rewards_padding_shape, dtype=np.float32)]
+        )
+        availables = np.concatenate(
+            [
+                self._available_actions,
+                np.ones(
+                    (padding_size, self.n_agents, self.n_actions), dtype=np.float32
+                ),
+            ]
+        )
+        states = np.concatenate(
+            [
+                self.states,
+                np.zeros((padding_size, *self.states.shape[1:]), dtype=np.float32),
+            ]
+        )
         return Episode(
             _observations=obs,
             actions=actions,
