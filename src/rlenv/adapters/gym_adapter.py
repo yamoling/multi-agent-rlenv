@@ -3,7 +3,13 @@ from gymnasium import Env, spaces
 import numpy as np
 from serde import serde
 
-from rlenv.models import RLEnv, Observation, ActionSpace, DiscreteActionSpace, ContinuousActionSpace
+from rlenv.models import (
+    RLEnv,
+    Observation,
+    ActionSpace,
+    DiscreteActionSpace,
+    ContinuousActionSpace,
+)
 
 A = TypeVar("A", bound=ActionSpace)
 
@@ -17,7 +23,13 @@ class GymAdapter(RLEnv[A]):
             case spaces.Discrete() as s:
                 space = DiscreteActionSpace(1, int(s.n))
             case spaces.Box() as s:
-                space = ContinuousActionSpace(1, s.shape[0], low=float(s.low), high=float(s.high))
+                if len(s.low.shape) > 1 or len(s.high.shape) > 1:
+                    raise NotImplementedError(
+                        "Multi-dimensional action spaces not supported"
+                    )
+                space = ContinuousActionSpace(
+                    1, s.shape[0], low=float(s.low[0]), high=float(s.high[0])
+                )
             case other:
                 raise NotImplementedError(f"Action space {other} not supported")
         super().__init__(space)
@@ -34,7 +46,11 @@ class GymAdapter(RLEnv[A]):
 
     def step(self, actions) -> tuple[Observation, float, bool, bool, dict]:
         obs_, reward, done, truncated, info = self.env.step(actions[0])
-        obs_ = Observation(np.array([obs_], dtype=np.float32), self.available_actions(), self.get_state())
+        obs_ = Observation(
+            np.array([obs_], dtype=np.float32),
+            self.available_actions(),
+            self.get_state(),
+        )
         return obs_, reward, done, truncated, info
 
     def get_state(self):
@@ -42,7 +58,11 @@ class GymAdapter(RLEnv[A]):
 
     def reset(self):
         obs_data, _info = self.env.reset()
-        obs = Observation(np.array([obs_data], dtype=np.float32), self.available_actions(), self.get_state())
+        obs = Observation(
+            np.array([obs_data], dtype=np.float32),
+            self.available_actions(),
+            self.get_state(),
+        )
         return obs
 
     def render(self, mode: str = "human"):

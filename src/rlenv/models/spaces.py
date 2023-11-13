@@ -4,6 +4,7 @@ import numpy as np
 from serde import serde
 from dataclasses import dataclass
 
+
 ActionType = TypeVar("ActionType")
 
 

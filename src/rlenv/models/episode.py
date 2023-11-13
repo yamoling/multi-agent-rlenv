@@ -1,7 +1,8 @@
 from dataclasses import dataclass
 from serde import serde
-from typing import Iterable
+from typing import Iterable, Any
 import numpy as np
+import numpy.typing as npt
 
 from .metrics import Metrics
 from .transition import Transition
@@ -13,13 +14,13 @@ from .observation import Observation
 class Episode:
     """Episode model made of observations, actions, rewards, ..."""
 
-    _observations: np.ndarray[np.float32]
-    _extras: np.ndarray[np.float32]
-    actions: np.ndarray[np.int64]
-    rewards: np.ndarray[np.float32]
-    _available_actions: np.ndarray[np.int64]
-    states: np.ndarray[np.float32]
-    actions_probs: np.ndarray[np.float32] | None
+    _observations: npt.NDArray[np.float32]
+    _extras: npt.NDArray[np.float32]
+    actions: npt.NDArray[np.int64]
+    rewards: npt.NDArray[np.float32]
+    _available_actions: npt.NDArray[np.int64]
+    states: npt.NDArray[np.float32]
+    actions_probs: npt.NDArray[np.float32] | None
     metrics: Metrics
     episode_len: int
     is_finished: bool

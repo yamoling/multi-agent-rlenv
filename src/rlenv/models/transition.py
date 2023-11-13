@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from serde import serde
 from typing import Any
 import numpy as np
+import numpy.typing as npt
 
 from .observation import Observation
 
@@ -12,7 +13,7 @@ class Transition:
     """Transition model"""
 
     obs: Observation
-    action: np.ndarray[np.int32]
+    action: npt.NDArray[np.int32]
     reward: float
     done: bool
     info: dict[str, Any]
