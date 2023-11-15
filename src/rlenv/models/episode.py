@@ -1,10 +1,9 @@
 from dataclasses import dataclass
 from serde import serde
-from typing import Iterable, Any
+from typing import Iterable
 import numpy as np
 import numpy.typing as npt
 
-from .metrics import Metrics
 from .transition import Transition
 from .observation import Observation
 
@@ -21,7 +20,7 @@ class Episode:
     _available_actions: npt.NDArray[np.int64]
     states: npt.NDArray[np.float32]
     actions_probs: npt.NDArray[np.float32] | None
-    metrics: Metrics
+    metrics: dict[str, float]
     episode_len: int
     is_finished: bool
 
@@ -168,19 +167,13 @@ class Episode:
     def __iter__(self) -> Iterable[Transition]:
         return self.transitions()
 
-    @staticmethod
-    def agregate_metrics(episodes: list["Episode"]) -> Metrics:
-        """Agregate metrics of a list of episodes (min, max, avg)"""
-        metrics = [e.metrics for e in episodes]
-        return Metrics.agregate(metrics)
-
     def __len__(self):
         return self.episode_len
 
     @property
     def score(self) -> float:
         """The episode score (sum of all rewards)"""
-        return self.metrics["score"].value
+        return self.metrics["score"]
 
     def to_json(self) -> dict:
         """Creates a json serialisable dictionary"""
@@ -215,7 +208,7 @@ class EpisodeBuilder:
         self.states = []
         self.action_probs = []
         self.episode_len = 0
-        self.metrics = Metrics()
+        self.metrics = {}
         self._done = False
         self._truncated = False
 
