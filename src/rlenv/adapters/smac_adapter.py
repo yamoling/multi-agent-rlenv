@@ -16,14 +16,6 @@ class SMACAdapter(RLEnv[DiscreteActionSpace]):
         self.name = f"smac-{self._env.map_name}"
 
     @property
-    def n_actions(self) -> int:
-        return self._env.n_actions
-
-    @property
-    def n_agents(self) -> int:
-        return self._env.n_agents
-
-    @property
     def state_shape(self):
         return (self._env_info["state_shape"],)
 

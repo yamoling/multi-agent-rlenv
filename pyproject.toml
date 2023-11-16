@@ -29,6 +29,9 @@ smac = ["smac"]
 [tool.poetry.dev-dependencies]
 pytest = "^7.4"
 
+[tool.poetry.group.dev.dependencies]
+pytest-xdist = "^3.4.0"
+
 [tool.ruff]
 line-length = 140
 

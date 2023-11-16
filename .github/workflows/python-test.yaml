@@ -55,5 +55,5 @@ jobs:
       - name: Install dependencies and run pytest
         run: |
           poetry install --extras=all
-          poetry run pytest
+          poetry run pytest -n 4
         

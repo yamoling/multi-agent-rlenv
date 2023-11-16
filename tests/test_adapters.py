@@ -16,5 +16,6 @@ def test_smac_adapter():
     from rlenv.models import DiscreteActionSpace
 
     env = SMACAdapter("3m")
+    env.reset()
     assert env.n_agents == 3
-    assert isinstance(DiscreteActionSpace, env.action_space)
+    assert isinstance(env.action_space, DiscreteActionSpace)
