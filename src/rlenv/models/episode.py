@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from serde import serde
-from typing import Iterable
+from typing import Iterable, Optional
 import numpy as np
 import numpy.typing as npt
 
@@ -17,7 +17,7 @@ class Episode:
     _extras: npt.NDArray[np.float32]
     actions: npt.NDArray[np.int64]
     rewards: npt.NDArray[np.float32]
-    _available_actions: npt.NDArray[np.int64]
+    _available_actions: npt.NDArray[np.float32]
     states: npt.NDArray[np.float32]
     actions_probs: npt.NDArray[np.float32] | None
     metrics: dict[str, float]
@@ -82,59 +82,59 @@ class Episode:
         )
 
     @property
-    def mask(self) -> np.ndarray:
+    def mask(self):
         """Get the mask for the current episide (when padded)"""
         mask = np.ones_like(self.rewards, dtype=np.float32)
         mask[self.episode_len :] = 0
         return mask
 
     @property
-    def obs(self) -> np.ndarray:
+    def obs(self):
         """The observations"""
         return self._observations[:-1]
 
     @property
-    def obs_(self) -> np.ndarray:
+    def obs_(self):
         """The next observations"""
         return self._observations[1:]
 
     @property
-    def extras(self) -> np.ndarray[np.float32]:
+    def extras(self):
         """Get the extra features"""
         return self._extras[:-1]
 
     @property
-    def extras_(self) -> np.ndarray[np.float32]:
+    def extras_(self):
         """Get the next extra features"""
         return self._extras[1:]
 
     @property
-    def n_agents(self) -> int:
+    def n_agents(self):
         """The number of agents in the episode"""
         return self._observations.shape[1]
 
     @property
-    def obs_size(self) -> int:
+    def obs_size(self):
         """The observation size"""
         return self._observations.shape[2]
 
     @property
-    def n_actions(self) -> int:
+    def n_actions(self):
         """The number of actions"""
         return self._available_actions.shape[2]
 
     @property
-    def available_actions(self) -> np.ndarray[np.int64]:
+    def available_actions(self):
         """The available actions"""
         return self._available_actions[:-1]
 
     @property
-    def available_actions_(self) -> np.ndarray[np.int64]:
+    def available_actions_(self):
         """The next available actions"""
         return self._available_actions[1:]
 
     @property
-    def dones(self) -> np.ndarray:
+    def dones(self):
         """The done flags for each transition"""
         dones = np.zeros_like(self.rewards, dtype=np.float32)
         if self.is_finished:
@@ -175,19 +175,7 @@ class Episode:
         """The episode score (sum of all rewards)"""
         return self.metrics["score"]
 
-    def to_json(self) -> dict:
-        """Creates a json serialisable dictionary"""
-        return {
-            "obs": self._observations.tolist(),
-            "extras": self._extras.tolist(),
-            "actions": self.actions.tolist(),
-            "rewards": self.rewards.tolist(),
-            "available_actions": self._available_actions.tolist(),
-            "states": self.states.tolist(),
-            "metrics": self.metrics.to_json(),
-        }
-
-    def compute_returns(self, discount: float = 1.0) -> np.ndarray[np.float32]:
+    def compute_returns(self, discount: float = 1.0):
         """Compute the returns (discounted sum of future rewards) of the episode at each time step"""
         returns = np.zeros_like(self.rewards)
         returns[-1] = self.rewards[-1]
@@ -244,7 +232,7 @@ class EpisodeBuilder:
             self.available_actions.append(np.ones_like(self.available_actions[-1]))
             self.states.append(np.zeros_like(self.states[-1]))
 
-    def build(self, extra_metrics: dict[str, float] = None) -> Episode:
+    def build(self, extra_metrics: Optional[dict[str, float]] = None) -> Episode:
         """Build the Episode"""
         assert (
             self.is_finished

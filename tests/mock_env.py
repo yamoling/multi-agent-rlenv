@@ -27,7 +27,13 @@ class MockEnv(RLEnv[DiscreteActionSpace]):
         return self.observation()
 
     def observation(self):
-        obs_data = np.array([np.arange(self.t + agent, self.t + agent + MockEnv.OBS_SIZE) for agent in range(self.n_agents)])
+        obs_data = np.array(
+            [
+                np.arange(self.t + agent, self.t + agent + MockEnv.OBS_SIZE)
+                for agent in range(self.n_agents)
+            ],
+            dtype=np.float32,
+        )
         return Observation(obs_data, self.available_actions(), self.get_state())
 
     def get_state(self):
@@ -39,4 +45,10 @@ class MockEnv(RLEnv[DiscreteActionSpace]):
     def step(self, action):
         self.t += 1
         self.actions_history.append(action)
-        return self.observation(), MockEnv.REWARD_STEP, self.t >= MockEnv.END_GAME, False, {}
+        return (
+            self.observation(),
+            MockEnv.REWARD_STEP,
+            self.t >= MockEnv.END_GAME,
+            False,
+            {},
+        )

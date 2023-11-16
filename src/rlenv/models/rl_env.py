@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Union, Generic, TypeVar, overload, Any, Literal
 import numpy as np
+import numpy.typing as npt
 from serde import serde
 from dataclasses import dataclass
 
@@ -14,7 +15,14 @@ A = TypeVar("A", bound=ActionSpace)
 class StepData(tuple[Observation, float, bool, bool, dict[str, Any]]):
     """A tuple containing the data returned by the step method of an environment"""
 
-    def __new__(cls, observation: Observation, reward: float, done: bool, truncated: bool, info: dict[str, Any]):
+    def __new__(
+        cls,
+        observation: Observation,
+        reward: float,
+        done: bool,
+        truncated: bool,
+        info: dict[str, Any],
+    ):
         return super().__new__(cls, (observation, reward, done, truncated, info))
 
     @property
@@ -55,7 +63,7 @@ class RLEnv(ABC, Generic[A]):
         self.n_actions = action_space.n_actions
         self.n_agents = action_space.n_agents
 
-    def available_actions(self) -> np.ndarray[np.int32]:
+    def available_actions(self) -> np.ndarray[np.int32, Any]:
         """
         Get the currently available actions for each agent.
 
@@ -83,11 +91,13 @@ class RLEnv(ABC, Generic[A]):
         """The shape of an observation for a single agent."""
 
     @abstractmethod
-    def get_state(self) -> np.ndarray[np.float32]:
+    def get_state(self) -> npt.NDArray[np.float32]:
         """Retrieve the current state of the environment."""
 
     @abstractmethod
-    def step(self, actions: np.ndarray[np.int32]) -> Union[StepData, tuple[Observation, float, bool, bool, dict[str, Any]]]:
+    def step(
+        self, actions: npt.NDArray[np.int32]
+    ) -> Union[StepData, tuple[Observation, float, bool, bool, dict[str, Any]]]:
         """Perform a step in the environment.
 
         Returns:
@@ -103,13 +113,15 @@ class RLEnv(ABC, Generic[A]):
         """Reset the environment."""
 
     @overload
+    @abstractmethod
     def render(self, mode: Literal["human"]) -> None:
         """Render the environment in a window"""
 
     @overload
-    def render(self, mode: Literal["rgb_array"]) -> np.ndarray[np.uint8]:
+    @abstractmethod
+    def render(self, mode: Literal["rgb_array"]) -> npt.NDArray[np.uint8]:
         """Retrieve an image of the environment"""
 
     @abstractmethod
-    def render(self, mode):
+    def render(self, mode) -> None | npt.NDArray[np.uint8]:
         ...

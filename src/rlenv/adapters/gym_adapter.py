@@ -1,4 +1,3 @@
-from typing import TypeVar
 from gymnasium import Env, spaces
 import numpy as np
 from serde import serde
@@ -11,11 +10,9 @@ from rlenv.models import (
     ContinuousActionSpace,
 )
 
-A = TypeVar("A", bound=ActionSpace)
-
 
 @serde
-class GymAdapter(RLEnv[A]):
+class GymAdapter(RLEnv[ActionSpace]):
     """Wraps a gym envronment in an RLEnv"""
 
     def __init__(self, env: Env):
@@ -34,7 +31,10 @@ class GymAdapter(RLEnv[A]):
                 raise NotImplementedError(f"Action space {other} not supported")
         super().__init__(space)
         self.env = env
-        self.name = self.env.unwrapped.spec.id
+        if self.env.unwrapped.spec is not None:
+            self.name = self.env.unwrapped.spec.id
+        else:
+            self.name = "gym-no-id"
 
     @property
     def state_shape(self):
@@ -51,7 +51,7 @@ class GymAdapter(RLEnv[A]):
             self.available_actions(),
             self.get_state(),
         )
-        return obs_, reward, done, truncated, info
+        return obs_, float(reward), done, truncated, info
 
     def get_state(self):
         return np.zeros(1, dtype=np.float32)

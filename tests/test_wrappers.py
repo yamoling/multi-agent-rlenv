@@ -19,7 +19,9 @@ def test_available_actions():
 
     assert env.extra_feature_shape == (5,)
     obs = env.reset()
-    assert np.array_equal(obs.extras, np.ones((N_AGENTS, MockEnv.N_ACTIONS), dtype=np.float32))
+    assert np.array_equal(
+        obs.extras, np.ones((N_AGENTS, MockEnv.N_ACTIONS), dtype=np.float32)
+    )
 
 
 def test_agent_id():
@@ -34,7 +36,7 @@ def test_penalty_wrapper():
     env = Builder(MockEnv(1)).time_penalty(0.1).build()
     done = False
     while not done:
-        _, reward, done, *_ = env.step([0])
+        _, reward, done, *_ = env.step(np.array([0]))
         assert reward == MockEnv.REWARD_STEP - 0.1
 
 
@@ -45,7 +47,7 @@ def test_time_limit_wrapper():
     stop = False
     t = 0
     while not stop:
-        _, _, done, truncated, _ = env.step([0])
+        _, _, done, truncated, _ = env.step(np.array([0]))
         stop = done or truncated
         t += 1
     assert t == MAX_T
@@ -60,7 +62,7 @@ def test_time_limit_wrapper_with_extra():
     stop = False
     t = 0
     while not stop:
-        obs, _, done, truncated, _ = env.step([0])
+        obs, _, done, truncated, _ = env.step(np.array([0]))
         stop = done or truncated
         t += 1
     assert t == MAX_T
@@ -79,8 +81,7 @@ def test_force_actions():
                     assert obs.available_actions[agent, action] == 1
                 else:
                     assert obs.available_actions[agent, action] == 0
-        obs, _, done, *_ = env.step([0, 1, 2, 3, 4])
-
+        obs, _, done, *_ = env.step(np.array([0, 1, 2, 3, 4]))
 
 
 def test_blind_wrapper():

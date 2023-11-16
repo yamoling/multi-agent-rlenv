@@ -1,6 +1,7 @@
 from typing import TypeVar, Literal, overload
 from abc import ABC
 import numpy as np
+import numpy.typing as npt
 from rlenv.models import RLEnv, Observation, ActionSpace
 
 A = TypeVar("A", bound=ActionSpace)
@@ -26,7 +27,9 @@ class RLEnvWrapper(RLEnv[A], ABC):
     def extra_feature_shape(self):
         return self.wrapped.extra_feature_shape
 
-    def step(self, actions: np.ndarray[np.int32]) -> tuple[Observation, float, bool, bool, dict]:
+    def step(
+        self, actions: npt.NDArray[np.int32]
+    ) -> tuple[Observation, float, bool, bool, dict]:
         return self.wrapped.step(actions)
 
     def reset(self):

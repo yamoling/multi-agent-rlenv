@@ -1,6 +1,7 @@
 from typing import Generic, Optional, TypeVar
 from abc import abstractmethod, ABC
 import numpy as np
+import numpy.typing as npt
 from serde import serde
 from dataclasses import dataclass
 
@@ -18,7 +19,9 @@ class ActionSpace(ABC, Generic[ActionType]):
     action_names: list[str]
     """The meaning of each action."""
 
-    def __init__(self, n_agents: int, n_actions: int, action_names: Optional[list[str]] = None):
+    def __init__(
+        self, n_agents: int, n_actions: int, action_names: Optional[list[str]] = None
+    ):
         self.n_agents = n_agents
         self.n_actions = n_actions
         self.shape = (n_agents, n_actions)
@@ -31,12 +34,14 @@ class ActionSpace(ABC, Generic[ActionType]):
         """Sample actions from the action space for each agent."""
 
 
-class DiscreteActionSpace(ActionSpace[np.ndarray[np.int32]]):
-    def __init__(self, n_agents: int, n_actions: int, action_names: Optional[list[str]] = None):
+class DiscreteActionSpace(ActionSpace[npt.NDArray[np.int32]]):
+    def __init__(
+        self, n_agents: int, n_actions: int, action_names: Optional[list[str]] = None
+    ):
         super().__init__(n_agents, n_actions, action_names)
         self._actions = [range(self.n_actions) for _ in range(self.n_agents)]
 
-    def sample(self, available_actions: Optional[np.ndarray[np.int32]] = None) -> np.ndarray[np.int32]:
+    def sample(self, available_actions: Optional[npt.NDArray[np.int32]] = None):
         if available_actions is None:
             return np.random.randint(0, self.n_actions, self.n_agents)
         action_probs = available_actions / available_actions.sum(axis=1, keepdims=True)
@@ -47,7 +52,7 @@ class DiscreteActionSpace(ActionSpace[np.ndarray[np.int32]]):
 
 
 @dataclass
-class ContinuousActionSpace(ActionSpace[np.ndarray[float]]):
+class ContinuousActionSpace(ActionSpace[npt.NDArray[np.float32]]):
     low: float | list[float] = 0.0
     """Lower bound of the action space. If a float is provided, the same value is used for all actions."""
     high: float | list[float] = 1.0
@@ -61,11 +66,13 @@ class ContinuousActionSpace(ActionSpace[np.ndarray[float]]):
         high: float | list[float] = 1.0,
         action_names: Optional[list[str]] = None,
     ):
-        assert (
-            isinstance(low, (float)) or len(low) == n_actions
+        assert isinstance(low, (float)) or (
+            isinstance(low, list) and len(low) == n_actions
         ), "'low' parameter must be a float or a list of floats with length equal to the number of actions."
         assert (
-            isinstance(high, (float)) or len(high) == n_actions
+            isinstance(high, (float))
+            or isinstance(high, list)
+            and len(high) == n_actions
         ), "'high' parameter must be a float or a list of floats with length equal to the number of actions."
         super().__init__(n_agents, n_actions, action_names)
         if isinstance(low, float):
@@ -90,5 +97,7 @@ class ContinuousActionSpace(ActionSpace[np.ndarray[float]]):
     #         self.high = [self.high] * self.n_actions
     #     self.high = np.array(self.high, dtype=np.float32)
 
-    def sample(self) -> np.ndarray[np.float32]:
-        return np.random.random(self.shape) * (np.array(self.high) - np.array(self.low)) + np.array(self.low)
+    def sample(self):
+        return np.random.random(self.shape) * (
+            np.array(self.high) - np.array(self.low)
+        ) + np.array(self.low)

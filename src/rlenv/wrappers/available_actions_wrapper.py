@@ -1,4 +1,5 @@
 import numpy as np
+import numpy.typing as npt
 from typing import TypeVar
 from rlenv.models import ActionSpace, Observation
 from .rlenv_wrapper import RLEnvWrapper
@@ -13,10 +14,16 @@ class AvailableActionsWrapper(RLEnvWrapper[A]):
 
     def reset(self):
         obs = self.wrapped.reset()
-        obs.extras = np.concatenate([obs.extras, self.available_actions().astype(np.float32)], axis=-1)
+        obs.extras = np.concatenate(
+            [obs.extras, self.available_actions().astype(np.float32)], axis=-1
+        )
         return obs
 
-    def step(self, actions: np.ndarray[np.int32]) -> tuple[Observation, float, bool, bool, dict]:
-        obs, *rest = self.wrapped.step(actions)
-        obs.extras = np.concatenate([obs.extras, self.available_actions().astype(np.float32)], axis=-1)
-        return obs, *rest
+    def step(
+        self, actions: npt.NDArray[np.int32]
+    ) -> tuple[Observation, float, bool, bool, dict]:
+        obs, reward, done, truncated, info = self.wrapped.step(actions)
+        obs.extras = np.concatenate(
+            [obs.extras, self.available_actions().astype(np.float32)], axis=-1
+        )
+        return obs, reward, done, truncated, info

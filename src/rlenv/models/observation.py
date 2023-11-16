@@ -14,7 +14,7 @@ class Observation:
 
     data: npt.NDArray[np.float32]
     """The actual environment observation. The shape is [n_agents, *obs_shape]"""
-    available_actions: npt.NDArray[np.int32]
+    available_actions: npt.NDArray[np.float32]
     """The available actions at the time of the observation"""
     state: npt.NDArray[np.float32]
     """The environment state at the time of the observation"""
@@ -23,10 +23,10 @@ class Observation:
 
     def __init__(
         self,
-        data: np.ndarray[np.float32],
-        available_actions: np.ndarray[np.int32],
-        state: np.ndarray[np.float32],
-        extras: Optional[np.ndarray[np.float32]] = None,
+        data: npt.NDArray[np.float32],
+        available_actions: npt.NDArray[np.float32],
+        state: npt.NDArray[np.float32],
+        extras: Optional[npt.NDArray[np.float32]] = None,
     ):
         self.data = data
         self.available_actions = available_actions

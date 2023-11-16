@@ -1,20 +1,24 @@
 import os
 from copy import deepcopy
 from dataclasses import dataclass
-from typing import Literal, TypeVar, Generic
+from typing import Literal, TypeVar, Generic, TypeAlias
 
-try:
-    from pettingzoo import ParallelEnv
-except ImportError:
-    ParallelEnv = None
 
 from .models import RLEnv, ActionSpace
 from . import wrappers
 
 A = TypeVar("A", bound=ActionSpace)
 
+try:
+    from pettingzoo import ParallelEnv
 
-def make(env: str | ParallelEnv) -> RLEnv[ActionSpace]:
+    EnvType: TypeAlias = str | RLEnv | ParallelEnv
+except ImportError:
+    # EnvType: TypeAlias = str | RLEnv
+    pass
+
+
+def make(env: str | RLEnv) -> RLEnv[ActionSpace]:
     """Make an RLEnv from Gym, SMAC or PettingZoo"""
     return Builder(env).build()
 
@@ -26,7 +30,7 @@ class Builder(Generic[A]):
     _env: RLEnv[A]
     _test_env: RLEnv[A]
 
-    def __init__(self, env: str | RLEnv[A] | ParallelEnv):
+    def __init__(self, env: str | RLEnv[A]):
         match env:
             case str():
                 self._env = self._init_env(env)
@@ -37,7 +41,7 @@ class Builder(Generic[A]):
                     from rlenv.adapters import PettingZooAdapter
                 except ImportError:
                     raise ImportError("PettingZoo is not installed")
-                self._env = PettingZooAdapter(env)
+                self._env = PettingZooAdapter(env)  # type: ignore
             case _:
                 raise NotImplementedError()
         self._test_env = deepcopy(self._env)
@@ -95,12 +99,21 @@ class Builder(Generic[A]):
         self._test_env = wrappers.LastActionWrapper(self._test_env)
         return self
 
-    def record(self, folder: str, record_training=False, encoding: Literal["mp4", "avi"] = "mp4"):
+    def record(
+        self,
+        folder: str,
+        record_training=False,
+        encoding: Literal["mp4", "avi"] = "mp4",
+    ):
         """Add video recording of runs. Onnly records tests by default."""
         if record_training:
-            self._env = wrappers.VideoRecorder(self._env, os.path.join(folder, "training"), video_encoding=encoding)
+            self._env = wrappers.VideoRecorder(
+                self._env, os.path.join(folder, "training"), video_encoding=encoding
+            )
             folder = os.path.join(folder, "test")
-        self._test_env = wrappers.VideoRecorder(self._test_env, folder, video_encoding=encoding)
+        self._test_env = wrappers.VideoRecorder(
+            self._test_env, folder, video_encoding=encoding
+        )
         return self
 
     def available_actions(self):
@@ -115,16 +128,28 @@ class Builder(Generic[A]):
         self._test_env = wrappers.BlindWrapper(self._test_env, p)
         return self
 
-    def intrinsic_reward(self, method: Literal["linear", "exp"], initial_reward: float, anneal: float, also_for_testing=False):
+    def intrinsic_reward(
+        self,
+        method: Literal["linear", "exp"],
+        initial_reward: float,
+        anneal: int,
+        also_for_testing=False,
+    ):
         match method:
             case "linear":
                 self._env = wrappers.LinearStateCount(self._env, initial_reward, anneal)
                 if also_for_testing:
-                    self._test_env = wrappers.LinearStateCount(self._test_env, initial_reward, anneal)
+                    self._test_env = wrappers.LinearStateCount(
+                        self._test_env, initial_reward, anneal
+                    )
             case "exp":
-                self._env = wrappers.DecreasingExpStateCount(self._env, initial_reward, anneal)
+                self._env = wrappers.DecreasingExpStateCount(
+                    self._env, initial_reward, anneal
+                )
                 if also_for_testing:
-                    self._test_env = wrappers.DecreasingExpStateCount(self._test_env, initial_reward, anneal)
+                    self._test_env = wrappers.DecreasingExpStateCount(
+                        self._test_env, initial_reward, anneal
+                    )
             case other:
                 raise ValueError(f"'{other}' is not a known extrinsic reward wrapper")
         return self
