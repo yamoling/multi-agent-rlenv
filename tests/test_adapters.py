@@ -12,10 +12,15 @@ def test_gym_adapter():
 
 
 def test_smac_adapter():
-    from rlenv.adapters import SMACAdapter
-    from rlenv.models import DiscreteActionSpace
+    # Do not test this if starcrat is not installed (e.g. on CI)
+    try:
+        from rlenv.adapters import SMACAdapter
+        from rlenv.models import DiscreteActionSpace
 
-    env = SMACAdapter("3m")
-    env.reset()
-    assert env.n_agents == 3
-    assert isinstance(env.action_space, DiscreteActionSpace)
+        env = SMACAdapter("3m")
+        env.reset()
+        assert env.n_agents == 3
+        assert isinstance(env.action_space, DiscreteActionSpace)
+    except (FileNotFoundError, ImportError):
+        # File not found error if smac is installed but starcraft is not
+        pass
