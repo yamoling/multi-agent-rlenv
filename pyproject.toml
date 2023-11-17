@@ -44,3 +44,5 @@ build-backend = "poetry.core.masonry.api"
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = "src"
+# Run tests on two cores with xdist
+addopts = "-n 2"

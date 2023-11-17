@@ -4,7 +4,7 @@ from smac.env import StarCraft2Env
 from rlenv.models import RLEnv, Observation, DiscreteActionSpace
 
 
-class SMACAdapter(RLEnv[DiscreteActionSpace]):
+class SMAC(RLEnv[DiscreteActionSpace]):
     """Wrapper for the SMAC environment to work with this framework"""
 
     def __init__(self, map_name: str) -> None:

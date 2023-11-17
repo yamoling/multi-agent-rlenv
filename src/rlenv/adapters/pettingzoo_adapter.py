@@ -4,7 +4,7 @@ import numpy as np
 import numpy.typing as npt
 
 
-class PettingZooAdapter(RLEnv[ActionSpace]):
+class PettingZoo(RLEnv[ActionSpace]):
     def __init__(self, env: ParallelEnv):
         aspace = env.action_space(0)
         if aspace.shape is None:

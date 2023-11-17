@@ -38,10 +38,10 @@ class Builder(Generic[A]):
                 self._env = env
             case ParallelEnv():
                 try:
-                    from rlenv.adapters import PettingZooAdapter
+                    from rlenv.adapters import PettingZoo
                 except ImportError:
                     raise ImportError("PettingZoo is not installed")
-                self._env = PettingZooAdapter(env)  # type: ignore
+                self._env = PettingZoo(env)  # type: ignore
             case _:
                 raise NotImplementedError()
         self._test_env = deepcopy(self._env)
@@ -52,22 +52,22 @@ class Builder(Generic[A]):
 
         try:
             import gymnasium as gym
-            from rlenv.adapters import GymAdapter
+            from rlenv.adapters import Gym
 
-            return GymAdapter(gym.make(env, render_mode="rgb_array"))
+            return Gym(gym.make(env, render_mode="rgb_array"))
         except ImportError:
             raise ImportError("Gymnasium is not installed")
 
     def _get_smac_env(self, env_name: str) -> RLEnv:
         try:
-            from rlenv.adapters import SMACAdapter
+            from rlenv.adapters import SMAC
         except ImportError:
             raise ImportError("SMAC is not installed")
         env_name = env_name.lower()
         map_name = env_name[len("smac:") :]
         if len(map_name) == 0:
             map_name = "3m"
-        return SMACAdapter(map_name=map_name)
+        return SMAC(map_name=map_name)
 
     def time_limit(self, n_steps: int, add_extra: bool = False):
         """Set the time limit (horizon) of the environment (train & test)"""

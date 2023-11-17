@@ -12,7 +12,7 @@ from rlenv.models import (
 
 
 @serde
-class GymAdapter(RLEnv[ActionSpace]):
+class Gym(RLEnv[ActionSpace]):
     """Wraps a gym envronment in an RLEnv"""
 
     def __init__(self, env: Env):

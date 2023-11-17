@@ -1,14 +1,21 @@
+__all__ = []
 try:
-    from .gym_adapter import GymAdapter
+    from .gym_adapter import Gym
+
+    __all__.append("Gym")
 except ImportError:
-    GymAdapter = None
+    Gym = None
 
 try:
-    from .pettingzoo_adapter import PettingZooAdapter
+    from .pettingzoo_adapter import PettingZoo
+
+    __all__.append("PettingZoo")
 except ImportError:
-    PettingZooAdapter = None
+    PettingZoo = None
 
 try:
-    from .smac_adapter import SMACAdapter
+    from .smac_adapter import SMAC
+
+    __all__.append("SMAC")
 except ImportError:
-    SMACAdapter = None
+    SMAC = None
