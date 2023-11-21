@@ -7,7 +7,7 @@ from .rlenv_wrapper import RLEnvWrapper
 A = TypeVar("A", bound=ActionSpace)
 
 
-class AvailableActionsWrapper(RLEnvWrapper[A]):
+class AvailableActions(RLEnvWrapper[A]):
     @property
     def extra_feature_shape(self):
         return (self.wrapped.extra_feature_shape[0] + self.n_actions,)

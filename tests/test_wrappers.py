@@ -93,5 +93,5 @@ def test_blind_wrapper():
 
     env = rlenv.Builder(MockEnv(5)).blind(p=1).build()
     test(env)
-    env = rlenv.wrappers.BlindWrapper(MockEnv(5), p=1)
+    env = rlenv.wrappers.Blind(MockEnv(5), p=1)
     test(env)

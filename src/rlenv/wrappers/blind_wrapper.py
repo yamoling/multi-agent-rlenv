@@ -10,7 +10,7 @@ from .rlenv_wrapper import RLEnvWrapper
 A = TypeVar("A", bound=ActionSpace)
 
 
-class BlindWrapper(RLEnvWrapper[A]):
+class Blind(RLEnvWrapper[A]):
     def __init__(self, env: RLEnv[A], p: float) -> None:
         super().__init__(env)
         self.p = p

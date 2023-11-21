@@ -11,16 +11,27 @@ def test_gym_adapter():
     env.reset()
 
 
-def test_smac_adapter():
-    # Do not test this if starcrat is not installed (e.g. on CI)
-    try:
-        from rlenv.adapters import SMAC
+from rlenv.adapters import SMAC  # noqa: E402
+
+# Only perform the tests if SMAC is installed.
+if SMAC is not None:
+
+    def test_smac_adapter():
         from rlenv.models import DiscreteActionSpace
 
         env = SMAC("3m")
         env.reset()
         assert env.n_agents == 3
         assert isinstance(env.action_space, DiscreteActionSpace)
-    except (FileNotFoundError, ImportError):
-        # File not found error if smac is installed but starcraft is not
-        pass
+
+    def test_smac_render():
+        env = SMAC("3m")
+        env.reset()
+        env.render("human")
+
+    def test_smac_pickle():
+        import pickle
+
+        env = SMAC("3m")
+        env.reset()
+        pickle.dumps(env)

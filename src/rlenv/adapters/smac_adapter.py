@@ -1,4 +1,5 @@
 import numpy as np
+from typing import Literal
 from smac.env import StarCraft2Env
 
 from rlenv.models import RLEnv, Observation, DiscreteActionSpace
@@ -41,7 +42,7 @@ class SMAC(RLEnv[DiscreteActionSpace]):
     def available_actions(self):
         return np.array(self._env.get_avail_actions())
 
-    def render(self, mode: str = "human"):
+    def render(self, mode: Literal["human", "rgb_array"] = "human"):
         return self._env.render(mode)
 
     def seed(self, seed_value: int):

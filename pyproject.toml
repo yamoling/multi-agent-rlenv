@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "rlenv"
-version = "0.4.3"
+version = "0.4.4"
 description = "A strongly typed Reinforcement Learning framework"
 authors = ["Yannick Molinghen <yannick.molinghen@ulb.be>"]
 license = "MIT"
@@ -45,4 +45,4 @@ build-backend = "poetry.core.masonry.api"
 testpaths = ["tests"]
 pythonpath = "src"
 # Run tests on two cores with xdist
-addopts = "-n 2"
+addopts = "-n 4"

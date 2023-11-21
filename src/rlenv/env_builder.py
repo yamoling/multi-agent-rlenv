@@ -71,8 +71,8 @@ class Builder(Generic[A]):
 
     def time_limit(self, n_steps: int, add_extra: bool = False):
         """Set the time limit (horizon) of the environment (train & test)"""
-        self._env = wrappers.TimeLimitWrapper(self._env, n_steps, add_extra)
-        self._test_env = wrappers.TimeLimitWrapper(self._test_env, n_steps, add_extra)
+        self._env = wrappers.TimeLimit(self._env, n_steps, add_extra)
+        self._test_env = wrappers.TimeLimit(self._test_env, n_steps, add_extra)
         return self
 
     def pad(self, to_pad: Literal["obs", "extra"], n: int):
@@ -89,14 +89,14 @@ class Builder(Generic[A]):
 
     def agent_id(self):
         """Adds agent ID to the observations"""
-        self._env = wrappers.AgentIdWrapper(self._env)
-        self._test_env = wrappers.AgentIdWrapper(self._test_env)
+        self._env = wrappers.AgentId(self._env)
+        self._test_env = wrappers.AgentId(self._test_env)
         return self
 
     def last_action(self):
         """Adds the last action to the observations"""
-        self._env = wrappers.LastActionWrapper(self._env)
-        self._test_env = wrappers.LastActionWrapper(self._test_env)
+        self._env = wrappers.LastAction(self._env)
+        self._test_env = wrappers.LastAction(self._test_env)
         return self
 
     def record(
@@ -118,14 +118,14 @@ class Builder(Generic[A]):
 
     def available_actions(self):
         """Adds the available actions to the observations extras"""
-        self._env = wrappers.AvailableActionsWrapper(self._env)
-        self._test_env = wrappers.AvailableActionsWrapper(self._test_env)
+        self._env = wrappers.AvailableActions(self._env)
+        self._test_env = wrappers.AvailableActions(self._test_env)
         return self
 
     def blind(self, p: float):
         """Blinds the observations with probability p"""
-        self._env = wrappers.BlindWrapper(self._env, p)
-        self._test_env = wrappers.BlindWrapper(self._test_env, p)
+        self._env = wrappers.Blind(self._env, p)
+        self._test_env = wrappers.Blind(self._test_env, p)
         return self
 
     def intrinsic_reward(
@@ -155,13 +155,13 @@ class Builder(Generic[A]):
         return self
 
     def time_penalty(self, penalty: float):
-        self._env = wrappers.TimePenaltyWrapper(self._env, penalty)
-        self._test_env = wrappers.TimePenaltyWrapper(self._test_env, penalty)
+        self._env = wrappers.TimePenalty(self._env, penalty)
+        self._test_env = wrappers.TimePenalty(self._test_env, penalty)
         return self
 
     def force_actions(self, agent_actions: dict[int, int]):
-        self._env = wrappers.ForceActionWrapper(self._env, agent_actions)
-        self._test_env = wrappers.ForceActionWrapper(self._test_env, agent_actions)
+        self._env = wrappers.ForceAction(self._env, agent_actions)
+        self._test_env = wrappers.ForceAction(self._test_env, agent_actions)
         return self
 
     def build(self) -> RLEnv[A]:

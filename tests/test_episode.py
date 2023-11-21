@@ -86,7 +86,7 @@ def test_returns():
 
 def test_dones_not_set_when_truncated():
     # The time limit issues a 'truncated' flag at t=10 but the episode should not be done
-    env = wrappers.TimeLimitWrapper(MockEnv(2), 10)
+    env = wrappers.TimeLimit(MockEnv(2), 10)
     episode = generate_episode(env)
     # The episode sould be truncated but not done
     assert np.all(episode.dones == 0)
@@ -107,7 +107,7 @@ def test_dones_set_with_paddings():
 
 
 def test_truncated_and_done():
-    env = wrappers.TimeLimitWrapper(MockEnv(2), MockEnv.END_GAME)
+    env = wrappers.TimeLimit(MockEnv(2), MockEnv.END_GAME)
     obs = env.reset()
     episode = EpisodeBuilder()
     done = truncated = False
@@ -124,7 +124,7 @@ def test_truncated_and_done():
 
 
 def test_masks():
-    env = wrappers.TimeLimitWrapper(MockEnv(2), 10)
+    env = wrappers.TimeLimit(MockEnv(2), 10)
     episode = generate_episode(env)
     assert np.all(episode.mask == 1)
     padded = episode.padded(25)
@@ -143,7 +143,7 @@ def test_padded_raises_error_with_too_small_size():
 
 
 def test_padded():
-    env = wrappers.TimeLimitWrapper(MockEnv(2), 10)
+    env = wrappers.TimeLimit(MockEnv(2), 10)
 
     for i in range(5, 11):
         env._step_limit = i
@@ -164,7 +164,7 @@ def test_padded():
 
 
 def test_retrieve_episode_transitions():
-    env = wrappers.TimeLimitWrapper(MockEnv(2), 10)
+    env = wrappers.TimeLimit(MockEnv(2), 10)
     episode = generate_episode(env)
     transitions = list(episode.transitions())
     assert len(transitions) == 10
@@ -174,7 +174,7 @@ def test_retrieve_episode_transitions():
 
 
 def test_iterate_on_episode():
-    env = wrappers.TimeLimitWrapper(MockEnv(2), 10)
+    env = wrappers.TimeLimit(MockEnv(2), 10)
     episode = generate_episode(env)
     for i, t in enumerate(episode):  # type: ignore
         assert not t.done

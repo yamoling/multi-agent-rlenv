@@ -3,7 +3,7 @@ import numpy.typing as npt
 from .rlenv_wrapper import RLEnvWrapper, RLEnv
 
 
-class TimePenaltyWrapper(RLEnvWrapper):
+class TimePenalty(RLEnvWrapper):
     def __init__(self, env: RLEnv, penalty: float) -> None:
         super().__init__(env)
         self.penalty = penalty

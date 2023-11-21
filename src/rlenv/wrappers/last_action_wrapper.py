@@ -4,7 +4,7 @@ from rlenv.models import Observation
 from .rlenv_wrapper import RLEnvWrapper, RLEnv
 
 
-class LastActionWrapper(RLEnvWrapper):
+class LastAction(RLEnvWrapper):
     """Env wrapper that adds the last action taken by the agents to the extra features."""
 
     def __init__(self, env: RLEnv) -> None:

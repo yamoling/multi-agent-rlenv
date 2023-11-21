@@ -7,7 +7,7 @@ from .rlenv_wrapper import RLEnvWrapper, RLEnv
 A = TypeVar("A", bound=ActionSpace)
 
 
-class TimeLimitWrapper(RLEnvWrapper[A]):
+class TimeLimit(RLEnvWrapper[A]):
     def __init__(self, env: RLEnv[A], step_limit: int, add_extra: bool = False) -> None:
         super().__init__(env)
         self._step_limit = step_limit
@@ -36,6 +36,10 @@ class TimeLimitWrapper(RLEnvWrapper[A]):
 
     def add_time_extra(self, obs: Observation) -> Observation:
         if self._add_extra:
-            time_ratio = np.full((self.n_agents, 1), self._current_step / self._step_limit, dtype=np.float32)
+            time_ratio = np.full(
+                (self.n_agents, 1),
+                self._current_step / self._step_limit,
+                dtype=np.float32,
+            )
             obs.extras = np.concatenate([obs.extras, time_ratio], axis=-1)
         return obs
