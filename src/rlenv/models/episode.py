@@ -22,7 +22,8 @@ class Episode:
     actions_probs: npt.NDArray[np.float32] | None
     metrics: dict[str, float]
     episode_len: int
-    is_finished: bool
+    is_done: bool
+    """Whether the episode did reach a terminal state (different from truncated)"""
 
     def padded(self, target_len: int) -> "Episode":
         """Copy of the episode, padded with zeros to the target length"""
@@ -78,7 +79,7 @@ class Episode:
             _available_actions=availables,
             _extras=extras,
             actions_probs=None,
-            is_finished=self.is_finished,
+            is_done=self.is_done,
         )
 
     @property
@@ -137,7 +138,7 @@ class Episode:
     def dones(self):
         """The done flags for each transition"""
         dones = np.zeros_like(self.rewards, dtype=np.float32)
-        if self.is_finished:
+        if self.is_done:
             dones[self.episode_len - 1 :] = 1.0
         return dones
 
@@ -161,7 +162,7 @@ class Episode:
                     extras=self._extras[i + 1],
                     state=self.states[i + 1],
                 ),
-                truncated=not self.is_finished and i == self.episode_len - 1,
+                truncated=not self.is_done and i == self.episode_len - 1,
             )
 
     def __iter__(self) -> Iterable[Transition]:
@@ -251,7 +252,7 @@ class EpisodeBuilder:
             episode_len=self.episode_len,
             _available_actions=np.array(self.available_actions),
             actions_probs=np.array(self.action_probs),
-            is_finished=self._done,
+            is_done=self._done,
         )
 
     def __len__(self) -> int:

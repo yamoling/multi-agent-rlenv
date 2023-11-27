@@ -86,12 +86,21 @@ def test_returns():
 
 def test_dones_not_set_when_truncated():
     # The time limit issues a 'truncated' flag at t=10 but the episode should not be done
-    env = wrappers.TimeLimit(MockEnv(2), 10)
+    env = wrappers.TimeLimit(MockEnv(2), MockEnv.END_GAME - 1)
     episode = generate_episode(env)
     # The episode sould be truncated but not done
     assert np.all(episode.dones == 0)
-    padded = episode.padded(25)
+    padded = episode.padded(MockEnv.END_GAME * 2)
     assert np.all(padded.dones == 0)
+
+
+def test_done_when_time_limit_reached_with_extras():
+    env = wrappers.TimeLimit(MockEnv(2), MockEnv.END_GAME - 1, add_extra=True)
+    episode = generate_episode(env)
+    # The episode sould be truncated but not done
+    assert episode.dones[-1] == 1.0
+    padded = episode.padded(MockEnv.END_GAME * 2)
+    assert np.all(padded.dones[len(episode) - 1:] == 1)
 
 
 def test_dones_set_with_paddings():

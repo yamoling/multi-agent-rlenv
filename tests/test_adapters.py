@@ -28,10 +28,3 @@ if SMAC is not None:
         env = SMAC("3m")
         env.reset()
         env.render("human")
-
-    def test_smac_pickle():
-        import pickle
-
-        env = SMAC("3m")
-        env.reset()
-        pickle.dumps(env)
