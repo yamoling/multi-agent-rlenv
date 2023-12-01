@@ -2,6 +2,7 @@ import random
 from typing import TypeVar
 import numpy as np
 import numpy.typing as npt
+from dataclasses import dataclass
 
 from rlenv.models import RLEnv, ActionSpace
 from .rlenv_wrapper import RLEnvWrapper
@@ -10,7 +11,10 @@ from .rlenv_wrapper import RLEnvWrapper
 A = TypeVar("A", bound=ActionSpace)
 
 
+@dataclass
 class Blind(RLEnvWrapper[A]):
+    p: float
+
     def __init__(self, env: RLEnv[A], p: float):
         super().__init__(env)
         self.p = p

@@ -1,12 +1,16 @@
 import numpy as np
+from dataclasses import dataclass
 from rlenv.models import Observation
 from .rlenv_wrapper import RLEnvWrapper, RLEnv
 
 
+@dataclass
 class PadExtras(RLEnvWrapper):
     """RLEnv wrapper that adds extra zeros at the end of the observation extras."""
 
-    def __init__(self, env: RLEnv, n_added: int) -> None:
+    n: int
+
+    def __init__(self, env: RLEnv, n_added: int):
         assert len(env.extra_feature_shape) == 1, "PadExtras only accepts 1D extras"
         super().__init__(env, extra_feature_shape=(env.extra_feature_shape[0] + n_added,))
         self.n = n_added
