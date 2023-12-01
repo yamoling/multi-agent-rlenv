@@ -9,6 +9,7 @@ from .rlenv_wrapper import RLEnvWrapper, RLEnv
 A = TypeVar("A", bound=ActionSpace)
 
 
+@serde
 @dataclass
 class TimeLimit(RLEnvWrapper[A]):
     """

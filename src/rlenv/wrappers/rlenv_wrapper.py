@@ -15,8 +15,8 @@ class RLEnvWrapper(RLEnv[A], ABC):
     """Parent class for all RLEnv wrappers"""
 
     wrapped: RLEnv[A]
-    full_name: str
-    """The full name of the environment, including the name of the nested wrapper."""
+    base_name: str
+    """The full name of the wrapped environment, excluding the name of the nested wrappers."""
 
     def __init__(
         self,
@@ -33,8 +33,8 @@ class RLEnvWrapper(RLEnv[A], ABC):
             extra_feature_shape = env.extra_feature_shape
         super().__init__(env.action_space, observation_shape, state_shape, extra_feature_shape)
         self.wrapped = env
-        self.full_name = f"{self.__class__.__name__}({env.name})"
-        self.name = env.name
+        self.name = f"{self.__class__.__name__}({env.name})"
+        self.base_name = env.name
 
     def step(self, actions: npt.NDArray[np.int32]):
         return self.wrapped.step(actions)

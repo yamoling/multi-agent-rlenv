@@ -3,6 +3,7 @@ from typing import TypeVar
 import numpy as np
 import numpy.typing as npt
 from dataclasses import dataclass
+from serde import serde
 
 from rlenv.models import RLEnv, ActionSpace
 from .rlenv_wrapper import RLEnvWrapper
@@ -11,6 +12,7 @@ from .rlenv_wrapper import RLEnvWrapper
 A = TypeVar("A", bound=ActionSpace)
 
 
+@serde
 @dataclass
 class Blind(RLEnvWrapper[A]):
     p: float

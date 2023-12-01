@@ -1,37 +1,8 @@
-from smac.env import StarCraft2Env
-import numpy as np
-import pickle
+from serde.json import to_json
+from dataclasses import asdict
+import rlenv
+from pprint import pprint
 
 
-env = StarCraft2Env(map_name="3m")
-env_info = env.get_env_info()
-
-n_actions = env_info["n_actions"]
-n_agents = env_info["n_agents"]
-
-n_episodes = 10
-
-for e in range(n_episodes):
-    print("Seed:", env.seed())
-    env.reset()
-    terminated = False
-    episode_reward = 0
-
-    while not terminated:
-        obs = env.get_obs()
-        state = env.get_state()
-        env.render()  # Uncomment for rendering
-
-        actions = []
-        for agent_id in range(n_agents):
-            avail_actions = env.get_avail_agent_actions(agent_id)
-            avail_actions_ind = np.nonzero(avail_actions)[0]
-            action = np.random.choice(avail_actions_ind)
-            actions.append(action)
-
-        reward, terminated, _ = env.step(actions)
-        episode_reward += reward
-    env.save_replay()
-    print("Total reward in episode {} = {}".format(e, episode_reward))
-
-env.close()
+env = rlenv.Builder(rlenv.make("CartPole-v1")).time_limit(20).agent_id().build()
+pprint(asdict(env))

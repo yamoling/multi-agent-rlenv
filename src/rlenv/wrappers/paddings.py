@@ -1,9 +1,11 @@
 import numpy as np
 from dataclasses import dataclass
+from serde import serde
 from rlenv.models import Observation
 from .rlenv_wrapper import RLEnvWrapper, RLEnv
 
 
+@serde
 @dataclass
 class PadExtras(RLEnvWrapper):
     """RLEnv wrapper that adds extra zeros at the end of the observation extras."""
