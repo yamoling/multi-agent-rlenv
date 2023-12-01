@@ -100,7 +100,7 @@ def test_done_when_time_limit_reached_with_extras():
     # The episode sould be truncated but not done
     assert episode.dones[-1] == 1.0
     padded = episode.padded(MockEnv.END_GAME * 2)
-    assert np.all(padded.dones[len(episode) - 1:] == 1)
+    assert np.all(padded.dones[len(episode) - 1 :] == 1)
 
 
 def test_dones_set_with_paddings():
@@ -155,7 +155,7 @@ def test_padded():
     env = wrappers.TimeLimit(MockEnv(2), 10)
 
     for i in range(5, 11):
-        env._step_limit = i
+        env.step_limit = i
         episode = generate_episode(env)
         assert len(episode) == i
         padded = episode.padded(10)
