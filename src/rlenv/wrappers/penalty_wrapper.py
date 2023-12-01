@@ -8,7 +8,7 @@ class TimePenalty(RLEnvWrapper):
         super().__init__(env)
         self.penalty = penalty
 
-    def step(self, action: npt.NDArray[np.int32]) -> tuple:
+    def step(self, action: npt.NDArray[np.int32]):
         obs, reward, *rest = self.wrapped.step(action)
         reward -= self.penalty
         return obs, reward, *rest

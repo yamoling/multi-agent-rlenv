@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Union, Generic, TypeVar, overload, Any, Literal
+from typing import Generic, TypeVar, overload, Any, Literal
 import numpy as np
 import numpy.typing as npt
 from serde import serde
@@ -10,41 +10,7 @@ from .spaces import ActionSpace
 from .observation import Observation
 
 A = TypeVar("A", bound=ActionSpace)
-
-
-class StepData(tuple[Observation, float, bool, bool, dict[str, Any]]):
-    """A tuple containing the data returned by the step method of an environment"""
-
-    def __new__(
-        cls,
-        observation: Observation,
-        reward: float,
-        done: bool,
-        truncated: bool,
-        info: dict[str, Any],
-    ):
-        return super().__new__(cls, (observation, reward, done, truncated, info))
-
-    @property
-    def observation(self) -> Observation:
-        return self[0]
-
-    @property
-    def reward(self) -> float:
-        return self[1]
-
-    @property
-    def done(self) -> bool:
-        return self[2]
-
-    @property
-    def truncated(self) -> bool:
-        return self[3]
-
-    @property
-    def info(self) -> dict[str, Any]:
-        return self[4]
-
+O = TypeVar("O", bound=ActionSpace)
 
 @serde
 @dataclass
@@ -52,16 +18,30 @@ class RLEnv(ABC, Generic[A]):
     """This interface defines the attributes and methods that must be implemented to work with this framework"""
 
     action_space: A
+    observation_shape: tuple[int, ...]
+    """The shape of an observation for a single agent."""
+    state_shape: tuple[int, ...]
+    """The shape of the state."""
+    extra_feature_shape: tuple[int, ...]
     n_agents: int
     n_actions: int
     name: str
 
-    def __init__(self, action_space: A):
+    def __init__(
+            self, 
+            action_space: A, 
+            observation_shape: tuple[int, ...],
+            state_shape: tuple[int, ...],
+            extra_feature_shape: tuple[int, ...] = (0,)
+        ):
         super().__init__()
         self.name = self.__class__.__name__
         self.action_space = action_space
         self.n_actions = action_space.n_actions
         self.n_agents = action_space.n_agents
+        self.observation_shape = observation_shape
+        self.state_shape = state_shape
+        self.extra_feature_shape = extra_feature_shape
 
     def available_actions(self) -> np.ndarray[np.int32, Any]:
         """
@@ -75,20 +55,6 @@ class RLEnv(ABC, Generic[A]):
         """Set the environment seed"""
         raise NotImplementedError("Method not implemented")
 
-    @property
-    def extra_feature_shape(self) -> tuple[int, ...]:
-        """The shape of the extra features."""
-        return (0,)
-
-    @property
-    @abstractmethod
-    def state_shape(self) -> tuple[int, ...]:
-        """The state size."""
-
-    @property
-    @abstractmethod
-    def observation_shape(self) -> tuple[int, ...]:
-        """The shape of an observation for a single agent."""
 
     @abstractmethod
     def get_state(self) -> npt.NDArray[np.float32]:
@@ -97,7 +63,7 @@ class RLEnv(ABC, Generic[A]):
     @abstractmethod
     def step(
         self, actions: npt.NDArray[np.int32]
-    ) -> Union[StepData, tuple[Observation, float, bool, bool, dict[str, Any]]]:
+    ) -> tuple[Observation, float, bool, bool, dict[str, Any]]:
         """Perform a step in the environment.
 
         Returns:

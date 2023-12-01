@@ -107,13 +107,9 @@ class Builder(Generic[A]):
     ):
         """Add video recording of runs. Onnly records tests by default."""
         if record_training:
-            self._env = wrappers.VideoRecorder(
-                self._env, os.path.join(folder, "training"), video_encoding=encoding
-            )
+            self._env = wrappers.VideoRecorder(self._env, os.path.join(folder, "training"), video_encoding=encoding)
             folder = os.path.join(folder, "test")
-        self._test_env = wrappers.VideoRecorder(
-            self._test_env, folder, video_encoding=encoding
-        )
+        self._test_env = wrappers.VideoRecorder(self._test_env, folder, video_encoding=encoding)
         return self
 
     def available_actions(self):
@@ -139,17 +135,11 @@ class Builder(Generic[A]):
             case "linear":
                 self._env = wrappers.LinearStateCount(self._env, initial_reward, anneal)
                 if also_for_testing:
-                    self._test_env = wrappers.LinearStateCount(
-                        self._test_env, initial_reward, anneal
-                    )
+                    self._test_env = wrappers.LinearStateCount(self._test_env, initial_reward, anneal)
             case "exp":
-                self._env = wrappers.DecreasingExpStateCount(
-                    self._env, initial_reward, anneal
-                )
+                self._env = wrappers.DecreasingExpStateCount(self._env, initial_reward, anneal)
                 if also_for_testing:
-                    self._test_env = wrappers.DecreasingExpStateCount(
-                        self._test_env, initial_reward, anneal
-                    )
+                    self._test_env = wrappers.DecreasingExpStateCount(self._test_env, initial_reward, anneal)
             case other:
                 raise ValueError(f"'{other}' is not a known extrinsic reward wrapper")
         return self
@@ -157,11 +147,6 @@ class Builder(Generic[A]):
     def time_penalty(self, penalty: float):
         self._env = wrappers.TimePenalty(self._env, penalty)
         self._test_env = wrappers.TimePenalty(self._test_env, penalty)
-        return self
-
-    def force_actions(self, agent_actions: dict[int, int]):
-        self._env = wrappers.ForceAction(self._env, agent_actions)
-        self._test_env = wrappers.ForceAction(self._test_env, agent_actions)
         return self
 
     def build(self) -> RLEnv[A]:

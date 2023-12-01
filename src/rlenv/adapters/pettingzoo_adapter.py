@@ -9,20 +9,12 @@ class PettingZoo(RLEnv[ActionSpace]):
         aspace = env.action_space(0)
         if aspace.shape is None:
             raise NotImplementedError("Only discrete action spaces are supported")
-        super().__init__(DiscreteActionSpace(env.num_agents, aspace.shape[0]))
+        obs_space = env.observation_space(env.possible_agents[0])
+        if obs_space.shape is None:
+            raise NotImplementedError("Only discrete observation spaces are supported")
+        super().__init__(DiscreteActionSpace(env.num_agents, aspace.shape[0]), obs_space.shape, env.state().shape)
         self._env = env
         self.agents = env.possible_agents
-
-    @property
-    def state_shape(self):
-        return (0,)
-
-    @property
-    def observation_shape(self) -> tuple[int, ...]:
-        space = self._env.observation_space(self.agents[0])
-        if space.shape is None:
-            raise NotImplementedError("Only discrete observation spaces are supported")
-        return space.shape
 
     def get_state(self):
         try:
@@ -30,9 +22,7 @@ class PettingZoo(RLEnv[ActionSpace]):
         except NotImplementedError:
             return np.array([])
 
-    def step(
-        self, actions: npt.NDArray[np.int32]
-    ) -> tuple[Observation, float, bool, dict]:
+    def step(self, actions: npt.NDArray[np.int32]) -> tuple[Observation, float, bool, dict]:
         action_dict = dict(zip(self.agents, actions))
         obs, reward, term, trunc, info = self._env.step(action_dict)
         obs_data = np.array([v for v in obs.values()])

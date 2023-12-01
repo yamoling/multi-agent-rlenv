@@ -6,7 +6,6 @@ from .intrinsic_reward_wrapper import DecreasingExpStateCount, LinearStateCount
 from .time_limit import TimeLimit
 from .paddings import PadObservations, PadExtras
 from .penalty_wrapper import TimePenalty
-from .force_action import ForceAction
 from .available_actions_wrapper import AvailableActions
 from .blind_wrapper import Blind
 
@@ -23,7 +22,6 @@ __all__ = [
     "PadObservations",
     "PadExtras",
     "TimePenalty",
-    "ForceAction",
     "AvailableActions",
     "Blind",
 ]

@@ -9,18 +9,16 @@ class MockEnv(RLEnv[DiscreteActionSpace]):
     REWARD_STEP = 1
 
     def __init__(self, n_agents) -> None:
-        super().__init__(DiscreteActionSpace(n_agents, MockEnv.N_ACTIONS))
+        super().__init__(
+           DiscreteActionSpace(n_agents, MockEnv.N_ACTIONS), 
+           (MockEnv.OBS_SIZE,), 
+           (0,),
+        )
         self._n_agents = n_agents
         self.t = 0
         self.actions_history = []
 
-    @property
-    def observation_shape(self):
-        return (MockEnv.OBS_SIZE,)
 
-    @property
-    def state_shape(self):
-        return (0,)
 
     def reset(self):
         self.t = 0

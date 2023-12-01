@@ -16,6 +16,8 @@ class Gym(RLEnv[ActionSpace]):
     """Wraps a gym envronment in an RLEnv"""
 
     def __init__(self, env: Env):
+        if env.observation_space.shape is None:
+            raise NotImplementedError("Observation space must have a shape")
         match env.action_space:
             case spaces.Discrete() as s:
                 space = DiscreteActionSpace(1, int(s.n))
@@ -29,22 +31,18 @@ class Gym(RLEnv[ActionSpace]):
                 )
             case other:
                 raise NotImplementedError(f"Action space {other} not supported")
-        super().__init__(space)
+        super().__init__(
+            space,
+            env.observation_space.shape,
+            (1,)
+        )
         self.env = env
         if self.env.unwrapped.spec is not None:
             self.name = self.env.unwrapped.spec.id
         else:
             self.name = "gym-no-id"
 
-    @property
-    def state_shape(self):
-        return (1,)
-
-    @property
-    def observation_shape(self):
-        return self.env.observation_space.shape
-
-    def step(self, actions) -> tuple[Observation, float, bool, bool, dict]:
+    def step(self, actions):
         obs_, reward, done, truncated, info = self.env.step(actions[0])
         obs_ = Observation(
             np.array([obs_], dtype=np.float32),

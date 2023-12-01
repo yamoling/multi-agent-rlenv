@@ -7,16 +7,9 @@ from .rlenv_wrapper import RLEnvWrapper, RLEnv
 class LastAction(RLEnvWrapper):
     """Env wrapper that adds the last action taken by the agents to the extra features."""
 
-    def __init__(self, env: RLEnv) -> None:
-        assert (
-            len(env.extra_feature_shape) == 1
-        ), "Adding last action is only possible with 1D extras"
-        super().__init__(env)
-        self._extra_feature_shape = (env.extra_feature_shape[0] + self.n_actions,)
-
-    @property
-    def extra_feature_shape(self):
-        return self._extra_feature_shape
+    def __init__(self, env: RLEnv):
+        assert len(env.extra_feature_shape) == 1, "Adding last action is only possible with 1D extras"
+        super().__init__(env, extra_feature_shape=(env.extra_feature_shape[0] + self.n_actions,))
 
     def reset(self):
         obs = super().reset()
@@ -27,9 +20,7 @@ class LastAction(RLEnvWrapper):
         obs_ = self._add_last_action(obs_, actions)
         return obs_, *rest
 
-    def _add_last_action(
-        self, obs: Observation, last_actions: npt.NDArray[np.int32] | None
-    ):
+    def _add_last_action(self, obs: Observation, last_actions: npt.NDArray[np.int32] | None):
         one_hot_actions = np.zeros((self.n_agents, self.n_actions), dtype=np.float32)
         if last_actions is not None:
             index = np.arange(self.n_agents)

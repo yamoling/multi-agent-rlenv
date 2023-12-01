@@ -17,18 +17,15 @@ class TimeLimit(RLEnvWrapper[A]):
     """
 
     def __init__(self, env: RLEnv[A], step_limit: int, add_extra: bool = False) -> None:
-        super().__init__(env)
+        assert len(env.extra_feature_shape) == 1
+        extras_shape = env.extra_feature_shape
+        if add_extra:
+            dims = env.extra_feature_shape[0]
+            extras_shape = (dims + 1,)
+        super().__init__(env, extra_feature_shape=extras_shape)
         self._step_limit = step_limit
         self._current_step = 0
         self._add_extra = add_extra
-
-    @property
-    def extra_feature_shape(self):
-        assert len(self.wrapped.extra_feature_shape) == 1
-        if not self._add_extra:
-            return self.wrapped.extra_feature_shape
-        dims = self.wrapped.extra_feature_shape[0]
-        return (dims + 1,)
 
     def reset(self):
         self._current_step = 0

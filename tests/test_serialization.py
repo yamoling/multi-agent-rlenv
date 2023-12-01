@@ -2,7 +2,6 @@ import pickle
 import rlenv
 import json
 from dataclasses import asdict
-from rlenv import wrappers, adapters
 from serde.json import to_json
 
 from .mock_env import MockEnv
@@ -58,4 +57,8 @@ def test_env_serialization_json():
 
 def test_gym_adapter_json():
     env = rlenv.make("CartPole-v1")
-    to_json(env)
+    data = to_json(env)
+    assert "observation_shape" in data
+    assert "state_shape" in data
+    assert "extra_feature_shape" in data
+    assert "n_actions" in data

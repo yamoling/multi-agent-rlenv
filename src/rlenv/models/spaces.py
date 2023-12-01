@@ -82,21 +82,6 @@ class ContinuousActionSpace(ActionSpace[npt.NDArray[np.float32]]):
             self.high = [high] * self.n_actions
         self.high = high
 
-    # def __post_init__(self):
-    #     assert (
-    #         isinstance(self.low, (float)) or len(self.low) == self.n_actions
-    #     ), "'low' parameter must be a float or a list of floats with length equal to the number of actions."
-    #     assert (
-    #         isinstance(self.high, (float)) or len(self.high) == self.n_actions
-    #     ), "'high' parameter must be a float or a list of floats with length equal to the number of actions."
-    #     super().__post_init__()
-    #     if isinstance(self.low, float):
-    #         self.low = [self.low] * self.n_actions
-    #     self.low = np.array(self.low, dtype=np.float32)
-    #     if isinstance(self.high, float):
-    #         self.high = [self.high] * self.n_actions
-    #     self.high = np.array(self.high, dtype=np.float32)
-
     def sample(self):
         return np.random.random(self.shape) * (
             np.array(self.high) - np.array(self.low)

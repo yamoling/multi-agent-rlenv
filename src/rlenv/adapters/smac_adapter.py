@@ -8,21 +8,17 @@ from rlenv.models import RLEnv, Observation, DiscreteActionSpace
 class SMAC(RLEnv[DiscreteActionSpace]):
     """Wrapper for the SMAC environment to work with this framework"""
 
-    def __init__(self, map_name: str) -> None:
+    def __init__(self, map_name: str):
         self._env = StarCraft2Env(map_name=map_name)
         action_space = DiscreteActionSpace(self._env.n_agents, self._env.n_actions)
-        super().__init__(action_space)
         self._env_info = self._env.get_env_info()
+        super().__init__(
+            action_space=action_space,
+            observation_shape=(self._env_info["obs_shape"],),
+            state_shape=(self._env_info["state_shape"],),
+        )
         self._seed = self._env.seed()
         self.name = f"smac-{self._env.map_name}"
-
-    @property
-    def state_shape(self):
-        return (self._env_info["state_shape"],)
-
-    @property
-    def observation_shape(self):
-        return (self._env_info["obs_shape"],)
 
     def reset(self):
         obs, state = self._env.reset()
@@ -34,9 +30,7 @@ class SMAC(RLEnv[DiscreteActionSpace]):
 
     def step(self, actions):
         reward, done, info = self._env.step(actions)
-        obs = Observation(
-            np.array(self._env.get_obs()), self.available_actions(), self.get_state()
-        )
+        obs = Observation(np.array(self._env.get_obs()), self.available_actions(), self.get_state())
         return obs, reward, done, False, info
 
     def available_actions(self):
