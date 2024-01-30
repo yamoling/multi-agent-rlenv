@@ -78,3 +78,15 @@ def test_blind_wrapper():
     test(env)
     env = rlenv.wrappers.Blind(MockEnv(5), p=1)
     test(env)
+
+
+def test_last_action():
+    env = Builder(MockEnv(2)).last_action().build()
+    assert env.extra_feature_shape == (env.n_actions,)
+    obs = env.reset()
+    assert np.all(obs.extras == 0)
+    obs, _, _, _, _ = env.step(np.array([0, 1]))
+    one_hot_actions = np.zeros((2, env.n_actions), dtype=np.float32)
+    one_hot_actions[0, 0] = 1.0
+    one_hot_actions[1, 1] = 1.0
+    assert np.all(obs.extras == one_hot_actions)
