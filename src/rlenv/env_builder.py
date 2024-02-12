@@ -36,7 +36,7 @@ class Builder(Generic[A]):
                 self._env = self._init_env(env)
             case RLEnv():
                 self._env = env
-            case ParallelEnv():  # type: ignore
+            case ParallelEnv():
                 try:
                     from rlenv.adapters import PettingZoo
                 except ImportError:
