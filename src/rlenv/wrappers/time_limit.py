@@ -51,7 +51,7 @@ class TimeLimit(RLEnvWrapper[A]):
             # If we add an extra signal for the time, then we must set
             # the done flag to 1 for consistency:
             # -> since the state actually changes, then it is a terminal state.
-            done = done or self.add_extra
+            done = self.add_extra
         return obs_, reward, done, truncated, info
 
     def add_time_extra(self, obs: Observation):
