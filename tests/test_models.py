@@ -21,6 +21,24 @@ def test_obs_eq():
     assert obs1 == obs2
 
 
+def test_obs_not_eq():
+    obs1 = Observation(
+        data=np.arange(20, dtype=np.float32),
+        available_actions=np.ones(5, dtype=np.float32),
+        state=np.ones(10, dtype=np.float32),
+        extras=np.arange(5, dtype=np.float32),
+    )
+
+    obs2 = Observation(
+        data=np.arange(20, dtype=np.float32),
+        available_actions=np.zeros(5, dtype=np.float32),
+        state=np.ones(10, dtype=np.float32),
+        extras=np.arange(5, dtype=np.float32),
+    )
+
+    assert not obs1 == obs2
+
+
 def test_obs_eq_extras_none():
     obs1 = Observation(
         data=np.arange(20, dtype=np.float32),

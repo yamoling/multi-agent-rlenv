@@ -63,6 +63,9 @@ class Observation:
     def __hash__(self):
         return hash((self.data.tobytes(), self.state.tobytes(), self.extras.tobytes()))
 
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
     def __eq__(self, other):
         if not isinstance(other, Observation):
             return False
@@ -71,4 +74,5 @@ class Observation:
             np.array_equal(self.data, other.data)
             and np.array_equal(self.state, other.state)
             and np.array_equal(self.extras, other.extras)
+            and np.array_equal(self.available_actions, other.available_actions)
         )

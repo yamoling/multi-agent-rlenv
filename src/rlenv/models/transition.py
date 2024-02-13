@@ -45,9 +45,10 @@ class Transition:
         }
 
     def __hash__(self) -> int:
-        return hash(
-            (self.obs, self.action.tobytes(), self.reward, self.done, self.obs_)
-        )
+        return hash((self.obs, self.action.tobytes(), self.reward, self.done, self.obs_))
+
+    def __ne__(self, other) -> bool:
+        return not self.__eq__(other)
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Transition):
