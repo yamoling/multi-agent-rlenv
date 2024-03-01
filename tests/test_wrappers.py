@@ -1,5 +1,7 @@
+from itertools import product
 import numpy as np
 from rlenv import Builder
+from rlenv.wrappers import Centralised
 import rlenv
 from .mock_env import MockEnv
 
@@ -90,3 +92,32 @@ def test_last_action():
     one_hot_actions[0, 0] = 1.0
     one_hot_actions[1, 1] = 1.0
     assert np.all(obs.extras == one_hot_actions)
+
+
+def test_centralised_shape():
+    env = Builder(MockEnv(2)).centralised().time_limit(50, True).build()
+    assert env.observation_shape == (2 * MockEnv.OBS_SIZE,)
+    assert env.n_agents == 1
+    assert env.n_actions == MockEnv.N_ACTIONS**2
+    assert env.extra_feature_shape == (1,)
+
+
+def test_centralised_action():
+    env = Centralised(MockEnv(2))
+    for action1 in range(MockEnv.N_ACTIONS):
+        for action2 in range(MockEnv.N_ACTIONS):
+            joint_action = action1 * MockEnv.N_ACTIONS + action2
+            expected_individual_actions = np.array([action1, action2])
+            individual_actions = env._individual_actions(joint_action)
+            assert np.array_equal(individual_actions, expected_individual_actions)
+
+
+def test_centralised_obs_and_state():
+    wrapped = MockEnv(2)
+    env = Builder(wrapped).centralised().build()
+    obs = env.reset()
+    assert obs.data.shape == env.observation_shape
+    assert obs.state.shape == env.state_shape
+    obs, _, _, _, _ = env.step(np.array([0]))
+    assert obs.data.shape == env.observation_shape
+    assert obs.state.shape == env.state_shape

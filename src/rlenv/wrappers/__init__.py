@@ -8,7 +8,7 @@ from .paddings import PadObservations, PadExtras
 from .penalty_wrapper import TimePenalty
 from .available_actions_wrapper import AvailableActions
 from .blind_wrapper import Blind
-
+from .centralised import Centralised
 
 __all__ = [
     "RLEnvWrapper",
@@ -24,4 +24,5 @@ __all__ = [
     "TimePenalty",
     "AvailableActions",
     "Blind",
+    "Centralised",
 ]

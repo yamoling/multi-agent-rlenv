@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from typing import Literal, TypeVar, Generic, TypeAlias
 
 
-from .models import RLEnv, ActionSpace
+from .models import RLEnv, ActionSpace, DiscreteActionSpace
 from . import wrappers
 
 A = TypeVar("A", bound=ActionSpace)
@@ -97,6 +97,12 @@ class Builder(Generic[A]):
         """Adds the last action to the observations"""
         self._env = wrappers.LastAction(self._env)
         self._test_env = wrappers.LastAction(self._test_env)
+        return self
+
+    def centralised(self):
+        """Centralises the observations and actions"""
+        self._env = wrappers.Centralised(self._env)
+        self._test_env = wrappers.Centralised(self._test_env)
         return self
 
     def record(

@@ -10,7 +10,7 @@ from .spaces import ActionSpace
 from .observation import Observation
 
 A = TypeVar("A", bound=ActionSpace)
-O = TypeVar("O", bound=ActionSpace)
+
 
 @serde
 @dataclass
@@ -28,12 +28,12 @@ class RLEnv(ABC, Generic[A]):
     name: str
 
     def __init__(
-            self, 
-            action_space: A, 
-            observation_shape: tuple[int, ...],
-            state_shape: tuple[int, ...],
-            extra_feature_shape: tuple[int, ...] = (0,)
-        ):
+        self,
+        action_space: A,
+        observation_shape: tuple[int, ...],
+        state_shape: tuple[int, ...],
+        extra_feature_shape: tuple[int, ...] = (0,),
+    ):
         super().__init__()
         self.name = self.__class__.__name__
         self.action_space = action_space
@@ -55,15 +55,12 @@ class RLEnv(ABC, Generic[A]):
         """Set the environment seed"""
         raise NotImplementedError("Method not implemented")
 
-
     @abstractmethod
     def get_state(self) -> npt.NDArray[np.float32]:
         """Retrieve the current state of the environment."""
 
     @abstractmethod
-    def step(
-        self, actions: npt.NDArray[np.int32]
-    ) -> tuple[Observation, float, bool, bool, dict[str, Any]]:
+    def step(self, actions: npt.NDArray[np.int32]) -> tuple[Observation, float, bool, bool, dict[str, Any]]:
         """Perform a step in the environment.
 
         Returns:

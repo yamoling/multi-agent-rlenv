@@ -24,6 +24,7 @@ class RLEnvWrapper(RLEnv[A], ABC):
         observation_shape: Optional[tuple[int, ...]] = None,
         state_shape: Optional[tuple[int, ...]] = None,
         extra_feature_shape: Optional[tuple[int, ...]] = None,
+        action_space: Optional[A] = None,
     ):
         if observation_shape is None:
             observation_shape = env.observation_shape
@@ -31,7 +32,9 @@ class RLEnvWrapper(RLEnv[A], ABC):
             state_shape = env.state_shape
         if extra_feature_shape is None:
             extra_feature_shape = env.extra_feature_shape
-        super().__init__(env.action_space, observation_shape, state_shape, extra_feature_shape)
+        if action_space is None:
+            action_space = env.action_space
+        super().__init__(action_space, observation_shape, state_shape, extra_feature_shape)
         self.wrapped = env
         if isinstance(env, RLEnvWrapper):
             self.full_name = f"{self.__class__.__name__}({env.full_name})"
