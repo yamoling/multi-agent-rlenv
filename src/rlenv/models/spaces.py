@@ -83,6 +83,6 @@ class ContinuousActionSpace(ActionSpace[npt.NDArray[np.float32]]):
         self.high = high
 
     def sample(self):
-        return np.random.random(self.shape) * (
+        return (np.random.random(self.shape) * (
             np.array(self.high) - np.array(self.low)
-        ) + np.array(self.low)
+        ) + np.array(self.low)).astype(np.float32)
