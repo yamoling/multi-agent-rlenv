@@ -19,9 +19,9 @@ class LastAction(RLEnvWrapper):
         return self._add_last_action(obs, None)
 
     def step(self, actions: npt.NDArray[np.int32]):
-        obs_, *rest = super().step(actions)
+        obs_, r, done, truncated, info = super().step(actions)
         obs_ = self._add_last_action(obs_, actions)
-        return obs_, *rest
+        return obs_, r, done, truncated, info
 
     def _add_last_action(self, obs: Observation, last_actions: npt.NDArray[np.int32] | None):
         one_hot_actions = np.zeros((self.n_agents, self.n_actions), dtype=np.float32)
