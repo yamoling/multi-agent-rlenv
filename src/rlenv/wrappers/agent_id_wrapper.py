@@ -12,8 +12,8 @@ class AgentId(RLEnvWrapper):
         self._identity = np.identity(env.n_agents, dtype=np.float32)
 
     def step(self, actions):
-        obs, *data = super().step(actions)
-        return self._add_one_hot(obs), *data
+        obs, r, done, truncated, info = super().step(actions)
+        return self._add_one_hot(obs), r, done, truncated, info
 
     def reset(self):
         return self._add_one_hot(super().reset())
