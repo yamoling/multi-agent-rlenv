@@ -18,7 +18,9 @@ gymnasium = { extras = [
 ], version = "^0.28.1", optional = true }
 pettingzoo = { version = "^1.22.3", optional = true }
 pysc2 = { git = "https://github.com/deepmind/pysc2.git", optional = true }
-
+pygame = { version = "^2.5.2" }
+scipy = { version = "^1.12.0" }
+pymunk = { version = "^6.6.0" }
 
 [tool.poetry.extras]
 all = ["gymnasium", "pettingzoo", "smac"]
