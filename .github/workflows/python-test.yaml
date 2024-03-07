@@ -54,6 +54,6 @@ jobs:
           poetry-version: ${{ matrix.poetry-version }}
       - name: Install dependencies and run pytest
         run: |
-          poetry install --extras=atari
+          poetry install --extras=tests
           poetry run pytest -n 4
         
