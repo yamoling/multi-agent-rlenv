@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
-from typing import Generic, TypeVar, overload, Any, Literal
+from typing import Generic, TypeVar, overload, Any, Literal, Iterable
 import numpy as np
-import numpy.typing as npt
 from serde import serde
 from dataclasses import dataclass
 
@@ -43,24 +42,24 @@ class RLEnv(ABC, Generic[A]):
         self.state_shape = state_shape
         self.extra_feature_shape = extra_feature_shape
 
-    def available_actions(self) -> np.ndarray[np.int32, Any]:
+    def available_actions(self) -> np.ndarray[np.float32, Any]:
         """
         Get the currently available actions for each agent.
 
         The output array has shape (n_agents, n_actions) and contains 1 if the action is available and 0 otherwise.
         """
-        return np.ones((self.n_agents, self.n_actions), dtype=np.int64)
+        return np.ones((self.n_agents, self.n_actions), dtype=np.float32)
 
     def seed(self, seed_value: int):
         """Set the environment seed"""
         raise NotImplementedError("Method not implemented")
 
     @abstractmethod
-    def get_state(self) -> npt.NDArray[np.float32]:
+    def get_state(self) -> np.ndarray[np.float32, Any]:
         """Retrieve the current state of the environment."""
 
     @abstractmethod
-    def step(self, actions: npt.NDArray[np.int32]) -> tuple[Observation, float, bool, bool, dict[str, Any]]:
+    def step(self, actions: Iterable[int]) -> tuple[Observation, float, bool, bool, dict[str, Any]]:
         """Perform a step in the environment.
 
         Returns:
@@ -82,9 +81,9 @@ class RLEnv(ABC, Generic[A]):
 
     @overload
     @abstractmethod
-    def render(self, mode: Literal["rgb_array"]) -> npt.NDArray[np.uint8]:
+    def render(self, mode: Literal["rgb_array"]) -> np.ndarray[np.uint8, Any]:
         """Retrieve an image of the environment"""
 
     @abstractmethod
-    def render(self, mode) -> None | npt.NDArray[np.uint8]:
+    def render(self, mode) -> None | np.ndarray[np.uint8, Any]:
         ...

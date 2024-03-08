@@ -1,7 +1,7 @@
 from itertools import product
 import numpy as np
 from rlenv import Builder
-from rlenv.wrappers import Centralised
+from rlenv.wrappers import Centralised, AvailableActionsMask
 import rlenv
 from .mock_env import MockEnv
 
@@ -121,3 +121,47 @@ def test_centralised_obs_and_state():
     obs, _, _, _, _ = env.step(np.array([0]))
     assert obs.data.shape == env.observation_shape
     assert obs.state.shape == env.state_shape
+
+
+def test_centralised_available_actions():
+    N_AGENTS = 2
+    mock = MockEnv(N_AGENTS)
+    env = Builder(mock).centralised().build()
+    available = env.available_actions()
+    assert available.shape == (1, MockEnv.N_ACTIONS**N_AGENTS)
+    assert np.all(available == 1)
+
+    mask = np.zeros((N_AGENTS, MockEnv.N_ACTIONS))
+    mask[0, 0] = 1
+    mask[1, 0] = 1
+    env = Centralised(AvailableActionsMask(mock, mask))
+    expected_joint_mask = np.zeros((1, MockEnv.N_ACTIONS**N_AGENTS))
+    expected_joint_mask[0, 0] = 1
+    obs = env.reset()
+    assert np.array_equal(obs.available_actions, expected_joint_mask)
+    obs, *_ = env.step([0])
+    assert np.array_equal(obs.available_actions, expected_joint_mask)
+
+
+def test_available_action_mask():
+    N_AGENTS = 2
+    wrapped = MockEnv(N_AGENTS)
+
+    try:
+        AvailableActionsMask(wrapped, np.zeros((N_AGENTS, MockEnv.N_ACTIONS)))
+        assert False, "It should not be possible to mask all actions"
+    except AssertionError:
+        pass
+
+    try:
+        AvailableActionsMask(wrapped, np.zeros((N_AGENTS, MockEnv.N_ACTIONS + 1)))
+        assert False, "It should not be possible to mask all actions"
+    except AssertionError:
+        pass
+
+    mask = np.array([[0, 1, 0, 1, 0], [1, 0, 1, 0, 1]])
+    env = AvailableActionsMask(wrapped, mask)
+    obs = env.reset()
+    assert np.array_equal(obs.available_actions, mask)
+    obs, *_ = env.step([0, 1])
+    assert np.array_equal(obs.available_actions, mask)

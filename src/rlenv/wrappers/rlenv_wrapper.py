@@ -1,9 +1,8 @@
-from typing import TypeVar, Literal, overload, Optional
+from typing import TypeVar, Literal, overload, Optional, Iterable, Any
 from dataclasses import dataclass
 from serde import serde
 from abc import ABC
 import numpy as np
-import numpy.typing as npt
 from rlenv.models import RLEnv, ActionSpace
 
 A = TypeVar("A", bound=ActionSpace)
@@ -42,7 +41,7 @@ class RLEnvWrapper(RLEnv[A], ABC):
             self.full_name = f"{self.__class__.__name__}({env.name})"
         self.name = env.name
 
-    def step(self, actions: npt.NDArray[np.int32]):
+    def step(self, actions: Iterable[int]):
         return self.wrapped.step(actions)
 
     def reset(self):
@@ -59,7 +58,7 @@ class RLEnvWrapper(RLEnv[A], ABC):
         """Render the environment in a window"""
 
     @overload
-    def render(self, mode: Literal["rgb_array"]) -> npt.NDArray[np.uint8]:
+    def render(self, mode: Literal["rgb_array"]) -> np.ndarray[np.uint8, Any]:
         """Retrieve an image of the environment"""
 
     def render(self, mode):
