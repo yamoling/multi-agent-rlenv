@@ -1,4 +1,4 @@
-from typing import TypeVar, Literal, overload, Optional, Iterable, Any
+from typing import TypeVar, Literal, overload, Optional, Any
 from dataclasses import dataclass
 from serde import serde
 from abc import ABC
@@ -41,7 +41,7 @@ class RLEnvWrapper(RLEnv[A], ABC):
             self.full_name = f"{self.__class__.__name__}({env.name})"
         self.name = env.name
 
-    def step(self, actions: Iterable[int]):
+    def step(self, actions: list[int] | np.ndarray):
         return self.wrapped.step(actions)
 
     def reset(self):

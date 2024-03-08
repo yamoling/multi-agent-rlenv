@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Generic, TypeVar, overload, Any, Literal, Iterable
+from typing import Generic, TypeVar, overload, Any, Literal
 import numpy as np
 from serde import serde
 from dataclasses import dataclass
@@ -59,7 +59,7 @@ class RLEnv(ABC, Generic[A]):
         """Retrieve the current state of the environment."""
 
     @abstractmethod
-    def step(self, actions: Iterable[int]) -> tuple[Observation, float, bool, bool, dict[str, Any]]:
+    def step(self, actions: list[int] | np.ndarray) -> tuple[Observation, float, bool, bool, dict[str, Any]]:
         """Perform a step in the environment.
 
         Returns:
