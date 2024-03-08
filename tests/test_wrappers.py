@@ -114,12 +114,14 @@ def test_centralised_action():
 
 def test_centralised_obs_and_state():
     wrapped = MockEnv(2)
-    env = Builder(wrapped).centralised().build()
+    env = Centralised(wrapped)
+    assert env.observation_shape == (2 * MockEnv.OBS_SIZE,)
+    assert env.state_shape == (MockEnv.STATE_SIZE,)
     obs = env.reset()
-    assert obs.data.shape == env.observation_shape
+    assert obs.data.shape == (1, *env.observation_shape)
     assert obs.state.shape == env.state_shape
-    obs, _, _, _, _ = env.step(np.array([0]))
-    assert obs.data.shape == env.observation_shape
+    obs, *_ = env.step(np.array([0]))
+    assert obs.data.shape == (1, *env.observation_shape)
     assert obs.state.shape == env.state_shape
 
 

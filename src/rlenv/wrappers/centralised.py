@@ -53,5 +53,7 @@ class Centralised(RLEnvWrapper[A]):
 
     def _joint_observation(self, obs: Observation):
         obs.data = np.concatenate(obs.data, axis=0)
+        # Unsqueze the first dimension since there is one agent
+        obs.data = np.expand_dims(obs.data, axis=0)
         obs.available_actions = self.available_actions()
         return obs
