@@ -9,6 +9,24 @@ from dataclasses import dataclass
 ActionType = TypeVar("ActionType")
 
 
+@dataclass
+class DiscreteSpace:
+    n_categories: int
+    """Number of categories."""
+    categories: list[str]
+    """The meaning of each category."""
+
+    def __init__(self, n_categories, categories_names: Optional[list[str]] = None):
+        self.n_categories = n_categories
+        if categories_names is None:
+            categories_names = [f"Action {i}" for i in range(n_categories)]
+        self.categories = categories_names
+        self.space = np.arange(n_categories)
+
+    def sample(self):
+        return np.random.choice(self.space)
+
+
 @serde
 @dataclass
 class ActionSpace(ABC, Generic[ActionType]):
