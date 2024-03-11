@@ -41,6 +41,10 @@ class RLEnvWrapper(RLEnv[A], ABC):
             self.full_name = f"{self.__class__.__name__}({env.name})"
         self.name = env.name
 
+    @property
+    def unit_state_size(self):
+        return self.wrapped.unit_state_size
+
     def step(self, actions: list[int] | np.ndarray):
         return self.wrapped.step(actions)
 

@@ -19,9 +19,7 @@ class ActionSpace(ABC, Generic[ActionType]):
     action_names: list[str]
     """The meaning of each action."""
 
-    def __init__(
-        self, n_agents: int, n_actions: int, action_names: Optional[list[str]] = None
-    ):
+    def __init__(self, n_agents: int, n_actions: int, action_names: Optional[list[str]] = None):
         self.n_agents = n_agents
         self.n_actions = n_actions
         self.shape = (n_agents, n_actions)
@@ -35,9 +33,7 @@ class ActionSpace(ABC, Generic[ActionType]):
 
 
 class DiscreteActionSpace(ActionSpace[npt.NDArray[np.int32]]):
-    def __init__(
-        self, n_agents: int, n_actions: int, action_names: Optional[list[str]] = None
-    ):
+    def __init__(self, n_agents: int, n_actions: int, action_names: Optional[list[str]] = None):
         super().__init__(n_agents, n_actions, action_names)
         self._actions = [range(self.n_actions) for _ in range(self.n_agents)]
 
@@ -70,9 +66,7 @@ class ContinuousActionSpace(ActionSpace[npt.NDArray[np.float32]]):
             isinstance(low, list) and len(low) == n_actions
         ), "'low' parameter must be a float or a list of floats with length equal to the number of actions."
         assert (
-            isinstance(high, (float))
-            or isinstance(high, list)
-            and len(high) == n_actions
+            isinstance(high, (float)) or isinstance(high, list) and len(high) == n_actions
         ), "'high' parameter must be a float or a list of floats with length equal to the number of actions."
         super().__init__(n_agents, n_actions, action_names)
         if isinstance(low, float):
@@ -83,6 +77,4 @@ class ContinuousActionSpace(ActionSpace[npt.NDArray[np.float32]]):
         self.high = high
 
     def sample(self):
-        return (np.random.random(self.shape) * (
-            np.array(self.high) - np.array(self.low)
-        ) + np.array(self.low)).astype(np.float32)
+        return (np.random.random(self.shape) * (np.array(self.high) - np.array(self.low)) + np.array(self.low)).astype(np.float32)

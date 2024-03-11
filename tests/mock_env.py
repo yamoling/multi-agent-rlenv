@@ -7,17 +7,20 @@ class MockEnv(RLEnv[DiscreteActionSpace]):
     N_ACTIONS = 5
     END_GAME = 30
     REWARD_STEP = 1
-    STATE_SIZE = 0
+    UNIT_STATE_SIZE = 1
 
     def __init__(self, n_agents) -> None:
         super().__init__(
             DiscreteActionSpace(n_agents, MockEnv.N_ACTIONS),
             (MockEnv.OBS_SIZE,),
-            (0,),
+            (n_agents * MockEnv.UNIT_STATE_SIZE,),
         )
-        self._n_agents = n_agents
         self.t = 0
         self.actions_history = []
+
+    @property
+    def unit_state_size(self):
+        return MockEnv.UNIT_STATE_SIZE
 
     def reset(self):
         self.t = 0
@@ -31,7 +34,7 @@ class MockEnv(RLEnv[DiscreteActionSpace]):
         return Observation(obs_data, self.available_actions(), self.get_state())
 
     def get_state(self):
-        return np.zeros((MockEnv.STATE_SIZE,), dtype=np.float32)
+        return np.full((self.n_agents * MockEnv.UNIT_STATE_SIZE,), self.t, dtype=np.float32)
 
     def render(self, mode: str = "human"):
         return

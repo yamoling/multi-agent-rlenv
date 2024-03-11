@@ -42,6 +42,11 @@ class RLEnv(ABC, Generic[A]):
         self.state_shape = state_shape
         self.extra_feature_shape = extra_feature_shape
 
+    @property
+    def unit_state_size(self) -> int:
+        """The size of the state for a single agent."""
+        raise NotImplementedError(f"{self.name} does not support unit_state_size")
+
     def available_actions(self) -> np.ndarray[np.float32, Any]:
         """
         Get the currently available actions for each agent.

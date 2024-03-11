@@ -116,7 +116,7 @@ def test_centralised_obs_and_state():
     wrapped = MockEnv(2)
     env = Centralised(wrapped)
     assert env.observation_shape == (2 * MockEnv.OBS_SIZE,)
-    assert env.state_shape == (MockEnv.STATE_SIZE,)
+    assert env.state_shape == (MockEnv.UNIT_STATE_SIZE * wrapped.n_agents,)
     obs = env.reset()
     assert obs.data.shape == (1, *env.observation_shape)
     assert obs.state.shape == env.state_shape
