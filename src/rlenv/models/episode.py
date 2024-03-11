@@ -155,13 +155,13 @@ class Episode:
 class EpisodeBuilder:
     """EpisodeBuilder gives away the complexity of building an Episode to another class"""
 
-    def __init__(self) -> None:
-        self.observations = []
-        self.extras = []
-        self.actions = []
-        self.rewards = []
-        self.available_actions = []
-        self.states = []
+    def __init__(self):
+        self.observations = list[np.ndarray]()
+        self.extras = list[np.ndarray]()
+        self.actions = list[np.ndarray]()
+        self.rewards = list[np.ndarray]()
+        self.available_actions = list[np.ndarray]()
+        self.states = list[np.ndarray]()
         self.action_probs = []
         self.episode_len = 0
         self.metrics = {}

@@ -33,7 +33,13 @@ class RLEnvWrapper(RLEnv[A], ABC):
             extra_feature_shape = env.extra_feature_shape
         if action_space is None:
             action_space = env.action_space
-        super().__init__(action_space, observation_shape, state_shape, extra_feature_shape)
+        super().__init__(
+            action_space=action_space,
+            observation_shape=observation_shape,
+            state_shape=state_shape,
+            extra_feature_shape=extra_feature_shape,
+            reward_size=env.reward_size,
+        )
         self.wrapped = env
         if isinstance(env, RLEnvWrapper):
             self.full_name = f"{self.__class__.__name__}({env.full_name})"

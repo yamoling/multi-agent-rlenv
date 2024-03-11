@@ -9,11 +9,12 @@ class MockEnv(RLEnv[DiscreteActionSpace]):
     REWARD_STEP = 1
     UNIT_STATE_SIZE = 1
 
-    def __init__(self, n_agents) -> None:
+    def __init__(self, n_agents: int, n_objectives: int = 1) -> None:
         super().__init__(
             DiscreteActionSpace(n_agents, MockEnv.N_ACTIONS),
             (MockEnv.OBS_SIZE,),
             (n_agents * MockEnv.UNIT_STATE_SIZE,),
+            reward_size=n_objectives,
         )
         self.t = 0
         self.actions_history = []
@@ -44,7 +45,7 @@ class MockEnv(RLEnv[DiscreteActionSpace]):
         self.actions_history.append(action)
         return (
             self.observation(),
-            MockEnv.REWARD_STEP,
+            [MockEnv.REWARD_STEP] * self.reward_size,
             self.t >= MockEnv.END_GAME,
             False,
             {},

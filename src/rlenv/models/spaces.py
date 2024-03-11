@@ -11,15 +11,15 @@ ActionType = TypeVar("ActionType")
 
 @dataclass
 class DiscreteSpace:
-    n_categories: int
-    """Number of categories."""
+    size: int
+    """Size fo the space (number of categories)."""
     categories: list[str]
     """The meaning of each category."""
 
     def __init__(self, n_categories, categories_names: Optional[list[str]] = None):
-        self.n_categories = n_categories
+        self.size = n_categories
         if categories_names is None:
-            categories_names = [f"Action {i}" for i in range(n_categories)]
+            categories_names = [f"Category {i}" for i in range(n_categories)]
         self.categories = categories_names
         self.space = np.arange(n_categories)
 

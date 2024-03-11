@@ -84,7 +84,7 @@ def test_transition_eq():
             extras=np.arange(5, dtype=np.float32),
         ),
         action=np.ones(5, dtype=np.float32),
-        reward=1.0,
+        reward=[1.0],
         done=False,
         info={},
         obs_=Observation(
@@ -104,7 +104,7 @@ def test_transition_eq():
             extras=np.arange(5, dtype=np.float32),
         ),
         action=np.ones(5, dtype=np.float32),
-        reward=1.0,
+        reward=[1.0],
         done=False,
         info={},
         obs_=Observation(
@@ -128,7 +128,7 @@ def test_transition_hash():
             extras=np.arange(5, dtype=np.float32),
         ),
         action=np.ones(5, dtype=np.float32),
-        reward=1.0,
+        reward=[1.0],
         done=False,
         info={},
         obs_=Observation(
@@ -148,7 +148,7 @@ def test_transition_hash():
             extras=np.arange(5, dtype=np.float32),
         ),
         action=np.ones(5, dtype=np.float32),
-        reward=1.0,
+        reward=[1.0],
         done=False,
         info={},
         obs_=Observation(
