@@ -1,5 +1,5 @@
 import numpy as np
-from rlenv import RLEnv, Observation, DiscreteActionSpace
+from rlenv import RLEnv, Observation, DiscreteActionSpace, MultiObjectiveRLEnv as MORLenv
 
 
 class MockEnv(RLEnv[DiscreteActionSpace]):
@@ -49,3 +49,19 @@ class MockEnv(RLEnv[DiscreteActionSpace]):
             False,
             {},
         )
+
+
+class MockMOEnv(MORLenv, MockEnv):
+    def __init__(self, n_agents, n_objectives):
+        MockEnv.__init__(self, n_agents)
+        MORLenv.__init__(
+            self,
+            n_objectives,
+            DiscreteActionSpace(n_agents, MockEnv.N_ACTIONS),
+            (MockEnv.OBS_SIZE,),
+            (n_agents * MockEnv.UNIT_STATE_SIZE,),
+        )
+
+    def step(self, action):
+        obs, reward, done, truncated, info = MockEnv.step(self, action)
+        return obs, [reward] * self.n_objectives, done, truncated, info
