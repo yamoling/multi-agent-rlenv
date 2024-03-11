@@ -11,6 +11,10 @@ A = TypeVar("A", bound=ActionSpace, covariant=True)
 
 try:
     from pettingzoo import ParallelEnv
+
+    @overload
+    def make(env: ParallelEnv) -> RLEnv[ActionSpace]:
+        ...
 except ImportError:
     pass
 
@@ -25,12 +29,7 @@ def make(env: RLEnv[A]) -> RLEnv[A]:
     ...
 
 
-@overload
-def make(env: ParallelEnv) -> RLEnv[ActionSpace]:
-    ...
-
-
-def make(env: str | RLEnv[A] | ParallelEnv):
+def make(env):
     """Make an RLEnv from Gym, SMAC or PettingZoo"""
     return Builder(env).build()
 
@@ -42,7 +41,7 @@ class Builder(Generic[A]):
     _env: RLEnv[A]
     _test_env: RLEnv[A]
 
-    def __init__(self, env: str | RLEnv[A] | ParallelEnv):
+    def __init__(self, env):
         match env:
             case str():
                 self._env = self._init_env(env)
