@@ -40,7 +40,7 @@ class PettingZoo(RLEnv[ActionSpace]):
         action_dict = dict(zip(self.agents, actions))
         obs, reward, term, trunc, info = self._env.step(action_dict)
         obs_data = np.array([v for v in obs.values()])
-        reward = sum(reward.values())
+        reward = np.sum([r for r in reward.values()], keepdims=True)
         observation = Observation(obs_data, self.available_actions(), self.get_state())
         return observation, reward, term, trunc, info
 
@@ -49,11 +49,8 @@ class PettingZoo(RLEnv[ActionSpace]):
         obs_data = np.array([v for v in obs.values()])
         return Observation(obs_data, self.available_actions(), self.get_state())
 
-    def available_actions(self):
-        return np.ones(self.n_actions, dtype=np.float32)
-
     def seed(self, seed_value: int):
         self._env.reset(seed=seed_value)
 
-    def render(self):
+    def render(self, *_):
         return self._env.render()

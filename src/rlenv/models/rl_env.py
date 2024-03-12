@@ -68,7 +68,7 @@ class RLEnv(ABC, Generic[A]):
         """Retrieve the current state of the environment."""
 
     @abstractmethod
-    def step(self, actions: list[int] | np.ndarray) -> tuple[Observation, Iterable[float], bool, bool, dict[str, Any]]:
+    def step(self, actions: list[int] | np.ndarray) -> tuple[Observation, np.ndarray[np.float32, Any], bool, bool, dict[str, Any]]:
         """Perform a step in the environment.
 
         Returns:

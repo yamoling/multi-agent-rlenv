@@ -8,6 +8,9 @@ def test_gym_adapter():
     # Discrete action space
     env = rlenv.make("CartPole-v1")
     env.reset()
+    assert env.n_actions == 2
+    assert env.n_agents == 1
+    assert env.reward_size == 1
 
     # Continuous action space
     env = rlenv.make("Pendulum-v1")
@@ -18,7 +21,8 @@ def test_pettingzoo_adapter_discrete_action():
     # https://pettingzoo.farama.org/environments/sisl/pursuit/#pursuit
     env = rlenv.make(pursuit_v4.parallel_env())
     env.reset()
-    env.step(env.action_space.sample())
+    _, r, *_ = env.step(env.action_space.sample())
+    assert len(r) == 1
     assert env.n_agents == 8
     assert env.n_actions == 5
     assert isinstance(env.action_space, rlenv.DiscreteActionSpace)

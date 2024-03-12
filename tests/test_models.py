@@ -1,5 +1,5 @@
 from rlenv import Observation, Transition
-from .mock_env import MockEnv, MockMOEnv
+from .mock_env import MockEnv
 import numpy as np
 
 
@@ -171,11 +171,10 @@ def test_rlenv_available_actions():
 def test_multi_objective_env():
     N_AGENTS = 2
     N_OBJECTVES = 3
-    env = MockMOEnv(N_AGENTS, N_OBJECTVES)
-    assert env.n_objectives == N_OBJECTVES
-    assert env.reward_shape == (N_OBJECTVES,)
+    env = MockEnv(N_AGENTS, N_OBJECTVES)
+    assert env.reward_size == N_OBJECTVES
     assert env.n_agents == N_AGENTS
-    assert env.n_actions == MockMOEnv.N_ACTIONS
+    assert env.n_actions == MockEnv.N_ACTIONS
 
     env.reset()
     reward = env.step([0] * N_AGENTS)[1]

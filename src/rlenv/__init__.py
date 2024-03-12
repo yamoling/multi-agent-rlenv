@@ -14,7 +14,6 @@ from . import adapters
 from .env_builder import make, Builder
 from .models import (
     RLEnv,
-    MultiObjectiveRLEnv,
     Observation,
     Episode,
     Transition,
@@ -30,7 +29,6 @@ __all__ = [
     "make",
     "Builder",
     "RLEnv",
-    "MultiObjectiveRLEnv",
     "Observation",
     "Episode",
     "Transition",
