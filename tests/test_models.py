@@ -1,5 +1,5 @@
 from rlenv import Observation, Transition
-from .mock_env import MockEnv
+from .mock_env import MockEnv, MockMOEnv
 import numpy as np
 
 
@@ -84,7 +84,7 @@ def test_transition_eq():
             extras=np.arange(5, dtype=np.float32),
         ),
         action=np.ones(5, dtype=np.float32),
-        reward=1.0,
+        reward=[1.0],
         done=False,
         info={},
         obs_=Observation(
@@ -104,7 +104,7 @@ def test_transition_eq():
             extras=np.arange(5, dtype=np.float32),
         ),
         action=np.ones(5, dtype=np.float32),
-        reward=1.0,
+        reward=[1.0],
         done=False,
         info={},
         obs_=Observation(
@@ -128,7 +128,7 @@ def test_transition_hash():
             extras=np.arange(5, dtype=np.float32),
         ),
         action=np.ones(5, dtype=np.float32),
-        reward=1.0,
+        reward=[1.0],
         done=False,
         info={},
         obs_=Observation(
@@ -148,7 +148,7 @@ def test_transition_hash():
             extras=np.arange(5, dtype=np.float32),
         ),
         action=np.ones(5, dtype=np.float32),
-        reward=1.0,
+        reward=[1.0],
         done=False,
         info={},
         obs_=Observation(
@@ -166,3 +166,17 @@ def test_transition_hash():
 def test_rlenv_available_actions():
     env = MockEnv(4)
     assert np.all(env.available_actions() == 1)
+
+
+def test_multi_objective_env():
+    N_AGENTS = 2
+    N_OBJECTVES = 3
+    env = MockMOEnv(N_AGENTS, N_OBJECTVES)
+    assert env.n_objectives == N_OBJECTVES
+    assert env.reward_shape == (N_OBJECTVES,)
+    assert env.n_agents == N_AGENTS
+    assert env.n_actions == MockMOEnv.N_ACTIONS
+
+    env.reset()
+    reward = env.step([0] * N_AGENTS)[1]
+    assert len(reward) == N_OBJECTVES

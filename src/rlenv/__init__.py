@@ -5,7 +5,7 @@ RLEnv
     - works with gym(-nasium), pettingzoo and SMAC 
     - provides helpful wrappers to add intrinsic rewards, agent ids, record videos, ...
 """
-__version__ = "0.4.6"
+__version__ = "0.5.2"
 
 from . import models
 from . import wrappers
@@ -14,9 +14,11 @@ from . import adapters
 from .env_builder import make, Builder
 from .models import (
     RLEnv,
+    MultiObjectiveRLEnv,
     Observation,
     Episode,
     Transition,
+    ActionSpace,
     DiscreteActionSpace,
     ContinuousActionSpace,
 )
@@ -28,9 +30,11 @@ __all__ = [
     "make",
     "Builder",
     "RLEnv",
+    "MultiObjectiveRLEnv",
     "Observation",
     "Episode",
     "Transition",
+    "ActionSpace",
     "DiscreteActionSpace",
     "ContinuousActionSpace",
 ]

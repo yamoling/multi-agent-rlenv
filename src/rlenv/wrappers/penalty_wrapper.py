@@ -16,5 +16,5 @@ class TimePenalty(RLEnvWrapper):
 
     def step(self, action: npt.NDArray[np.int32]):
         obs, reward, *rest = self.wrapped.step(action)
-        reward -= self.penalty
+        reward = [r - self.penalty for r in reward]
         return obs, reward, *rest

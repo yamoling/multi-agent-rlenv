@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
-from typing import Generic, TypeVar, overload, Any, Literal
+from typing import Generic, TypeVar, overload, Any, Literal, Iterable
 import numpy as np
-import numpy.typing as npt
 from serde import serde
 from dataclasses import dataclass
 
@@ -23,6 +22,8 @@ class RLEnv(ABC, Generic[A]):
     state_shape: tuple[int, ...]
     """The shape of the state."""
     extra_feature_shape: tuple[int, ...]
+    reward_size: int
+    """The dimension of the reward signal. In general, this is 1, but it can be higher for multi-objective environments."""
     n_agents: int
     n_actions: int
     name: str
@@ -33,6 +34,7 @@ class RLEnv(ABC, Generic[A]):
         observation_shape: tuple[int, ...],
         state_shape: tuple[int, ...],
         extra_feature_shape: tuple[int, ...] = (0,),
+        reward_size: int = 1,
     ):
         super().__init__()
         self.name = self.__class__.__name__
@@ -42,30 +44,36 @@ class RLEnv(ABC, Generic[A]):
         self.observation_shape = observation_shape
         self.state_shape = state_shape
         self.extra_feature_shape = extra_feature_shape
+        self.reward_size = reward_size
 
-    def available_actions(self) -> np.ndarray[np.int32, Any]:
+    @property
+    def unit_state_size(self) -> int:
+        """The size of the state for a single agent."""
+        raise NotImplementedError(f"{self.name} does not support unit_state_size")
+
+    def available_actions(self) -> np.ndarray[np.float32, Any]:
         """
         Get the currently available actions for each agent.
 
         The output array has shape (n_agents, n_actions) and contains 1 if the action is available and 0 otherwise.
         """
-        return np.ones((self.n_agents, self.n_actions), dtype=np.int64)
+        return np.ones((self.n_agents, self.n_actions), dtype=np.float32)
 
     def seed(self, seed_value: int):
         """Set the environment seed"""
         raise NotImplementedError("Method not implemented")
 
     @abstractmethod
-    def get_state(self) -> npt.NDArray[np.float32]:
+    def get_state(self) -> np.ndarray[np.float32, Any]:
         """Retrieve the current state of the environment."""
 
     @abstractmethod
-    def step(self, actions: npt.NDArray[np.int32]) -> tuple[Observation, float, bool, bool, dict[str, Any]]:
+    def step(self, actions: list[int] | np.ndarray) -> tuple[Observation, Iterable[float], bool, bool, dict[str, Any]]:
         """Perform a step in the environment.
 
         Returns:
-        - observations: The observations for each agent.
-        - rewards: The team reward
+        - observations: The observation resulting from the action.
+        - rewards: The team reward (single item list in general, but can be multi-objective).
         - done: Whether the episode is over
         - truncated: Whether the episode is truncated
         - info: Extra information
@@ -82,9 +90,9 @@ class RLEnv(ABC, Generic[A]):
 
     @overload
     @abstractmethod
-    def render(self, mode: Literal["rgb_array"]) -> npt.NDArray[np.uint8]:
+    def render(self, mode: Literal["rgb_array"]) -> np.ndarray[np.uint8, Any]:
         """Retrieve an image of the environment"""
 
     @abstractmethod
-    def render(self, mode) -> None | npt.NDArray[np.uint8]:
+    def render(self, mode) -> None | np.ndarray[np.uint8, Any]:
         ...

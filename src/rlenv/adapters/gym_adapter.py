@@ -23,19 +23,11 @@ class Gym(RLEnv[ActionSpace]):
                 space = DiscreteActionSpace(1, int(s.n))
             case spaces.Box() as s:
                 if len(s.low.shape) > 1 or len(s.high.shape) > 1:
-                    raise NotImplementedError(
-                        "Multi-dimensional action spaces not supported"
-                    )
-                space = ContinuousActionSpace(
-                    1, s.shape[0], low=float(s.low[0]), high=float(s.high[0])
-                )
+                    raise NotImplementedError("Multi-dimensional action spaces not supported")
+                space = ContinuousActionSpace(1, s.shape[0], low=float(s.low[0]), high=float(s.high[0]))
             case other:
                 raise NotImplementedError(f"Action space {other} not supported")
-        super().__init__(
-            space,
-            env.observation_space.shape,
-            (1,)
-        )
+        super().__init__(space, env.observation_space.shape, (1,))
         self.env = env
         if self.env.unwrapped.spec is not None:
             self.name = self.env.unwrapped.spec.id
@@ -43,7 +35,7 @@ class Gym(RLEnv[ActionSpace]):
             self.name = "gym-no-id"
 
     def step(self, actions):
-        obs_, reward, done, truncated, info = self.env.step(actions[0])
+        obs_, reward, done, truncated, info = self.env.step(list(actions)[0])
         obs_ = Observation(
             np.array([obs_], dtype=np.float32),
             self.available_actions(),

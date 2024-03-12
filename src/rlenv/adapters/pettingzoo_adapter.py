@@ -1,5 +1,5 @@
 from pettingzoo import ParallelEnv
-from gymnasium import spaces    # pettingzoo uses gymnasium spaces
+from gymnasium import spaces  # pettingzoo uses gymnasium spaces
 from rlenv.models import RLEnv, Observation, ActionSpace, DiscreteActionSpace, ContinuousActionSpace
 import numpy as np
 import numpy.typing as npt
@@ -12,14 +12,14 @@ class PettingZoo(RLEnv[ActionSpace]):
 
         match aspace:
             case spaces.Discrete() as s:
-                space = DiscreteActionSpace(env.num_agents, s.n)
-            
+                space = DiscreteActionSpace(env.num_agents, int(s.n))
+
             case spaces.Box() as s:
                 if len(s.shape) > 1:
                     raise NotImplementedError("Multi-dimensional action spaces not supported")
 
                 space = ContinuousActionSpace(env.num_agents, s.shape[0], low=s.low.tolist(), high=s.high.tolist())
-            
+
             case other:
                 raise NotImplementedError(f"Action space {other} not supported")
 

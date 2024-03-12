@@ -8,6 +8,8 @@ A = TypeVar("A", bound=ActionSpace)
 
 
 class AvailableActions(RLEnvWrapper[A]):
+    """Adds the available actions (one-hot) as an extra feature to the observation."""
+
     def __init__(self, env: RLEnv[A]):
         super().__init__(env, extra_feature_shape=(env.extra_feature_shape[0] + env.n_actions,))
 

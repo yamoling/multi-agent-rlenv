@@ -29,7 +29,8 @@ class Centralised(RLEnvWrapper[A]):
         return DiscreteActionSpace(1, env.n_actions**env.n_agents, action_names)
 
     def step(self, actions):
-        individual_actions = self._individual_actions(actions[0])
+        action = list(actions)[0]
+        individual_actions = self._individual_actions(action)
         obs, *rest = self.wrapped.step(individual_actions)
         return self._joint_observation(obs), *rest
 
@@ -42,6 +43,17 @@ class Centralised(RLEnvWrapper[A]):
         individual_actions.reverse()
         return np.array(individual_actions)
 
+    def available_actions(self):
+        individual_available = self.wrapped.available_actions()
+        joint_available = list[float]()
+        for actions in product(*individual_available):
+            joint_available.append(1.0 if all(actions) else 0.0)
+        available_actions = np.array(joint_available, dtype=np.float32)
+        return available_actions.reshape((self.n_agents, self.n_actions))
+
     def _joint_observation(self, obs: Observation):
         obs.data = np.concatenate(obs.data, axis=0)
+        # Unsqueze the first dimension since there is one agent
+        obs.data = np.expand_dims(obs.data, axis=0)
+        obs.available_actions = self.available_actions()
         return obs

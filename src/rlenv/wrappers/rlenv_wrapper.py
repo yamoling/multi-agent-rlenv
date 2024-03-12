@@ -1,9 +1,8 @@
-from typing import TypeVar, Literal, overload, Optional
+from typing import TypeVar, Literal, overload, Optional, Any
 from dataclasses import dataclass
 from serde import serde
 from abc import ABC
 import numpy as np
-import numpy.typing as npt
 from rlenv.models import RLEnv, ActionSpace
 
 A = TypeVar("A", bound=ActionSpace)
@@ -34,7 +33,13 @@ class RLEnvWrapper(RLEnv[A], ABC):
             extra_feature_shape = env.extra_feature_shape
         if action_space is None:
             action_space = env.action_space
-        super().__init__(action_space, observation_shape, state_shape, extra_feature_shape)
+        super().__init__(
+            action_space=action_space,
+            observation_shape=observation_shape,
+            state_shape=state_shape,
+            extra_feature_shape=extra_feature_shape,
+            reward_size=env.reward_size,
+        )
         self.wrapped = env
         if isinstance(env, RLEnvWrapper):
             self.full_name = f"{self.__class__.__name__}({env.full_name})"
@@ -42,7 +47,11 @@ class RLEnvWrapper(RLEnv[A], ABC):
             self.full_name = f"{self.__class__.__name__}({env.name})"
         self.name = env.name
 
-    def step(self, actions: npt.NDArray[np.int32]):
+    @property
+    def unit_state_size(self):
+        return self.wrapped.unit_state_size
+
+    def step(self, actions: list[int] | np.ndarray):
         return self.wrapped.step(actions)
 
     def reset(self):
@@ -59,7 +68,7 @@ class RLEnvWrapper(RLEnv[A], ABC):
         """Render the environment in a window"""
 
     @overload
-    def render(self, mode: Literal["rgb_array"]) -> npt.NDArray[np.uint8]:
+    def render(self, mode: Literal["rgb_array"]) -> np.ndarray[np.uint8, Any]:
         """Retrieve an image of the environment"""
 
     def render(self, mode):

@@ -1,24 +1,35 @@
 import os
 from copy import deepcopy
 from dataclasses import dataclass
-from typing import Literal, TypeVar, Generic, TypeAlias
+from typing import Literal, TypeVar, Generic, overload
 
 
-from .models import RLEnv, ActionSpace, DiscreteActionSpace
+from .models import RLEnv, ActionSpace
 from . import wrappers
 
-A = TypeVar("A", bound=ActionSpace)
+A = TypeVar("A", bound=ActionSpace, covariant=True)
 
 try:
     from pettingzoo import ParallelEnv
 
-    EnvType: TypeAlias = str | RLEnv | ParallelEnv
+    @overload
+    def make(env: ParallelEnv) -> RLEnv[ActionSpace]:
+        ...
 except ImportError:
-    # EnvType: TypeAlias = str | RLEnv
     pass
 
 
-def make(env: str | RLEnv) -> RLEnv[ActionSpace]:
+@overload
+def make(env: str) -> RLEnv[ActionSpace]:
+    ...
+
+
+@overload
+def make(env: RLEnv[A]) -> RLEnv[A]:
+    ...
+
+
+def make(env):
     """Make an RLEnv from Gym, SMAC or PettingZoo"""
     return Builder(env).build()
 
@@ -30,7 +41,7 @@ class Builder(Generic[A]):
     _env: RLEnv[A]
     _test_env: RLEnv[A]
 
-    def __init__(self, env: str | RLEnv[A]):
+    def __init__(self, env):
         match env:
             case str():
                 self._env = self._init_env(env)
@@ -128,26 +139,6 @@ class Builder(Generic[A]):
         """Blinds the observations with probability p"""
         self._env = wrappers.Blind(self._env, p)
         self._test_env = wrappers.Blind(self._test_env, p)
-        return self
-
-    def intrinsic_reward(
-        self,
-        method: Literal["linear", "exp"],
-        initial_reward: float,
-        anneal: int,
-        also_for_testing=False,
-    ):
-        match method:
-            case "linear":
-                self._env = wrappers.LinearStateCount(self._env, initial_reward, anneal)
-                if also_for_testing:
-                    self._test_env = wrappers.LinearStateCount(self._test_env, initial_reward, anneal)
-            case "exp":
-                self._env = wrappers.DecreasingExpStateCount(self._env, initial_reward, anneal)
-                if also_for_testing:
-                    self._test_env = wrappers.DecreasingExpStateCount(self._test_env, initial_reward, anneal)
-            case other:
-                raise ValueError(f"'{other}' is not a known extrinsic reward wrapper")
         return self
 
     def time_penalty(self, penalty: float):

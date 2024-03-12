@@ -1,4 +1,8 @@
-__all__ = []
+from .pymarl_adapter import PymarlAdapter
+
+__all__ = [
+    "PymarlAdapter",
+]
 try:
     from .gym_adapter import Gym
 

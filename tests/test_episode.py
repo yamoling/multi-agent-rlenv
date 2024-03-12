@@ -22,17 +22,17 @@ def test_episode_builder_is_done():
     # Set the 'done' flag
     builder = EpisodeBuilder()
     assert not builder.is_finished
-    builder.add(Transition(obs, np.array([0, 0]), 0, False, {}, obs, False))
+    builder.add(Transition(obs, np.array([0, 0]), [0], False, {}, obs, False))
     assert not builder.is_finished
-    builder.add(Transition(obs, np.array([0, 0]), 0, True, {}, obs, False))
+    builder.add(Transition(obs, np.array([0, 0]), [0], True, {}, obs, False))
     assert builder.is_finished
 
     # Set the 'truncated' flag
     builder = EpisodeBuilder()
     assert not builder.is_finished
-    builder.add(Transition(obs, np.array([0, 0]), 0, False, {}, obs, False))
+    builder.add(Transition(obs, np.array([0, 0]), [0], False, {}, obs, False))
     assert not builder.is_finished
-    builder.add(Transition(obs, np.array([0, 0]), 0, False, {}, obs, True))
+    builder.add(Transition(obs, np.array([0, 0]), [0], False, {}, obs, True))
     assert builder.is_finished
 
 
@@ -49,7 +49,7 @@ def test_build_not_finished_episode_fails():
         Transition(
             obs=obs,
             action=np.array([0, 0]),
-            reward=0,
+            reward=[0],
             done=False,
             info={},
             obs_=obs,
@@ -74,7 +74,7 @@ def test_returns():
         done = i == n_steps - 1
         r = random.random()
         rewards.append(r)
-        builder.add(Transition(obs, np.array([0, 0]), r, done, {}, obs, False))
+        builder.add(Transition(obs, np.array([0, 0]), [r], done, {}, obs, False))
     episode = builder.build()
     returns = episode.compute_returns(discount=gamma)
     for i, r in enumerate(returns):

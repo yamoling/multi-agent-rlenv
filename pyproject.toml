@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "rlenv"
-version = "0.4.6"
+version = "0.5.2"
 description = "A strongly typed Multi-Agent Reinforcement Learning framework"
 authors = ["Yannick Molinghen <yannick.molinghen@ulb.be>"]
 license = "MIT"
@@ -55,6 +55,7 @@ filterwarnings = [
     "ignore:Call to deprecated create function EnumValueDescriptor().*:DeprecationWarning",
     "ignore:Call to deprecated create function EnumDescriptor().*:DeprecationWarning",
     "ignore:Call to deprecated create function FileDescriptor().*:DeprecationWarning",
+    "ignore:pkg_resources is deprecated as an API*:DeprecationWarning",
 ]
 # Run tests on two cores with xdist
 addopts = "-n 4"
