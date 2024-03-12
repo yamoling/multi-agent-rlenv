@@ -17,9 +17,7 @@ class PettingZoo(RLEnv[ActionSpace]):
             case spaces.Box() as s:
                 if len(s.shape) > 1:
                     raise NotImplementedError("Multi-dimensional action spaces not supported")
-
                 space = ContinuousActionSpace(env.num_agents, s.shape[0], low=s.low.tolist(), high=s.high.tolist())
-
             case other:
                 raise NotImplementedError(f"Action space {other} not supported")
 
@@ -34,7 +32,7 @@ class PettingZoo(RLEnv[ActionSpace]):
         try:
             return self._env.state()
         except NotImplementedError:
-            return np.array([])
+            return np.array([0])
 
     def step(self, actions: npt.NDArray[np.int32]):
         action_dict = dict(zip(self.agents, actions))
