@@ -48,8 +48,8 @@ class RLEnvWrapper(RLEnv[A], ABC):
         self.name = env.name
 
     @property
-    def unit_state_size(self):
-        return self.wrapped.unit_state_size
+    def agent_state_size(self):
+        return self.wrapped.agent_state_size
 
     def step(self, actions: list[int] | np.ndarray):
         return self.wrapped.step(actions)

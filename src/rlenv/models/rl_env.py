@@ -47,7 +47,7 @@ class RLEnv(ABC, Generic[A]):
         self.reward_size = reward_size
 
     @property
-    def unit_state_size(self) -> int:
+    def agent_state_size(self) -> int:
         """The size of the state for a single agent."""
         raise NotImplementedError(f"{self.name} does not support unit_state_size")
 

@@ -78,6 +78,6 @@ class PymarlAdapter:
             "n_actions": self.get_total_actions(),
             "n_agents": self.env.n_agents,
             "episode_limit": self.env.step_limit,
-            "unit_dim": self.env.unit_state_size,
+            "unit_dim": self.env.agent_state_size,
         }
         return env_info

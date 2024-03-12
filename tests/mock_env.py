@@ -20,7 +20,7 @@ class MockEnv(RLEnv[DiscreteActionSpace]):
         self.actions_history = []
 
     @property
-    def unit_state_size(self):
+    def agent_state_size(self):
         return MockEnv.UNIT_STATE_SIZE
 
     def reset(self):
