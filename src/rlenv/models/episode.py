@@ -197,8 +197,8 @@ class EpisodeBuilder:
                 self.metrics[key] = value
             self.observations.append(transition.obs_.data)
             self.extras.append(transition.obs_.extras)
-            self.available_actions.append(np.ones_like(self.available_actions[-1]))
-            self.states.append(np.zeros_like(self.states[-1]))
+            self.available_actions.append(transition.obs_.available_actions)
+            self.states.append(transition.obs_.state)
 
     def build(self, extra_metrics: Optional[dict[str, float]] = None) -> Episode:
         """Build the Episode"""
