@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from serde import serde
 from abc import ABC
 import numpy as np
-from rlenv.models import RLEnv, ActionSpace
+from rlenv.models import RLEnv, ActionSpace, DiscreteSpace
 
 A = TypeVar("A", bound=ActionSpace)
 
@@ -24,21 +24,14 @@ class RLEnvWrapper(RLEnv[A], ABC):
         state_shape: Optional[tuple[int, ...]] = None,
         extra_feature_shape: Optional[tuple[int, ...]] = None,
         action_space: Optional[A] = None,
+        reward_space: Optional[DiscreteSpace] = None,
     ):
-        if observation_shape is None:
-            observation_shape = env.observation_shape
-        if state_shape is None:
-            state_shape = env.state_shape
-        if extra_feature_shape is None:
-            extra_feature_shape = env.extra_feature_shape
-        if action_space is None:
-            action_space = env.action_space
         super().__init__(
-            action_space=action_space,
-            observation_shape=observation_shape,
-            state_shape=state_shape,
-            extra_feature_shape=extra_feature_shape,
-            reward_size=env.reward_size,
+            action_space=action_space or env.action_space,
+            observation_shape=observation_shape or env.observation_shape,
+            state_shape=state_shape or env.state_shape,
+            extra_feature_shape=extra_feature_shape or env.extra_feature_shape,
+            reward_space=reward_space or env.reward_space,
         )
         self.wrapped = env
         if isinstance(env, RLEnvWrapper):

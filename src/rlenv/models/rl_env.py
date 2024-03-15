@@ -1,11 +1,11 @@
 from abc import ABC, abstractmethod
-from typing import Generic, TypeVar, overload, Any, Literal, Iterable
+from typing import Generic, TypeVar, overload, Any, Literal, Optional
 import numpy as np
 from serde import serde
 from dataclasses import dataclass
 
 
-from .spaces import ActionSpace
+from .spaces import ActionSpace, DiscreteSpace
 from .observation import Observation
 
 A = TypeVar("A", bound=ActionSpace)
@@ -22,8 +22,8 @@ class RLEnv(ABC, Generic[A]):
     state_shape: tuple[int, ...]
     """The shape of the state."""
     extra_feature_shape: tuple[int, ...]
-    reward_size: int
-    """The dimension of the reward signal. In general, this is 1, but it can be higher for multi-objective environments."""
+    reward_space: DiscreteSpace
+    """Desription of the reward space. In general, this is a single scalar, but it can be multi-objective."""
     n_agents: int
     n_actions: int
     name: str
@@ -34,7 +34,7 @@ class RLEnv(ABC, Generic[A]):
         observation_shape: tuple[int, ...],
         state_shape: tuple[int, ...],
         extra_feature_shape: tuple[int, ...] = (0,),
-        reward_size: int = 1,
+        reward_space: Optional[DiscreteSpace] = None,
     ):
         super().__init__()
         self.name = self.__class__.__name__
@@ -44,12 +44,17 @@ class RLEnv(ABC, Generic[A]):
         self.observation_shape = observation_shape
         self.state_shape = state_shape
         self.extra_feature_shape = extra_feature_shape
-        self.reward_size = reward_size
+        self.reward_space = reward_space or DiscreteSpace(1, ["default"])
 
     @property
     def agent_state_size(self) -> int:
         """The size of the state for a single agent."""
         raise NotImplementedError(f"{self.name} does not support unit_state_size")
+
+    @property
+    def reward_size(self) -> int:
+        """The size of the reward signal. In general, this is 1, but it can be higher for multi-objective environments."""
+        return self.reward_space.size
 
     def available_actions(self) -> np.ndarray[np.float32, Any]:
         """

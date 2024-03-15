@@ -1,30 +1,57 @@
-from typing import Generic, Optional, TypeVar
+from typing import Generic, Optional, TypeVar, Iterable
 from abc import abstractmethod, ABC
 import numpy as np
 import numpy.typing as npt
 from serde import serde
 from dataclasses import dataclass
-
+from gymnasium.spaces import Discrete
 
 ActionType = TypeVar("ActionType")
 
 
+@serde
 @dataclass
-class DiscreteSpace:
+class DiscreteSpace(Discrete):
     size: int
-    """Size fo the space (number of categories)."""
-    categories: list[str]
-    """The meaning of each category."""
+    """Number of categories"""
+    labels: list[str]
+    """The label of each category."""
 
-    def __init__(self, n_categories, categories_names: Optional[list[str]] = None):
-        self.size = n_categories
-        if categories_names is None:
-            categories_names = [f"Category {i}" for i in range(n_categories)]
-        self.categories = categories_names
-        self.space = np.arange(n_categories)
+    def __init__(self, size: int, labels: Optional[list[str]] = None):
+        self.size = size
+        if labels is None:
+            labels = [f"Label {i}" for i in range(size)]
+        self.labels = labels
+        self.space = np.arange(size)
+
+
+@dataclass
+class ContinuousSpace:
+    """A continuous space (box) in R^n."""
+
+    shape: tuple[int, ...]
+    """The shape of the space."""
+    low: list[float]
+    """Lower bound of the space for each dimension."""
+    high: list[float]
+    """Upper bound of the space for each dimension."""
+
+    def __init__(self, low: float | list[float], high: float | list[float]):
+        assert isinstance(low, (float)) or (
+            isinstance(low, list) and len(low) == 1
+        ), "'low' parameter must be a float or a list of floats with length equal to the number of dimensions."
+        assert (
+            isinstance(high, (float)) or isinstance(high, list) and len(high) == 1
+        ), "'high' parameter must be a float or a list of floats with length equal to the number of dimensions."
+        if isinstance(low, float):
+            low = [low]
+        self.low = low
+        if isinstance(high, float):
+            high = [high]
+        self.high = high
 
     def sample(self):
-        return np.random.choice(self.space)
+        return (np.random.random(len(self.low)) * (np.array(self.high) - np.array(self.low)) + np.array(self.low)).astype(np.float32)
 
 
 @serde
@@ -88,10 +115,10 @@ class ContinuousActionSpace(ActionSpace[npt.NDArray[np.float32]]):
         ), "'high' parameter must be a float or a list of floats with length equal to the number of actions."
         super().__init__(n_agents, n_actions, action_names)
         if isinstance(low, float):
-            self.low = [low] * n_actions
+            low = [low] * n_actions
         self.low = low
         if isinstance(high, float):
-            self.high = [high] * self.n_actions
+            high = [high] * self.n_actions
         self.high = high
 
     def sample(self):

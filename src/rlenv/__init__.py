@@ -17,6 +17,8 @@ from .models import (
     Observation,
     Episode,
     Transition,
+    DiscreteSpace,
+    ContinuousSpace,
     ActionSpace,
     DiscreteActionSpace,
     ContinuousActionSpace,
@@ -33,6 +35,8 @@ __all__ = [
     "Episode",
     "Transition",
     "ActionSpace",
+    "DiscreteSpace",
+    "ContinuousSpace",
     "DiscreteActionSpace",
     "ContinuousActionSpace",
 ]

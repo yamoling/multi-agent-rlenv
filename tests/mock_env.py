@@ -1,5 +1,5 @@
 import numpy as np
-from rlenv import RLEnv, Observation, DiscreteActionSpace
+from rlenv import RLEnv, Observation, DiscreteActionSpace, DiscreteSpace
 
 
 class MockEnv(RLEnv[DiscreteActionSpace]):
@@ -14,7 +14,7 @@ class MockEnv(RLEnv[DiscreteActionSpace]):
             DiscreteActionSpace(n_agents, MockEnv.N_ACTIONS),
             (MockEnv.OBS_SIZE,),
             (n_agents * MockEnv.UNIT_STATE_SIZE,),
-            reward_size=n_objectives,
+            reward_space=DiscreteSpace(n_objectives),
         )
         self.t = 0
         self.actions_history = []
