@@ -4,14 +4,13 @@ import numpy as np
 import numpy.typing as npt
 from serde import serde
 from dataclasses import dataclass
-from gymnasium.spaces import Discrete
 
 ActionType = TypeVar("ActionType")
 
 
 @serde
 @dataclass
-class DiscreteSpace(Discrete):
+class DiscreteSpace:
     size: int
     """Number of categories"""
     labels: list[str]
@@ -23,6 +22,12 @@ class DiscreteSpace(Discrete):
             labels = [f"Label {i}" for i in range(size)]
         self.labels = labels
         self.space = np.arange(size)
+
+    def sample(self, mask: Optional[np.ndarray]):
+        space = self.space
+        if mask is not None:
+            space = space[mask]
+        return np.random.choice(space)
 
 
 @dataclass
