@@ -87,9 +87,9 @@ class DiscreteActionSpace(ActionSpace[npt.NDArray[np.int32]]):
         super().__init__(n_agents, n_actions, action_names)
         self._actions = [range(self.n_actions) for _ in range(self.n_agents)]
 
-    def sample(self, available_actions: Optional[npt.NDArray[np.int32]] = None):
+    def sample(self, available_actions: Optional[np.ndarray] = None):
         if available_actions is None:
-            return np.random.randint(0, self.n_actions, self.n_agents)
+            return np.random.randint(0, self.n_actions, self.n_agents, dtype=np.int32)
         action_probs = available_actions / available_actions.sum(axis=1, keepdims=True)
         res = []
         for action, available in zip(self._actions, action_probs):

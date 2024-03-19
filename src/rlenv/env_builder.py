@@ -1,7 +1,7 @@
 import os
 from copy import deepcopy
 from dataclasses import dataclass
-from typing import Literal, TypeVar, Generic, overload
+from typing import Literal, TypeVar, Generic, overload, Any
 
 
 from .models import RLEnv, ActionSpace
@@ -16,7 +16,7 @@ try:
     def make(env: ParallelEnv) -> RLEnv[ActionSpace]:
         ...
 except ImportError:
-    pass
+    ParralelEnv = Any
 
 
 @overload
@@ -41,7 +41,7 @@ class Builder(Generic[A]):
     _env: RLEnv[A]
     _test_env: RLEnv[A]
 
-    def __init__(self, env):
+    def __init__(self, env: RLEnv[A] | str | ParallelEnv):
         match env:
             case str():
                 self._env = self._init_env(env)
