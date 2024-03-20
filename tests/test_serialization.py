@@ -4,7 +4,7 @@ import json
 from dataclasses import asdict
 from serde.json import to_json
 
-from .mock_env import MockEnv
+from rlenv import MockEnv
 
 
 def test_registry():
@@ -48,8 +48,6 @@ def test_action_space_json():
 
 
 def test_env_serialization_json():
-    from .mock_env import MockEnv
-
     env = MockEnv(4)
     to_json(env)
     json.dumps(asdict(env))

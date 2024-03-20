@@ -11,11 +11,13 @@ from . import models
 from . import wrappers
 from . import adapters
 
+
 from .env_builder import make, Builder
 from .models import (
     RLEnv,
     Observation,
     Episode,
+    EpisodeBuilder,
     Transition,
     DiscreteSpace,
     ContinuousSpace,
@@ -23,6 +25,7 @@ from .models import (
     DiscreteActionSpace,
     ContinuousActionSpace,
 )
+from .mock_env import MockEnv
 
 __all__ = [
     "models",
@@ -33,10 +36,12 @@ __all__ = [
     "RLEnv",
     "Observation",
     "Episode",
+    "EpisodeBuilder",
     "Transition",
     "ActionSpace",
     "DiscreteSpace",
     "ContinuousSpace",
     "DiscreteActionSpace",
     "ContinuousActionSpace",
+    "MockEnv",
 ]

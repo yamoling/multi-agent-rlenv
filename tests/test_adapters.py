@@ -1,7 +1,7 @@
 import rlenv
 from pettingzoo.sisl import pursuit_v4, waterworld_v4
 from rlenv.adapters import SMAC, PymarlAdapter
-from .mock_env import MockEnv
+from rlenv import MockEnv
 
 
 def test_gym_adapter():

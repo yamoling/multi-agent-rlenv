@@ -1,9 +1,7 @@
-from itertools import product
 import numpy as np
-from rlenv import Builder
+from rlenv import Builder, MockEnv
 from rlenv.wrappers import Centralised, AvailableActionsMask
 import rlenv
-from .mock_env import MockEnv
 
 
 def test_padding():

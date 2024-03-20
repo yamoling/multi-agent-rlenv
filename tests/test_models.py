@@ -1,5 +1,4 @@
-from rlenv import Observation, Transition
-from .mock_env import MockEnv
+from rlenv import Observation, Transition, MockEnv
 import numpy as np
 
 
