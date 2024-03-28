@@ -1,9 +1,7 @@
-from itertools import product
 import numpy as np
-from rlenv import Builder
+from rlenv import Builder, MockEnv
 from rlenv.wrappers import Centralised, AvailableActionsMask
 import rlenv
-from .mock_env import MockEnv
 
 
 def test_padding():
@@ -33,11 +31,12 @@ def test_agent_id():
 
 
 def test_penalty_wrapper():
-    env = Builder(MockEnv(1)).time_penalty(0.1).build()
+    N_OBJECTIVES = 5
+    env = Builder(MockEnv(1, N_OBJECTIVES)).time_penalty(0.1).build()
     done = False
     while not done:
         _, reward, done, *_ = env.step(np.array([0]))
-        assert reward == MockEnv.REWARD_STEP - 0.1
+        assert reward == [MockEnv.REWARD_STEP - 0.1] * N_OBJECTIVES
 
 
 def test_time_limit_wrapper():

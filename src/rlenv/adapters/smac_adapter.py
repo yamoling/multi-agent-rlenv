@@ -31,7 +31,7 @@ class SMAC(RLEnv[DiscreteActionSpace]):
     def step(self, actions):
         reward, done, info = self._env.step(actions)
         obs = Observation(np.array(self._env.get_obs()), self.available_actions(), self.get_state())
-        return obs, reward, done, False, info
+        return obs, np.array([reward], np.float32), done, False, info
 
     def available_actions(self):
         return np.array(self._env.get_avail_actions())

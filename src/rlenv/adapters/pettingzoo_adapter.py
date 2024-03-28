@@ -1,3 +1,4 @@
+from typing import Any
 from pettingzoo import ParallelEnv
 from gymnasium import spaces  # pettingzoo uses gymnasium spaces
 from rlenv.models import RLEnv, Observation, ActionSpace, DiscreteActionSpace, ContinuousActionSpace
@@ -17,9 +18,7 @@ class PettingZoo(RLEnv[ActionSpace]):
             case spaces.Box() as s:
                 if len(s.shape) > 1:
                     raise NotImplementedError("Multi-dimensional action spaces not supported")
-
                 space = ContinuousActionSpace(env.num_agents, s.shape[0], low=s.low.tolist(), high=s.high.tolist())
-
             case other:
                 raise NotImplementedError(f"Action space {other} not supported")
 
@@ -34,26 +33,23 @@ class PettingZoo(RLEnv[ActionSpace]):
         try:
             return self._env.state()
         except NotImplementedError:
-            return np.array([])
+            return np.array([0])
 
     def step(self, actions: npt.NDArray[np.int32]):
         action_dict = dict(zip(self.agents, actions))
         obs, reward, term, trunc, info = self._env.step(action_dict)
         obs_data = np.array([v for v in obs.values()])
-        reward = sum(reward.values())
+        reward = np.sum([r for r in reward.values()], keepdims=True)
         observation = Observation(obs_data, self.available_actions(), self.get_state())
-        return observation, reward, term, trunc, info
+        return observation, reward, any(term.values()), any(trunc.values()), info
 
     def reset(self) -> Observation:
         obs = self._env.reset()[0]
         obs_data = np.array([v for v in obs.values()])
         return Observation(obs_data, self.available_actions(), self.get_state())
 
-    def available_actions(self):
-        return np.ones(self.n_actions, dtype=np.float32)
-
     def seed(self, seed_value: int):
         self._env.reset(seed=seed_value)
 
-    def render(self):
+    def render(self, *_):
         return self._env.render()

@@ -1,3 +1,4 @@
+from typing import Any
 import numpy as np
 from rlenv.models import RLEnv, DiscreteActionSpace
 from rlenv.wrappers import TimeLimit
@@ -15,11 +16,11 @@ class PymarlAdapter:
         self.episode_limit = episode_limit
         self.current_observation = None
 
-    def step(self, actions):
+    def step(self, actions) -> tuple[float, bool, dict[str, Any]]:
         """Returns reward, terminated, info"""
         obs, reward, done, truncated, info = self.env.step(actions)
         self.current_observation = obs
-        return reward, done or truncated, info
+        return list(reward)[0], done or truncated, info
 
     def get_obs(self):
         """Returns all agent observations in a list"""
@@ -77,6 +78,6 @@ class PymarlAdapter:
             "n_actions": self.get_total_actions(),
             "n_agents": self.env.n_agents,
             "episode_limit": self.env.step_limit,
-            "unit_dim": self.env.unit_state_size,
+            "unit_dim": self.env.agent_state_size,
         }
         return env_info

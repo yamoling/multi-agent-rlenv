@@ -1,13 +1,25 @@
+import numpy as np
 import rlenv
 from pettingzoo.sisl import pursuit_v4, waterworld_v4
 from rlenv.adapters import SMAC, PymarlAdapter
-from .mock_env import MockEnv
+from rlenv import MockEnv, Observation
 
 
 def test_gym_adapter():
     # Discrete action space
     env = rlenv.make("CartPole-v1")
     env.reset()
+    assert env.n_actions == 2
+    assert env.n_agents == 1
+    assert env.reward_size == 1
+
+    obs, r, done, truncated, info = env.step(env.action_space.sample())
+    assert isinstance(obs, Observation)
+    assert isinstance(r, np.ndarray)
+    assert r.shape == (1,)
+    assert isinstance(done, bool)
+    assert isinstance(truncated, bool)
+    assert isinstance(info, dict)
 
     # Continuous action space
     env = rlenv.make("Pendulum-v1")
@@ -18,7 +30,13 @@ def test_pettingzoo_adapter_discrete_action():
     # https://pettingzoo.farama.org/environments/sisl/pursuit/#pursuit
     env = rlenv.make(pursuit_v4.parallel_env())
     env.reset()
-    env.step(env.action_space.sample())
+    obs, r, done, truncated, info = env.step(env.action_space.sample())
+    assert isinstance(obs, Observation)
+    assert isinstance(r, np.ndarray)
+    assert r.shape == (1,)
+    assert isinstance(done, bool)
+    assert isinstance(truncated, bool)
+    assert isinstance(info, dict)
     assert env.n_agents == 8
     assert env.n_actions == 5
     assert isinstance(env.action_space, rlenv.DiscreteActionSpace)
@@ -28,7 +46,13 @@ def test_pettingzoo_adapter_continuous_action():
     # https://pettingzoo.farama.org/environments/sisl/waterworld/
     env = rlenv.make(waterworld_v4.parallel_env())
     env.reset()
-    env.step(env.action_space.sample())
+    obs, r, done, truncated, info = env.step(env.action_space.sample())
+    assert isinstance(obs, Observation)
+    assert isinstance(r, np.ndarray)
+    assert r.shape == (1,)
+    assert isinstance(done, bool)
+    assert isinstance(truncated, bool)
+    assert isinstance(info, dict)
     assert env.n_actions == 2
     assert env.n_agents == 2
     assert isinstance(env.action_space, rlenv.ContinuousActionSpace)
@@ -41,9 +65,18 @@ if SMAC is not None:
         from rlenv.models import DiscreteActionSpace
 
         env = SMAC("3m")
-        env.reset()
+        obs = env.reset()
+        assert isinstance(obs, Observation)
         assert env.n_agents == 3
         assert isinstance(env.action_space, DiscreteActionSpace)
+
+        obs, r, done, truncated, info = env.step(env.action_space.sample(env.available_actions()))
+        assert isinstance(obs, Observation)
+        assert isinstance(r, np.ndarray)
+        assert r.shape == (1,)
+        assert isinstance(done, bool)
+        assert isinstance(truncated, bool)
+        assert isinstance(info, dict)
 
     def test_smac_render():
         env = SMAC("3m")

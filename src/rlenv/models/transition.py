@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from serde import serde
-from typing import Any
+from typing import Any, Iterable
 import numpy as np
 import numpy.typing as npt
 
@@ -14,11 +14,31 @@ class Transition:
 
     obs: Observation
     action: npt.NDArray[np.int32]
-    reward: float
+    reward: npt.NDArray[np.float32]
     done: bool
     info: dict[str, Any]
     obs_: Observation
     truncated: bool
+
+    def __init__(
+        self,
+        obs: Observation,
+        action: npt.NDArray[np.int32],
+        reward: npt.NDArray[np.float32] | Iterable[float],
+        done: bool,
+        info: dict[str, Any],
+        obs_: Observation,
+        truncated: bool,
+    ):
+        self.obs = obs
+        self.action = action
+        if not isinstance(reward, np.ndarray):
+            reward = np.array(reward, dtype=np.float32)
+        self.reward = reward
+        self.done = done
+        self.info = info
+        self.obs_ = obs_
+        self.truncated = truncated
 
     @property
     def is_terminal(self) -> bool:
@@ -45,7 +65,7 @@ class Transition:
         }
 
     def __hash__(self) -> int:
-        return hash((self.obs, self.action.tobytes(), self.reward, self.done, self.obs_))
+        return hash((self.obs, self.action.tobytes(), self.reward.tobytes(), self.done, self.obs_))
 
     def __ne__(self, other) -> bool:
         return not self.__eq__(other)

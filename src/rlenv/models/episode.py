@@ -3,6 +3,7 @@ from serde import serde
 from typing import Iterable, Optional
 import numpy as np
 import numpy.typing as npt
+from functools import cached_property
 
 from .transition import Transition
 from .observation import Observation
@@ -18,7 +19,7 @@ class Episode:
     actions: npt.NDArray[np.int64]
     rewards: npt.NDArray[np.float32]
     _available_actions: npt.NDArray[np.float32]
-    states: npt.NDArray[np.float32]
+    _states: npt.NDArray[np.float32]
     actions_probs: npt.NDArray[np.float32] | None
     metrics: dict[str, float]
     episode_len: int
@@ -40,12 +41,12 @@ class Episode:
         rewards_padding_shape = (padding_size, *self.rewards.shape[1:])
         rewards = np.concatenate([self.rewards, np.zeros(rewards_padding_shape, dtype=np.float32)])
         availables = np.concatenate([self._available_actions, np.ones((padding_size, self.n_agents, self.n_actions), dtype=np.float32)])
-        states = np.concatenate([self.states, np.zeros((padding_size, *self.states.shape[1:]), dtype=np.float32)])
+        states = np.concatenate([self._states, np.zeros((padding_size, *self._states.shape[1:]), dtype=np.float32)])
         return Episode(
             _observations=obs,
             actions=actions,
             rewards=rewards,
-            states=states,
+            _states=states,
             metrics=self.metrics,
             episode_len=self.episode_len,
             _available_actions=availables,
@@ -54,54 +55,64 @@ class Episode:
             is_done=self.is_done,
         )
 
-    @property
+    @cached_property
+    def states(self):
+        """The states"""
+        return self._states[:-1]
+
+    @cached_property
+    def states_(self):
+        """The next states"""
+        return self._states[1:]
+
+    @cached_property
     def mask(self):
         """Get the mask for the current episide (when padded)"""
         mask = np.ones_like(self.rewards, dtype=np.float32)
         mask[self.episode_len :] = 0
         return mask
 
-    @property
+    @cached_property
     def obs(self):
         """The observations"""
         return self._observations[:-1]
 
-    @property
+    @cached_property
     def obs_(self):
         """The next observations"""
         return self._observations[1:]
 
-    @property
+    @cached_property
     def extras(self):
         """Get the extra features"""
         return self._extras[:-1]
 
-    @property
+    @cached_property
     def extras_(self):
         """Get the next extra features"""
         return self._extras[1:]
 
-    @property
+    @cached_property
     def n_agents(self):
         """The number of agents in the episode"""
         return self._observations.shape[1]
 
-    @property
+    @cached_property
     def n_actions(self):
         """The number of actions"""
         return self._available_actions.shape[2]
 
-    @property
+    @cached_property
     def available_actions(self):
         """The available actions"""
         return self._available_actions[:-1]
 
-    @property
+    @cached_property
     def available_actions_(self):
         """The next available actions"""
         return self._available_actions[1:]
 
-    @property
+    @cached_property
     def dones(self):
         """The done flags for each transition"""
         dones = np.zeros_like(self.rewards, dtype=np.float32)
@@ -117,7 +128,7 @@ class Episode:
                     data=self._observations[i],
                     available_actions=self._available_actions[i],
                     extras=self._extras[i],
-                    state=self.states[i],
+                    state=self._states[i],
                 ),
                 action=self.actions[i],
                 reward=self.rewards[i],
@@ -127,7 +138,7 @@ class Episode:
                     data=self._observations[i + 1],
                     available_actions=self._available_actions[i + 1],
                     extras=self._extras[i + 1],
-                    state=self.states[i + 1],
+                    state=self._states[i + 1],
                 ),
                 truncated=not self.is_done and i == self.episode_len - 1,
             )
@@ -138,7 +149,7 @@ class Episode:
     def __len__(self):
         return self.episode_len
 
-    @property
+    @cached_property
     def score(self) -> float:
         """The episode score (sum of all rewards)"""
         return self.metrics["score"]
@@ -155,13 +166,13 @@ class Episode:
 class EpisodeBuilder:
     """EpisodeBuilder gives away the complexity of building an Episode to another class"""
 
-    def __init__(self) -> None:
-        self.observations = []
-        self.extras = []
-        self.actions = []
-        self.rewards = []
-        self.available_actions = []
-        self.states = []
+    def __init__(self):
+        self.observations = list[np.ndarray]()
+        self.extras = list[np.ndarray]()
+        self.actions = list[np.ndarray]()
+        self.rewards = list[np.ndarray]()
+        self.available_actions = list[np.ndarray]()
+        self.states = list[np.ndarray]()
         self.action_probs = []
         self.episode_len = 0
         self.metrics = {}
@@ -197,8 +208,8 @@ class EpisodeBuilder:
                 self.metrics[key] = value
             self.observations.append(transition.obs_.data)
             self.extras.append(transition.obs_.extras)
-            self.available_actions.append(np.ones_like(self.available_actions[-1]))
-            self.states.append(np.zeros_like(self.states[-1]))
+            self.available_actions.append(transition.obs_.available_actions)
+            self.states.append(transition.obs_.state)
 
     def build(self, extra_metrics: Optional[dict[str, float]] = None) -> Episode:
         """Build the Episode"""
@@ -214,7 +225,7 @@ class EpisodeBuilder:
             _extras=np.array(self.extras),
             actions=np.array(self.actions),
             rewards=np.array(self.rewards),
-            states=np.array(self.states),
+            _states=np.array(self.states),
             metrics=self.metrics,
             episode_len=self.episode_len,
             _available_actions=np.array(self.available_actions),
