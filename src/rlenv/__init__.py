@@ -1,11 +1,13 @@
 """
-RLEnv is a strongly typed library for reinforcement learning.
+RLEnv is a strongly typed library for multi-agent and multi-objective reinforcement learning.
 
 RLEnv 
-    - works with gym(-nasium), pettingzoo and SMAC 
+    - provides a simple and consistent interface for reinforcement learning environments
+    - provides fundamental models such as `Observation`s, `Episode`s, `Transition`s, ...
+    - works with gymnasium, pettingzoo and SMAC out of the box
     - provides helpful wrappers to add intrinsic rewards, agent ids, record videos, ...
 """
-__version__ = "0.5.2"
+__version__ = "1.0.0"
 
 from . import models
 from . import wrappers

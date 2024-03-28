@@ -41,7 +41,7 @@ class Gym(RLEnv[ActionSpace]):
             self.available_actions(),
             self.get_state(),
         )
-        return obs_, float(reward), done, truncated, info
+        return obs_, np.array([reward], dtype=np.float32), done, truncated, info
 
     def get_state(self):
         return np.zeros(1, dtype=np.float32)

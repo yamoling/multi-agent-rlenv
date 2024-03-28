@@ -1,3 +1,4 @@
+from typing import Any
 from pettingzoo import ParallelEnv
 from gymnasium import spaces  # pettingzoo uses gymnasium spaces
 from rlenv.models import RLEnv, Observation, ActionSpace, DiscreteActionSpace, ContinuousActionSpace
@@ -40,7 +41,7 @@ class PettingZoo(RLEnv[ActionSpace]):
         obs_data = np.array([v for v in obs.values()])
         reward = np.sum([r for r in reward.values()], keepdims=True)
         observation = Observation(obs_data, self.available_actions(), self.get_state())
-        return observation, reward, term, trunc, info
+        return observation, reward, any(term.values()), any(trunc.values()), info
 
     def reset(self) -> Observation:
         obs = self._env.reset()[0]
