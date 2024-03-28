@@ -1,5 +1,5 @@
 import numpy as np
-from typing import Literal
+from typing import Literal, overload
 from smac.env import StarCraft2Env
 
 from rlenv.models import RLEnv, Observation, DiscreteActionSpace
@@ -8,7 +8,24 @@ from rlenv.models import RLEnv, Observation, DiscreteActionSpace
 class SMAC(RLEnv[DiscreteActionSpace]):
     """Wrapper for the SMAC environment to work with this framework"""
 
-    def __init__(self, map_name: str):
+    @overload
+    def __init__(self, map_name: str) -> None:
+        ...
+
+    @overload
+    def __init__(self, env: StarCraft2Env) -> None:
+        ...
+
+    def __init__(self, env_or_map_name):  # type: ignore
+        match env_or_map_name:
+            case StarCraft2Env():
+                self._env = env_or_map_name
+                map_name = env_or_map_name.map_name
+            case str():
+                map_name = env_or_map_name
+                self._env = StarCraft2Env(map_name=map_name)
+            case other:
+                raise ValueError(f"Invalid argument type: {type(other)}")
         self._env = StarCraft2Env(map_name=map_name)
         action_space = DiscreteActionSpace(self._env.n_agents, self._env.n_actions)
         self._env_info = self._env.get_env_info()

@@ -1,10 +1,10 @@
 import os
 from copy import deepcopy
 from dataclasses import dataclass
-from typing import Literal, TypeVar, Generic, overload, Any
+from typing import Literal, TypeVar, Generic, overload, Any, Union
 
 
-from .models import RLEnv, ActionSpace
+from .models import RLEnv, ActionSpace, DiscreteActionSpace
 from . import wrappers
 
 A = TypeVar("A", bound=ActionSpace, covariant=True)
@@ -15,23 +15,88 @@ try:
     @overload
     def make(env: ParallelEnv) -> RLEnv[ActionSpace]:
         ...
+
+    HAS_PETTINGZOO = True
 except ImportError:
-    ParralelEnv = Any
+    HAS_PETTINGZOO = False
+
+
+try:
+    from gymnasium import Env
+
+    @overload
+    def make(env: Env) -> RLEnv[ActionSpace]:
+        ...
+
+    HAS_GYM = True
+except ImportError:
+    HAS_GYM = False
+
+try:
+    from smac.env import StarCraft2Env
+
+    @overload
+    def make(env: StarCraft2Env) -> RLEnv[DiscreteActionSpace]:
+        ...
+
+    HAS_SMAC = True
+except ImportError:
+    HAS_SMAC = False
 
 
 @overload
 def make(env: str) -> RLEnv[ActionSpace]:
-    ...
+    """
+    Make an RLEnv from a string.
+
+    Formats:
+        - "smac:<map_name>" for SMAC environments
+        - Any other string is assumed to be a Gymnasium environment (e.g. "CartPole-v1")
+    """
 
 
 @overload
 def make(env: RLEnv[A]) -> RLEnv[A]:
-    ...
+    """Why would you do this ?"""
 
 
 def make(env):
-    """Make an RLEnv from Gym, SMAC or PettingZoo"""
-    return Builder(env).build()
+    """Make an RLEnv from str, Gym, SMAC or PettingZoo"""
+    match env:
+        case RLEnv():
+            return env
+        case str():
+            if env.lower().startswith("smac"):
+                from rlenv.adapters import SMAC
+
+                env_name = env.lower()
+                map_name = env_name[len("smac:") :]
+                if len(map_name) == 0:
+                    map_name = "3m"
+                return SMAC(map_name)
+
+            import gymnasium
+            from rlenv.adapters import Gym
+
+            return Gym(gymnasium.make(env, render_mode="rgb_array"))
+
+    try:
+        from rlenv.adapters import PettingZoo
+
+        if isinstance(env, ParallelEnv):
+            return PettingZoo(env)
+    except ImportError:
+        pass
+    try:
+        from smac.env import StarCraft2Env
+        from rlenv.adapters import SMAC
+
+        if isinstance(env, StarCraft2Env):
+            return SMAC(env)
+    except ImportError:
+        pass
+
+    raise ValueError(f"Unknown environment type: {type(env)}")
 
 
 @dataclass
@@ -41,44 +106,9 @@ class Builder(Generic[A]):
     _env: RLEnv[A]
     _test_env: RLEnv[A]
 
-    def __init__(self, env: RLEnv[A] | str | ParallelEnv):
-        match env:
-            case str():
-                self._env = self._init_env(env)
-            case RLEnv():
-                self._env = env
-            case ParallelEnv():  # type: ignore
-                try:
-                    from rlenv.adapters import PettingZoo
-                except ImportError:
-                    raise ImportError("PettingZoo is not installed")
-                self._env = PettingZoo(env)  # type: ignore
-            case _:
-                raise NotImplementedError()
+    def __init__(self, env: RLEnv[A]):
+        self._env = env
         self._test_env = deepcopy(self._env)
-
-    def _init_env(self, env: str) -> RLEnv:
-        if env.lower().startswith("smac"):
-            return self._get_smac_env(env)
-
-        try:
-            import gymnasium as gym
-            from rlenv.adapters import Gym
-
-            return Gym(gym.make(env, render_mode="rgb_array"))
-        except ImportError:
-            raise ImportError("Gymnasium is not installed")
-
-    def _get_smac_env(self, env_name: str) -> RLEnv:
-        try:
-            from rlenv.adapters import SMAC
-        except ImportError:
-            raise ImportError("SMAC is not installed")
-        env_name = env_name.lower()
-        map_name = env_name[len("smac:") :]
-        if len(map_name) == 0:
-            map_name = "3m"
-        return SMAC(map_name=map_name)
 
     def time_limit(self, n_steps: int, add_extra: bool = False):
         """Set the time limit (horizon) of the environment (train & test)"""
