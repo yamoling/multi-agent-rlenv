@@ -1,7 +1,7 @@
 import os
 from copy import deepcopy
 from dataclasses import dataclass
-from typing import Literal, TypeVar, Generic, overload, Any, Union
+from typing import Literal, Optional, TypeVar, Generic, overload, Any, Union
 
 
 from .models import RLEnv, ActionSpace, DiscreteActionSpace
@@ -110,10 +110,19 @@ class Builder(Generic[A]):
         self._env = env
         self._test_env = deepcopy(self._env)
 
-    def time_limit(self, n_steps: int, add_extra: bool = False):
-        """Set the time limit (horizon) of the environment (train & test)"""
-        self._env = wrappers.TimeLimit(self._env, n_steps, add_extra)
-        self._test_env = wrappers.TimeLimit(self._test_env, n_steps, add_extra)
+    def time_limit(self, n_steps: int, add_extra: bool = False, truncation_penalty: Optional[float] = None):
+        """
+        Limits the number of time steps for an episode. When the number of steps is reached, then the episode is truncated.
+
+        - If the `add_extra` flag is set to True, then an extra signal is added to the observation, which is the ratio of the
+        current step over the maximum number of steps. In this case, the done flag is also set to True when the maximum
+        number of steps is reached.
+        - The `truncated` flag is only set to `True` when the maximum number of steps is reached and the episode is not done.
+        - The `truncation_penalty` is subtracted from the reward when the episode is truncated. This is only possible when
+        the `add_extra` flag is set to True, otherwise the agent is not able to anticipate this penalty.
+        """
+        self._env = wrappers.TimeLimit(self._env, n_steps, add_extra, truncation_penalty)
+        self._test_env = wrappers.TimeLimit(self._test_env, n_steps, add_extra, truncation_penalty)
         return self
 
     def pad(self, to_pad: Literal["obs", "extra"], n: int):

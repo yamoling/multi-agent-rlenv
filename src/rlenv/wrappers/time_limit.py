@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from serde import serde
-from typing import TypeVar
+from typing import Optional, TypeVar
 import numpy as np
 
 from rlenv.models import ActionSpace, Observation
@@ -15,15 +15,19 @@ class TimeLimit(RLEnvWrapper[A]):
     """
     Limits the number of time steps for an episode. When the number of steps is reached, then the episode is truncated.
 
-    If the `add_extra` flag is set to True, then an extra signal is added to the observation, which is the ratio of the
+    - If the `add_extra` flag is set to True, then an extra signal is added to the observation, which is the ratio of the
     current step over the maximum number of steps. In this case, the done flag is also set to True when the maximum
     number of steps is reached.
+    - The `truncated` flag is only set to `True` when the maximum number of steps is reached and the episode is not done.
+    - The `truncation_penalty` is subtracted from the reward when the episode is truncated. This is only possible when
+    the `add_extra` flag is set to True, otherwise the agent is not able to anticipate this penalty.
     """
 
     step_limit: int
     add_extra: bool
+    truncation_penalty: float
 
-    def __init__(self, env: RLEnv[A], step_limit: int, add_extra: bool = False) -> None:
+    def __init__(self, env: RLEnv[A], step_limit: int, add_extra: bool = False, truncation_penalty: Optional[float] = None) -> None:
         assert len(env.extra_feature_shape) == 1
         extras_shape = env.extra_feature_shape
         if add_extra:
@@ -33,6 +37,11 @@ class TimeLimit(RLEnvWrapper[A]):
         self.step_limit = step_limit
         self._current_step = 0
         self.add_extra = add_extra
+        if truncation_penalty is None:
+            truncation_penalty = 0.0
+        assert truncation_penalty >= 0, "The truncation penalty must be a positive value."
+        assert add_extra, "The truncation penalty can only be set when the add_extra flag is set to True, otherwise agents are not able to anticipate this punishment."
+        self.truncation_penalty = truncation_penalty
 
     def reset(self):
         self._current_step = 0
@@ -46,12 +55,16 @@ class TimeLimit(RLEnvWrapper[A]):
         obs_, reward, done, truncated, info = super().step(actions)
         if self.add_extra:
             self.add_time_extra(obs_)
+        # If we reach the time limit
         if self._current_step >= self.step_limit:
-            truncated = True
-            # If we add an extra signal for the time, then we must set
-            # the done flag to 1 for consistency:
-            # -> since the state actually changes, then it is a terminal state.
-            done = done or self.add_extra
+            # And the episode is not done
+            if not done:
+                # then we set the truncation flag
+                truncated = True
+                if self.add_extra:
+                    done = True
+        if truncated:
+            reward -= self.truncation_penalty
         return obs_, reward, done, truncated, info
 
     def add_time_extra(self, obs: Observation):

@@ -48,11 +48,17 @@ def test_time_limit_wrapper():
     while not stop:
         _, _, done, truncated, _ = env.step(np.array([0]))
         stop = done or truncated
+        assert not done
         t += 1
     assert t == MAX_T
+    assert truncated
+    assert not done
 
 
 def test_time_limit_wrapper_with_extra():
+    """
+    When an extra is given as input, the environment should be 'done' and 'truncated' when the time limit is reached.
+    """
     MAX_T = 5
     env = Builder(MockEnv(5)).time_limit(MAX_T, add_extra=True).build()
     assert env.extra_feature_shape == (1,)
@@ -66,6 +72,26 @@ def test_time_limit_wrapper_with_extra():
         t += 1
     assert t == MAX_T
     assert np.all(obs.extras[:] == 1)
+    assert done
+    assert not truncated
+
+
+def test_time_limit_wrapper_with_truncation_penalty():
+    MAX_T = 5
+    env = Builder(MockEnv(5)).time_limit(MAX_T, add_extra=True, truncation_penalty=0.1).build()
+    assert env.extra_feature_shape == (1,)
+    obs = env.reset()
+    assert obs.extras.shape == (5, 1)
+    stop = False
+    t = 0
+    while not stop:
+        obs, _, done, truncated, _ = env.step(np.array([0]))
+        stop = done or truncated
+        t += 1
+    assert t == MAX_T
+    assert np.all(obs.extras[:] == 1)
+    assert done
+    assert truncated
 
 
 def test_blind_wrapper():
