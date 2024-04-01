@@ -55,6 +55,24 @@ def test_time_limit_wrapper():
     assert not done
 
 
+def test_truncated_and_done():
+    env = rlenv.wrappers.TimeLimit(MockEnv(2), MockEnv.END_GAME)
+    obs = env.reset()
+    episode = rlenv.EpisodeBuilder()
+    done = truncated = False
+    while not episode.is_finished:
+        action = env.action_space.sample()
+        next_obs, r, done, truncated, info = env.step(action)
+        episode.add(rlenv.Transition(obs, action, r, done, info, next_obs, truncated))
+        obs = next_obs
+    assert done
+    assert not truncated, "The episode is done, so it does not have to be truncated even though the time limit is reached at the same time."
+    episode = episode.build()
+
+    assert np.all(episode.dones[:-1] == 0)
+    assert episode.dones[-1] == 1
+
+
 def test_time_limit_wrapper_with_extra():
     """
     When an extra is given as input, the environment should be 'done' and 'truncated' when the time limit is reached.
@@ -73,7 +91,21 @@ def test_time_limit_wrapper_with_extra():
     assert t == MAX_T
     assert np.all(obs.extras[:] == 1)
     assert done
-    assert not truncated
+    assert truncated
+
+
+def test_wrong_truncation_penalty():
+    try:
+        Builder(MockEnv(1)).time_limit(5, add_extra=True, truncation_penalty=-0.1).build()
+        assert False, "It should not be possible to set a negative truncation penalty"
+    except AssertionError:
+        pass
+
+    try:
+        Builder(MockEnv(1)).time_limit(5, add_extra=False, truncation_penalty=0.1).build()
+        assert False, "It should not be possible to set a truncation penalty without adding the extra feature"
+    except AssertionError:
+        pass
 
 
 def test_time_limit_wrapper_with_truncation_penalty():

@@ -39,8 +39,9 @@ class TimeLimit(RLEnvWrapper[A]):
         self.add_extra = add_extra
         if truncation_penalty is None:
             truncation_penalty = 0.0
+        else:
+            assert add_extra, "The truncation penalty can only be set when the add_extra flag is set to True, otherwise agents are not able to anticipate this punishment."
         assert truncation_penalty >= 0, "The truncation penalty must be a positive value."
-        assert add_extra, "The truncation penalty can only be set when the add_extra flag is set to True, otherwise agents are not able to anticipate this punishment."
         self.truncation_penalty = truncation_penalty
 
     def reset(self):
