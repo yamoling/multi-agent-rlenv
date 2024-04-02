@@ -113,23 +113,6 @@ def test_dones_set_with_paddings():
     assert np.all(padded.dones[MockEnv.END_GAME - 1 :] == 1)
 
 
-def test_truncated_and_done():
-    env = wrappers.TimeLimit(MockEnv(2), MockEnv.END_GAME)
-    obs = env.reset()
-    episode = EpisodeBuilder()
-    done = truncated = False
-    while not episode.is_finished:
-        action = env.action_space.sample()
-        next_obs, r, done, truncated, info = env.step(action)
-        episode.add(Transition(obs, action, r, done, info, next_obs, truncated))
-        obs = next_obs
-    assert done and truncated
-    episode = episode.build()
-
-    assert np.all(episode.dones[:-1] == 0)
-    assert episode.dones[-1] == 1
-
-
 def test_masks():
     env = wrappers.TimeLimit(MockEnv(2), 10)
     episode = generate_episode(env)

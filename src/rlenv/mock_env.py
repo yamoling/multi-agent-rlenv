@@ -45,7 +45,7 @@ class MockEnv(RLEnv[DiscreteActionSpace]):
         self.actions_history.append(action)
         return (
             self.observation(),
-            [MockEnv.REWARD_STEP] * self.reward_size,
+            np.full(self.reward_space.shape, MockEnv.REWARD_STEP, dtype=np.float32),
             self.t >= MockEnv.END_GAME,
             False,
             {},

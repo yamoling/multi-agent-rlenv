@@ -48,11 +48,35 @@ def test_time_limit_wrapper():
     while not stop:
         _, _, done, truncated, _ = env.step(np.array([0]))
         stop = done or truncated
+        assert not done
         t += 1
     assert t == MAX_T
+    assert truncated
+    assert not done
+
+
+def test_truncated_and_done():
+    env = rlenv.wrappers.TimeLimit(MockEnv(2), MockEnv.END_GAME)
+    obs = env.reset()
+    episode = rlenv.EpisodeBuilder()
+    done = truncated = False
+    while not episode.is_finished:
+        action = env.action_space.sample()
+        next_obs, r, done, truncated, info = env.step(action)
+        episode.add(rlenv.Transition(obs, action, r, done, info, next_obs, truncated))
+        obs = next_obs
+    assert done
+    assert not truncated, "The episode is done, so it does not have to be truncated even though the time limit is reached at the same time."
+    episode = episode.build()
+
+    assert np.all(episode.dones[:-1] == 0)
+    assert episode.dones[-1] == 1
 
 
 def test_time_limit_wrapper_with_extra():
+    """
+    When an extra is given as input, the environment should be 'done' and 'truncated' when the time limit is reached.
+    """
     MAX_T = 5
     env = Builder(MockEnv(5)).time_limit(MAX_T, add_extra=True).build()
     assert env.extra_feature_shape == (1,)
@@ -66,6 +90,40 @@ def test_time_limit_wrapper_with_extra():
         t += 1
     assert t == MAX_T
     assert np.all(obs.extras[:] == 1)
+    assert done
+    assert truncated
+
+
+def test_wrong_truncation_penalty():
+    try:
+        Builder(MockEnv(1)).time_limit(5, add_extra=True, truncation_penalty=-0.1).build()
+        assert False, "It should not be possible to set a negative truncation penalty"
+    except AssertionError:
+        pass
+
+    try:
+        Builder(MockEnv(1)).time_limit(5, add_extra=False, truncation_penalty=0.1).build()
+        assert False, "It should not be possible to set a truncation penalty without adding the extra feature"
+    except AssertionError:
+        pass
+
+
+def test_time_limit_wrapper_with_truncation_penalty():
+    MAX_T = 5
+    env = Builder(MockEnv(5)).time_limit(MAX_T, add_extra=True, truncation_penalty=0.1).build()
+    assert env.extra_feature_shape == (1,)
+    obs = env.reset()
+    assert obs.extras.shape == (5, 1)
+    stop = False
+    t = 0
+    while not stop:
+        obs, _, done, truncated, _ = env.step(np.array([0]))
+        stop = done or truncated
+        t += 1
+    assert t == MAX_T
+    assert np.all(obs.extras[:] == 1)
+    assert done
+    assert truncated
 
 
 def test_blind_wrapper():

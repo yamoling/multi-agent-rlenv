@@ -15,6 +15,7 @@ class DiscreteSpace:
     """Number of categories"""
     labels: list[str]
     """The label of each category."""
+    shape: tuple[int]
 
     def __init__(self, size: int, labels: Optional[list[str]] = None):
         self.size = size
@@ -22,6 +23,7 @@ class DiscreteSpace:
             labels = [f"Label {i}" for i in range(size)]
         self.labels = labels
         self.space = np.arange(size)
+        self.shape = (size,)
 
     def sample(self, mask: Optional[np.ndarray]):
         space = self.space
