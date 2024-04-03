@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "rlenv"
-version = "1.0.1"
+version = "1.0.2"
 description = "A strongly typed Multi-Agent Reinforcement Learning framework"
 authors = ["Yannick Molinghen <yannick.molinghen@ulb.be>"]
 license = "MIT"
@@ -18,16 +18,15 @@ gymnasium = { extras = [
 ], version = "^0.28.1", optional = true }
 pettingzoo = { version = "^1.22.3", optional = true }
 pysc2 = { git = "https://github.com/deepmind/pysc2.git", optional = true }
-pygame = { version = "^2.5.2" }
-scipy = { version = "^1.12.0" }
-pymunk = { version = "^6.6.0" }
+pygame = { version = "^2.5.2", optional = true }
+pymunk = { version = "^6.6.0", optional = true }
 
 [tool.poetry.extras]
 all = ["gymnasium", "pettingzoo", "smac"]
 tests = ["gymnasium", "pettingzoo"]
 atari = ["gymnasium"]
 pettingzoo = ["pettingzoo"]
-smac = ["smac", "pysc2"]
+smac = ["smac", "pysc2", "pygame", "pymunk"]
 
 
 [tool.poetry.dev-dependencies]

@@ -1,7 +1,5 @@
-import os
-from copy import deepcopy
 from dataclasses import dataclass
-from typing import Literal, Optional, TypeVar, Generic, overload, Any, Union
+from typing import Literal, Optional, TypeVar, Generic, overload
 
 
 from .models import RLEnv, ActionSpace, DiscreteActionSpace
@@ -104,11 +102,9 @@ class Builder(Generic[A]):
     """Builder for environments"""
 
     _env: RLEnv[A]
-    _test_env: RLEnv[A]
 
     def __init__(self, env: RLEnv[A]):
         self._env = env
-        self._test_env = deepcopy(self._env)
 
     def time_limit(self, n_steps: int, add_extra: bool = False, truncation_penalty: Optional[float] = None):
         """
@@ -122,17 +118,14 @@ class Builder(Generic[A]):
         the `add_extra` flag is set to True, otherwise the agent is not able to anticipate this penalty.
         """
         self._env = wrappers.TimeLimit(self._env, n_steps, add_extra, truncation_penalty)
-        self._test_env = wrappers.TimeLimit(self._test_env, n_steps, add_extra, truncation_penalty)
         return self
 
     def pad(self, to_pad: Literal["obs", "extra"], n: int):
         match to_pad:
             case "obs":
                 self._env = wrappers.PadObservations(self._env, n)
-                self._test_env = wrappers.PadObservations(self._test_env, n)
             case "extra":
                 self._env = wrappers.PadExtras(self._env, n)
-                self._test_env = wrappers.PadExtras(self._test_env, n)
             case other:
                 raise ValueError(f"Unknown padding type: {other}")
         return self
@@ -140,55 +133,41 @@ class Builder(Generic[A]):
     def agent_id(self):
         """Adds agent ID to the observations"""
         self._env = wrappers.AgentId(self._env)
-        self._test_env = wrappers.AgentId(self._test_env)
         return self
 
     def last_action(self):
         """Adds the last action to the observations"""
         self._env = wrappers.LastAction(self._env)
-        self._test_env = wrappers.LastAction(self._test_env)
         return self
 
     def centralised(self):
         """Centralises the observations and actions"""
         self._env = wrappers.Centralised(self._env)
-        self._test_env = wrappers.Centralised(self._test_env)
         return self
 
     def record(
         self,
         folder: str,
-        record_training=False,
         encoding: Literal["mp4", "avi"] = "mp4",
     ):
         """Add video recording of runs. Onnly records tests by default."""
-        if record_training:
-            self._env = wrappers.VideoRecorder(self._env, os.path.join(folder, "training"), video_encoding=encoding)
-            folder = os.path.join(folder, "test")
-        self._test_env = wrappers.VideoRecorder(self._test_env, folder, video_encoding=encoding)
+        self._env = wrappers.VideoRecorder(self._env, folder, video_encoding=encoding)
         return self
 
     def available_actions(self):
         """Adds the available actions to the observations extras"""
         self._env = wrappers.AvailableActions(self._env)
-        self._test_env = wrappers.AvailableActions(self._test_env)
         return self
 
     def blind(self, p: float):
         """Blinds the observations with probability p"""
         self._env = wrappers.Blind(self._env, p)
-        self._test_env = wrappers.Blind(self._test_env, p)
         return self
 
     def time_penalty(self, penalty: float):
         self._env = wrappers.TimePenalty(self._env, penalty)
-        self._test_env = wrappers.TimePenalty(self._test_env, penalty)
         return self
 
     def build(self) -> RLEnv[A]:
         """Build and return the environment"""
         return self._env
-
-    def build_all(self) -> tuple[RLEnv[A], RLEnv[A]]:
-        """Build and return the training and testing environments"""
-        return self._env, self._test_env
