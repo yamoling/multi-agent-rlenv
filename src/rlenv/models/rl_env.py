@@ -101,3 +101,18 @@ class RLEnv(ABC, Generic[A]):
     @abstractmethod
     def render(self, mode) -> None | np.ndarray[np.uint8, Any]:
         ...
+
+    def has_same_inouts(self, other: "RLEnv") -> bool:
+        """Alias for `have_same_inouts(self, other)`."""
+        return RLEnv.have_same_inouts(self, other)
+
+    @staticmethod
+    def have_same_inouts(env1: "RLEnv", env2: "RLEnv") -> bool:
+        """Check if two environments have the same input and output spaces."""
+        return (
+            env1.action_space == env2.action_space
+            and env1.observation_shape == env2.observation_shape
+            and env1.state_shape == env2.state_shape
+            and env1.extra_feature_shape == env2.extra_feature_shape
+            and env1.reward_space == env2.reward_space
+        )

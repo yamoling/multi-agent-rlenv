@@ -104,16 +104,29 @@ except ImportError:
 def test_pymarl():
     LIMIT = 20
     N_AGENTS = 2
-    env = PymarlAdapter(MockEnv(N_AGENTS), LIMIT)
+    N_ACTIONS = 5
+    UNIT_STATE_SIZE = 1
+    OBS_SIZE = 42
+    REWARD_STEP = 1
+    env = PymarlAdapter(
+        MockEnv(
+            N_AGENTS,
+            n_actions=N_ACTIONS,
+            agent_state_size=UNIT_STATE_SIZE,
+            obs_size=OBS_SIZE,
+            reward_step=REWARD_STEP,
+        ),
+        LIMIT,
+    )
 
     info = env.get_env_info()
     assert info["n_agents"] == N_AGENTS
-    assert info["n_actions"] == MockEnv.N_ACTIONS
-    assert env.get_total_actions() == MockEnv.N_ACTIONS
-    assert info["state_shape"] == MockEnv.UNIT_STATE_SIZE * N_AGENTS
-    assert env.get_state_size() == MockEnv.UNIT_STATE_SIZE * N_AGENTS
-    assert info["obs_shape"] == MockEnv.OBS_SIZE
-    assert env.get_obs_size() == MockEnv.OBS_SIZE
+    assert info["n_actions"] == N_ACTIONS
+    assert env.get_total_actions() == N_ACTIONS
+    assert info["state_shape"] == UNIT_STATE_SIZE * N_AGENTS
+    assert env.get_state_size() == UNIT_STATE_SIZE * N_AGENTS
+    assert info["obs_shape"] == OBS_SIZE
+    assert env.get_obs_size() == OBS_SIZE
     assert env.episode_limit == LIMIT
 
     try:
@@ -124,14 +137,14 @@ def test_pymarl():
 
     env.reset()
     obs = env.get_obs()
-    assert obs.shape == (N_AGENTS, MockEnv.OBS_SIZE)
+    assert obs.shape == (N_AGENTS, OBS_SIZE)
     state = env.get_state()
     assert len(state.shape) == 1 and state.shape[0] == env.get_state_size()
 
     for _ in range(LIMIT - 1):
         reward, done, _ = env.step([0] * N_AGENTS)
-        assert reward == MockEnv.REWARD_STEP
+        assert reward == REWARD_STEP
         assert not done
     reward, done, _ = env.step([0] * N_AGENTS)
-    assert reward == MockEnv.REWARD_STEP
+    assert reward == REWARD_STEP
     assert done

@@ -6,20 +6,23 @@ import rlenv
 
 def test_padding():
     PAD_SIZE = 2
-    env = Builder(MockEnv(5)).pad("extra", PAD_SIZE).build()
-    assert env.extra_feature_shape == (PAD_SIZE,)
+    mock = MockEnv(5)
+    env = Builder(mock).pad("extra", PAD_SIZE).build()
+    assert env.extra_feature_shape == (PAD_SIZE + mock.extra_feature_shape[0],)
 
-    env = Builder(MockEnv(5)).pad("obs", PAD_SIZE).build()
-    assert env.observation_shape == (MockEnv.OBS_SIZE + PAD_SIZE,)
+    mock = MockEnv(5)
+    env = Builder(mock).pad("obs", PAD_SIZE).build()
+    assert env.observation_shape == (mock.observation_shape[0] + PAD_SIZE,)
 
 
 def test_available_actions():
     N_AGENTS = 5
-    env = Builder(MockEnv(N_AGENTS)).available_actions().build()
+    mock = MockEnv(N_AGENTS)
+    env = Builder(mock).available_actions().build()
 
-    assert env.extra_feature_shape == (5,)
+    assert env.extra_feature_shape == (5 + mock.extra_feature_shape[0],)
     obs = env.reset()
-    assert np.array_equal(obs.extras, np.ones((N_AGENTS, MockEnv.N_ACTIONS), dtype=np.float32))
+    assert np.array_equal(obs.extras, np.ones((N_AGENTS, env.n_actions), dtype=np.float32))
 
 
 def test_agent_id():
@@ -32,11 +35,12 @@ def test_agent_id():
 
 def test_penalty_wrapper():
     N_OBJECTIVES = 5
-    env = Builder(MockEnv(1, N_OBJECTIVES)).time_penalty(0.1).build()
+    mock = MockEnv(1, N_OBJECTIVES)
+    env = Builder(mock).time_penalty(0.1).build()
     done = False
     while not done:
         _, reward, done, *_ = env.step(np.array([0]))
-        assert reward == [MockEnv.REWARD_STEP - 0.1] * N_OBJECTIVES
+        assert reward == [mock.reward_step - 0.1] * N_OBJECTIVES
 
 
 def test_time_limit_wrapper():
@@ -56,7 +60,8 @@ def test_time_limit_wrapper():
 
 
 def test_truncated_and_done():
-    env = rlenv.wrappers.TimeLimit(MockEnv(2), MockEnv.END_GAME)
+    END_GAME = 10
+    env = rlenv.wrappers.TimeLimit(MockEnv(2, end_game=END_GAME), END_GAME)
     obs = env.reset()
     episode = rlenv.EpisodeBuilder()
     done = truncated = False
@@ -152,18 +157,20 @@ def test_last_action():
 
 
 def test_centralised_shape():
-    env = Builder(MockEnv(2)).centralised().time_limit(50, True).build()
-    assert env.observation_shape == (2 * MockEnv.OBS_SIZE,)
+    mock = MockEnv(2)
+    env = Builder(mock).centralised().time_limit(50, True).build()
+    assert env.observation_shape == (2 * mock.obs_size,)
     assert env.n_agents == 1
-    assert env.n_actions == MockEnv.N_ACTIONS**2
+    assert env.n_actions == mock.n_actions**2
     assert env.extra_feature_shape == (1,)
 
 
 def test_centralised_action():
-    env = Centralised(MockEnv(2))
-    for action1 in range(MockEnv.N_ACTIONS):
-        for action2 in range(MockEnv.N_ACTIONS):
-            joint_action = action1 * MockEnv.N_ACTIONS + action2
+    mock = MockEnv(2)
+    env = Centralised(mock)
+    for action1 in range(mock.n_actions):
+        for action2 in range(mock.n_actions):
+            joint_action = action1 * mock.n_actions + action2
             expected_individual_actions = np.array([action1, action2])
             individual_actions = env._individual_actions(joint_action)
             assert np.array_equal(individual_actions, expected_individual_actions)
@@ -172,8 +179,8 @@ def test_centralised_action():
 def test_centralised_obs_and_state():
     wrapped = MockEnv(2)
     env = Centralised(wrapped)
-    assert env.observation_shape == (2 * MockEnv.OBS_SIZE,)
-    assert env.state_shape == (MockEnv.UNIT_STATE_SIZE * wrapped.n_agents,)
+    assert env.observation_shape == (2 * wrapped.obs_size,)
+    assert env.state_shape == (wrapped.agent_state_size * wrapped.n_agents,)
     obs = env.reset()
     assert obs.data.shape == (1, *env.observation_shape)
     assert obs.state.shape == env.state_shape
@@ -187,14 +194,14 @@ def test_centralised_available_actions():
     mock = MockEnv(N_AGENTS)
     env = Builder(mock).centralised().build()
     available = env.available_actions()
-    assert available.shape == (1, MockEnv.N_ACTIONS**N_AGENTS)
+    assert available.shape == (1, mock.n_actions**N_AGENTS)
     assert np.all(available == 1)
 
-    mask = np.zeros((N_AGENTS, MockEnv.N_ACTIONS))
+    mask = np.zeros((N_AGENTS, mock.n_actions))
     mask[0, 0] = 1
     mask[1, 0] = 1
     env = Centralised(AvailableActionsMask(mock, mask))
-    expected_joint_mask = np.zeros((1, MockEnv.N_ACTIONS**N_AGENTS))
+    expected_joint_mask = np.zeros((1, mock.n_actions**N_AGENTS))
     expected_joint_mask[0, 0] = 1
     obs = env.reset()
     assert np.array_equal(obs.available_actions, expected_joint_mask)
@@ -204,16 +211,17 @@ def test_centralised_available_actions():
 
 def test_available_action_mask():
     N_AGENTS = 2
-    wrapped = MockEnv(N_AGENTS)
+    N_ACTIONS = 5
+    wrapped = MockEnv(N_AGENTS, n_actions=N_ACTIONS)
 
     try:
-        AvailableActionsMask(wrapped, np.zeros((N_AGENTS, MockEnv.N_ACTIONS)))
+        AvailableActionsMask(wrapped, np.zeros((N_AGENTS, N_ACTIONS)))
         assert False, "It should not be possible to mask all actions"
     except AssertionError:
         pass
 
     try:
-        AvailableActionsMask(wrapped, np.zeros((N_AGENTS, MockEnv.N_ACTIONS + 1)))
+        AvailableActionsMask(wrapped, np.zeros((N_AGENTS, N_ACTIONS + 1)))
         assert False, "It should not be possible to mask all actions"
     except AssertionError:
         pass
