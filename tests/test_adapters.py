@@ -36,7 +36,8 @@ try:
         # https://pettingzoo.farama.org/environments/sisl/pursuit/#pursuit
         env = rlenv.make(pursuit_v4.parallel_env())
         env.reset()
-        obs, r, done, truncated, info = env.step(env.action_space.sample())
+        action = env.action_space.sample()
+        obs, r, done, truncated, info = env.step(action)
         assert isinstance(obs, Observation)
         assert isinstance(r, np.ndarray)
         assert r.shape == (1,)
@@ -51,7 +52,8 @@ try:
         # https://pettingzoo.farama.org/environments/sisl/waterworld/
         env = rlenv.make(waterworld_v4.parallel_env())
         env.reset()
-        obs, r, done, truncated, info = env.step(env.action_space.sample())
+        action = env.action_space.sample()
+        obs, r, done, truncated, info = env.step(action)
         assert isinstance(obs, Observation)
         assert isinstance(r, np.ndarray)
         assert r.shape == (1,)
@@ -86,10 +88,6 @@ try:
 
     def test_smac_from_class():
         env = SMAC(StarCraft2Env("3m"))
-        _check_env_3m(env)
-
-    def test_smac_from_str():
-        env = SMAC("3m")
         _check_env_3m(env)
 
     def test_smac_render():

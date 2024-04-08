@@ -1,10 +1,10 @@
 import numpy as np
-from rlenv.models import DiscreteActionSpace, ContinuousActionSpace
+from rlenv.models import DiscreteActionSpace, ContinuousActionSpace, DiscreteSpace, MultiDiscreteSpace, ContinuousSpace
 
 
 def test_discrete_action_space():
     s = DiscreteActionSpace(2, 3)
-    available_actions = np.array([[1, 1, 0], [1, 0, 1]])
+    available_actions = np.array([[True, True, False], [True, False, True]])
     for _ in range(100):
         actions = s.sample(available_actions)
         assert actions.shape == (2,)
@@ -62,3 +62,59 @@ def test_action_names_wrong_number_of_actions():
         assert False
     except AssertionError:
         pass
+
+
+def test_discrete_space_sample():
+    s = DiscreteSpace(3)
+    for _ in range(100):
+        action = s.sample()
+        assert action >= 0 and action < 3
+
+    mask = np.array([True, False, True])
+    for _ in range(100):
+        action = s.sample(mask)
+        assert action in [0, 2]
+
+
+def test_multi_discrete_space():
+    s = MultiDiscreteSpace(DiscreteSpace(5), DiscreteSpace(10))
+    for _ in range(100):
+        action = s.sample()
+        assert action.shape == (2,)
+        assert action[0] >= 0 and action[0] < 5
+        assert action[1] >= 0 and action[1] < 10
+
+    mask = [
+        np.array([True, False, True, False, True]),
+        np.array([True, True, False, False, True, True, False, True, False, True]),
+    ]
+    for _ in range(100):
+        action = s.sample(mask)
+        assert action[0] in [0, 2, 4]
+        assert action[1] in [0, 1, 4, 5, 7, 9]
+
+
+def test_wrong_continuous_space():
+    try:
+        ContinuousSpace([0, 1], [0, 1, 2])
+    except AssertionError:
+        pass
+
+    try:
+        ContinuousSpace([0, 1], [0, 0])
+    except AssertionError:
+        pass
+
+
+def test_continuous_space():
+    s = ContinuousSpace(low=[0.0, -1.0, 0.0], high=[1.0, 1.0, 2.0])
+    for _ in range(100):
+        action = s.sample()
+        assert action.shape == (3,)
+        assert np.all(action >= [0.0, -1.0, 0.0]) and np.all(action < [1.0, 1.0, 2.0])
+
+    s = ContinuousSpace(low=[[0.0, 0.5], [-1, -1]], high=[[1.0, 1.0], [1.0, 1.0]])
+    for _ in range(100):
+        action = s.sample()
+        assert action.shape == (2, 2)
+        assert np.all(action >= [[0.0, 0.5], [-1, -1]]) and np.all(action < [[1.0, 1.0], [1.0, 1.0]])

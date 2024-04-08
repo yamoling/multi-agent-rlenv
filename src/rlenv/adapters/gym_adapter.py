@@ -22,9 +22,13 @@ class Gym(RLEnv[ActionSpace]):
             case spaces.Discrete() as s:
                 space = DiscreteActionSpace(1, int(s.n))
             case spaces.Box() as s:
-                if len(s.low.shape) > 1 or len(s.high.shape) > 1:
-                    raise NotImplementedError("Multi-dimensional action spaces not supported")
-                space = ContinuousActionSpace(1, s.shape[0], low=float(s.low[0]), high=float(s.high[0]))
+                low = s.low.astype(np.float32)
+                high = s.high.astype(np.float32)
+                if not isinstance(low, np.ndarray):
+                    low = np.full(s.shape, s.low, dtype=np.float32)
+                if not isinstance(high, np.ndarray):
+                    high = np.full(s.shape, s.high, dtype=np.float32)
+                space = ContinuousActionSpace(1, s.shape[0], low=low, high=high)
             case other:
                 raise NotImplementedError(f"Action space {other} not supported")
         super().__init__(space, env.observation_space.shape, (1,))

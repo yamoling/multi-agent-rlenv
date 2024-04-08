@@ -1,5 +1,5 @@
 import numpy as np
-from typing import Literal, overload
+from typing import Any, Literal, overload
 from smac.env import StarCraft2Env
 
 from rlenv.models import RLEnv, Observation, DiscreteActionSpace
@@ -50,8 +50,8 @@ class SMAC(RLEnv[DiscreteActionSpace]):
         obs = Observation(np.array(self._env.get_obs()), self.available_actions(), self.get_state())
         return obs, np.array([reward], np.float32), done, False, info
 
-    def available_actions(self):
-        return np.array(self._env.get_avail_actions())
+    def available_actions(self) -> np.ndarray[bool, Any]:
+        return np.array(self._env.get_avail_actions()) == 1
 
     def render(self, mode: Literal["human", "rgb_array"] = "human"):
         return self._env.render(mode)

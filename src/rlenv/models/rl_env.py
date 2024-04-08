@@ -56,13 +56,13 @@ class RLEnv(ABC, Generic[A]):
         """The size of the reward signal. In general, this is 1, but it can be higher for multi-objective environments."""
         return self.reward_space.size
 
-    def available_actions(self) -> np.ndarray[np.float32, Any]:
+    def available_actions(self) -> np.ndarray[bool, Any]:
         """
         Get the currently available actions for each agent.
 
         The output array has shape (n_agents, n_actions) and contains 1 if the action is available and 0 otherwise.
         """
-        return np.ones((self.n_agents, self.n_actions), dtype=np.float32)
+        return np.full((self.n_agents, self.n_actions), True, dtype=bool)
 
     def seed(self, seed_value: int):
         """Set the environment seed"""
