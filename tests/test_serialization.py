@@ -41,7 +41,7 @@ def test_registry_wrapper():
 def test_action_space_json():
     space = rlenv.DiscreteActionSpace(1, 4)
     to_json(space)
-    space = rlenv.ContinuousActionSpace(1, 4)
+    space = rlenv.ContinuousActionSpace(1, [0, 0], [1, 1])
     to_json(space)
 
 

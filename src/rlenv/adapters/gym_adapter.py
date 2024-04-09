@@ -6,8 +6,8 @@ from rlenv.models import (
     RLEnv,
     Observation,
     ActionSpace,
-    DiscreteActionSpace,
-    ContinuousActionSpace,
+    DiscreteSpace,
+    ContinuousSpace,
 )
 
 
@@ -20,7 +20,7 @@ class Gym(RLEnv[ActionSpace]):
             raise NotImplementedError("Observation space must have a shape")
         match env.action_space:
             case spaces.Discrete() as s:
-                space = DiscreteActionSpace(1, int(s.n))
+                space = ActionSpace(1, DiscreteSpace(int(s.n)))
             case spaces.Box() as s:
                 low = s.low.astype(np.float32)
                 high = s.high.astype(np.float32)
@@ -28,7 +28,7 @@ class Gym(RLEnv[ActionSpace]):
                     low = np.full(s.shape, s.low, dtype=np.float32)
                 if not isinstance(high, np.ndarray):
                     high = np.full(s.shape, s.high, dtype=np.float32)
-                space = ContinuousActionSpace(1, s.shape[0], low=low, high=high)
+                space = ActionSpace(1, ContinuousSpace(low=low, high=high))
             case other:
                 raise NotImplementedError(f"Action space {other} not supported")
         super().__init__(space, env.observation_space.shape, (1,))

@@ -1,4 +1,4 @@
-from .spaces import ActionSpace, DiscreteActionSpace, ContinuousActionSpace, DiscreteSpace, ContinuousSpace, MultiDiscreteSpace
+from .spaces import ActionSpace, DiscreteSpace, ContinuousSpace, MultiDiscreteSpace, DiscreteActionSpace, ContinuousActionSpace
 from .observation import Observation
 from .rl_env import RLEnv
 from .transition import Transition
@@ -9,12 +9,12 @@ __all__ = [
     "ActionSpace",
     "DiscreteSpace",
     "ContinuousSpace",
-    "DiscreteActionSpace",
-    "ContinuousActionSpace",
     "Observation",
     "RLEnv",
     "Transition",
     "Episode",
     "EpisodeBuilder",
     "MultiDiscreteSpace",
+    "DiscreteActionSpace",
+    "ContinuousActionSpace",
 ]

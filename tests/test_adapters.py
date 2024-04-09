@@ -34,7 +34,7 @@ try:
 
     def test_pettingzoo_adapter_discrete_action():
         # https://pettingzoo.farama.org/environments/sisl/pursuit/#pursuit
-        env = rlenv.make(pursuit_v4.parallel_env())
+        env = rlenv.adapters.PettingZoo(pursuit_v4.parallel_env())
         env.reset()
         action = env.action_space.sample()
         obs, r, done, truncated, info = env.step(action)
@@ -50,7 +50,8 @@ try:
 
     def test_pettingzoo_adapter_continuous_action():
         # https://pettingzoo.farama.org/environments/sisl/waterworld/
-        env = rlenv.make(waterworld_v4.parallel_env())
+
+        env = rlenv.adapters.PettingZoo(waterworld_v4.parallel_env())
         env.reset()
         action = env.action_space.sample()
         obs, r, done, truncated, info = env.step(action)

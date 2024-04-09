@@ -18,7 +18,7 @@ def test_discrete_action_space():
 
 
 def test_continuous_action_space():
-    s = ContinuousActionSpace(2, 3, low=[0.0, -1.0, 0.0], high=[1.0, 1.0, 2.0])
+    s = ContinuousActionSpace(2, low=[0.0, -1.0, 0.0], high=[1.0, 1.0, 2.0])
     for _ in range(100):
         actions = s.sample()
         assert actions.shape == (2, 3)
@@ -28,13 +28,13 @@ def test_continuous_action_space():
 
 
 def test_action_names():
-    s = DiscreteActionSpace(2, 3, action_names=["a", "b", "c"])
+    s = DiscreteActionSpace(2, 3, ["a", "b", "c"])
     assert s.action_names == ["a", "b", "c"]
-    s = ContinuousActionSpace(2, 3, action_names=["a", "b", "c"])
+    s = ContinuousActionSpace(2, [0, 0, 0], [1, 1, 1], action_names=["a", "b", "c"])
     assert s.action_names == ["a", "b", "c"]
     s = DiscreteActionSpace(2, 3)
     assert s.action_names == ["Action 0", "Action 1", "Action 2"]
-    s = ContinuousActionSpace(2, 3)
+    s = ContinuousActionSpace(2, [0, 1, 0], [1, 2, 1])
     assert s.action_names == ["Action 0", "Action 1", "Action 2"]
 
 
@@ -52,13 +52,13 @@ def test_action_names_wrong_number_of_actions():
         pass
 
     try:
-        ContinuousActionSpace(2, 5, action_names=["a", "b", "c"])
+        ContinuousActionSpace(2, [0] * 5, [1] * 5, action_names=["a", "b", "c"])
         assert False
     except AssertionError:
         pass
 
     try:
-        ContinuousActionSpace(2, 3, action_names=["a", "b"])
+        ContinuousActionSpace(2, [0] * 3, [1] * 3, action_names=["a", "b"])
         assert False
     except AssertionError:
         pass

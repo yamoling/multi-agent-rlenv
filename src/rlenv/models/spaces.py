@@ -1,17 +1,27 @@
-from typing import Any, Optional, TypeVar
+from typing import Any, Optional, TypeVar, Generic
 from abc import abstractmethod, ABC
 import numpy as np
 import numpy.typing as npt
+import math
 from serde import serde
 from dataclasses import dataclass
 
-ActionType = TypeVar("ActionType")
+S = TypeVar("S", bound="Space")
 
 
 @serde
 @dataclass
 class Space(ABC):
     shape: tuple[int, ...]
+    n_dims: int
+    labels: list[str]
+
+    def __init__(self, shape: tuple[int, ...], labels: Optional[list[str]] = None):
+        self.shape = shape
+        self.n_dims = len(shape)
+        if labels is None:
+            labels = [f"Dim {i}" for i in range(self.n_dims)]
+        self.labels = labels
 
     @abstractmethod
     def sample(self, mask: Optional[np.ndarray] = None) -> Any:
@@ -23,15 +33,10 @@ class Space(ABC):
 class DiscreteSpace(Space):
     size: int
     """Number of categories"""
-    labels: list[str]
-    """The label of each category."""
 
     def __init__(self, size: int, labels: Optional[list[str]] = None):
-        super().__init__((size,))
+        super().__init__((size,), labels)
         self.size = size
-        if labels is None:
-            labels = [f"Label {i}" for i in range(size)]
-        self.labels = labels
         self.space = np.arange(size)
 
     def sample(self, mask: Optional[np.ndarray[bool, Any]] = None) -> int:
@@ -47,8 +52,10 @@ class MultiDiscreteSpace(Space):
     n_dims: int
     spaces: tuple[DiscreteSpace, ...]
 
-    def __init__(self, *spaces: DiscreteSpace):
-        Space.__init__(self, tuple(space.size for space in spaces))
+    def __init__(self, *spaces: DiscreteSpace, labels: Optional[list[str]] = None):
+        if labels is None:
+            labels = [f"Discrete space {i}" for i in range(len(spaces))]
+        Space.__init__(self, tuple(space.size for space in spaces), labels)
         self.spaces = spaces
         self.n_dims = len(spaces)
 
@@ -72,81 +79,65 @@ class ContinuousSpace(Space):
     high: npt.NDArray[np.float32]
     """Upper bound of the space for each dimension."""
 
-    def __init__(self, low: list | np.ndarray[np.float32, Any], high: list | np.ndarray[np.float32, Any]):
+    def __init__(
+        self,
+        low: list | np.ndarray[np.float32, Any],
+        high: list | np.ndarray[np.float32, Any],
+        labels: Optional[list[str]] = None,
+    ):
         if isinstance(low, list):
             low = np.array(low, dtype=np.float32)
         if isinstance(high, list):
             high = np.array(high, dtype=np.float32)
         assert low.shape == high.shape, "Low and high must have the same shape."
         assert np.all(low <= high), "All elements in low must be less than the corresponding elements in high."
-        Space.__init__(self, low.shape)
+        Space.__init__(self, low.shape, labels)
         self.low = low
         self.high = high
 
-    def sample(self):
+    def sample(self, *_):
         return np.random.random(self.shape) * (self.high - self.low) + self.low
 
 
 @serde
 @dataclass
-class ActionSpace(Space):
+class ActionSpace(Space, Generic[S]):
     n_agents: int
     """Number of agents."""
-    n_actions: int
-    """Number of actions that an agent can perform."""
     action_names: list[str]
     """The meaning of each action."""
+    n_actions: int
+    individual_action_space: S
 
-    def __init__(self, n_agents: int, n_actions: int, action_names: Optional[list[str]] = None):
-        Space.__init__(self, (n_agents, n_actions))
+    def __init__(self, n_agents: int, individual_action_space: S, action_names: Optional[list] = None):
+        Space.__init__(self, (n_agents, *individual_action_space.shape), action_names)
         self.n_agents = n_agents
-        self.n_actions = n_actions
-        if action_names is None:
-            action_names = [f"Action {i}" for i in range(self.n_actions)]
-        assert len(action_names) == n_actions
-        self.action_names = action_names
+        self.individual_action_space = individual_action_space
+        self.n_actions = math.prod(individual_action_space.shape)
+        self.action_names = action_names or [f"Action {i}" for i in range(self.n_actions)]
+
+    def sample(self, mask: np.ndarray | None = None):
+        res = []
+        for i in range(self.n_agents):
+            if mask is not None:
+                m = mask[i]
+            else:
+                m = None
+            res.append(self.individual_action_space.sample(m))
+        return np.array(res, dtype=np.int64)
 
 
-class DiscreteActionSpace(ActionSpace, MultiDiscreteSpace):
+class DiscreteActionSpace(ActionSpace[DiscreteSpace]):
     def __init__(self, n_agents: int, n_actions: int, action_names: Optional[list[str]] = None):
-        ActionSpace.__init__(self, n_agents, n_actions, action_names)
-        MultiDiscreteSpace.__init__(
-            self,
-            *[DiscreteSpace(n_actions, labels=action_names) for _ in range(n_agents)],
-        )
-        self._actions = [list(range(self.n_actions)) for _ in range(self.n_agents)]
-
-    def sample(self, available_actions: Optional[np.ndarray] = None):
-        return MultiDiscreteSpace.sample(self, available_actions)
+        individual_action_space = DiscreteSpace(n_actions, action_names)
+        super().__init__(n_agents, individual_action_space, action_names)
 
 
-@serde
-@dataclass
-class ContinuousActionSpace(ActionSpace, ContinuousSpace):
-    def __init__(
-        self,
-        n_agents: int,
-        n_actions: int,
-        low: Optional[float | list | npt.NDArray[np.float32]] = None,
-        high: Optional[float | list | npt.NDArray[np.float32]] = None,
-        action_names: Optional[list[str]] = None,
-    ):
-        if low is None:
-            low = np.zeros((n_actions,), dtype=np.float32)
-        elif isinstance(low, list):
-            low = np.array(low, dtype=np.float32)
-        elif isinstance(low, (float, int)):
-            low = np.full((n_actions,), low, dtype=np.float32)
-        if high is None:
-            high = np.ones((n_actions,), dtype=np.float32)
-        elif isinstance(high, list):
-            high = np.array(high, dtype=np.float32)
-        elif isinstance(high, (float, int)):
-            high = np.full((n_actions,), high, dtype=np.float32)
-        assert high.shape == (n_actions,)
-        assert low.shape == (n_actions,)
-        ContinuousSpace.__init__(self, low, high)
-        ActionSpace.__init__(self, n_agents, n_actions, action_names)
+class MultiDiscreteActionSpace(ActionSpace[MultiDiscreteSpace]):
+    pass
 
-    def sample(self):
-        return ContinuousSpace.sample(self)
+
+class ContinuousActionSpace(ActionSpace[ContinuousSpace]):
+    def __init__(self, n_agents: int, low: np.ndarray | list, high: np.ndarray | list, action_names: list | None = None):
+        space = ContinuousSpace(low, high, action_names)
+        super().__init__(n_agents, space, action_names)

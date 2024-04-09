@@ -6,7 +6,7 @@ from rlenv.wrappers import TimeLimit
 
 class PymarlAdapter:
     """
-    There is no official interface for PyMARL but this tries to comply
+    There is no official interface for PyMARL but aims at complying
     with the pymarl-qplex code base.
     """
 
