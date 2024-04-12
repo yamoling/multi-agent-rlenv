@@ -38,7 +38,7 @@ class PettingZoo(RLEnv[ActionSpace]):
         except NotImplementedError:
             return np.array([0])
 
-    def step(self, actions: npt.NDArray[np.int32]):
+    def step(self, actions: npt.NDArray[np.int64]):
         action_dict = dict(zip(self.agents, actions))
         obs, reward, term, trunc, info = self._env.step(action_dict)
         obs_data = np.array([v for v in obs.values()])

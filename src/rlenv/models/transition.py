@@ -13,7 +13,7 @@ class Transition:
     """Transition model"""
 
     obs: Observation
-    action: npt.NDArray[np.int32]
+    action: npt.NDArray[np.int64]
     reward: npt.NDArray[np.float32]
     done: bool
     info: dict[str, Any]
@@ -23,7 +23,7 @@ class Transition:
     def __init__(
         self,
         obs: Observation,
-        action: npt.NDArray[np.int32],
+        action: npt.NDArray[np.int64],
         reward: npt.NDArray[np.float32] | Iterable[float],
         done: bool,
         info: dict[str, Any],
