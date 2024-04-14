@@ -11,9 +11,7 @@ class PymarlAdapter:
     """
 
     def __init__(self, env: RLEnv[DiscreteActionSpace], episode_limit: int):
-        assert len(env.observation_shape) == 1, "Only 1D observations are supported because they must be concatenated with 1D extras"
         self.env = TimeLimit(env, episode_limit)
-        self.episode_limit = episode_limit
         self.current_observation = None
 
     def step(self, actions) -> tuple[float, bool, dict[str, Any]]:

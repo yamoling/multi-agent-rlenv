@@ -126,7 +126,7 @@ def test_pymarl():
     assert env.get_state_size() == UNIT_STATE_SIZE * N_AGENTS
     assert info["obs_shape"] == OBS_SIZE
     assert env.get_obs_size() == OBS_SIZE
-    assert env.episode_limit == LIMIT
+    assert info["episode_limit"] == LIMIT
 
     try:
         env.get_obs()
