@@ -78,6 +78,9 @@ class PymarlAdapter:
             "n_actions": self.get_total_actions(),
             "n_agents": self.env.n_agents,
             "episode_limit": self.env.step_limit,
-            "unit_dim": self.env.agent_state_size,
         }
+        try:
+            env_info["unit_dim"] = self.env.agent_state_size
+        except NotImplementedError:
+            pass
         return env_info
