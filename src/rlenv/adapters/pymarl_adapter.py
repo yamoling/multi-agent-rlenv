@@ -12,6 +12,8 @@ class PymarlAdapter:
 
     def __init__(self, env: RLEnv[DiscreteActionSpace], episode_limit: int):
         self.env = TimeLimit(env, episode_limit)
+        # Required by PyMarl
+        self.episode_limit = episode_limit
         self.current_observation = None
 
     def step(self, actions) -> tuple[float, bool, dict[str, Any]]:
