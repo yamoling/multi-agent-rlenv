@@ -82,5 +82,5 @@ class PymarlAdapter:
         try:
             env_info["unit_dim"] = self.env.agent_state_size
         except NotImplementedError:
-            pass
+            env_info["unit_dim"] = 0
         return env_info
