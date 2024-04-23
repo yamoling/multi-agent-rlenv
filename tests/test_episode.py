@@ -83,34 +83,37 @@ def test_returns():
 
 
 def test_dones_not_set_when_truncated():
+    END_GAME = 10
     # The time limit issues a 'truncated' flag at t=10 but the episode should not be done
-    env = wrappers.TimeLimit(MockEnv(2), MockEnv.END_GAME - 1)
+    env = wrappers.TimeLimit(MockEnv(2, end_game=END_GAME), END_GAME - 1)
     episode = generate_episode(env)
     # The episode sould be truncated but not done
     assert np.all(episode.dones == 0)
-    padded = episode.padded(MockEnv.END_GAME * 2)
+    padded = episode.padded(END_GAME * 2)
     assert np.all(padded.dones == 0)
 
 
 def test_done_when_time_limit_reached_with_extras():
-    env = wrappers.TimeLimit(MockEnv(2), MockEnv.END_GAME - 1, add_extra=True)
+    END_GAME = 10
+    env = wrappers.TimeLimit(MockEnv(2, end_game=END_GAME), END_GAME - 1, add_extra=True)
     episode = generate_episode(env)
     # The episode sould be truncated but not done
     assert episode.dones[-1] == 1.0
-    padded = episode.padded(MockEnv.END_GAME * 2)
+    padded = episode.padded(END_GAME * 2)
     assert np.all(padded.dones[len(episode) - 1 :] == 1)
 
 
 def test_dones_set_with_paddings():
     # The time limit issues a 'truncated' flag at t=10 but the episode should not be done
-    env = MockEnv(2)
+    END_GAME = 1
+    env = MockEnv(2, end_game=END_GAME)
     episode = generate_episode(env)
     # The episode sould be truncated but not done
     assert np.all(episode.dones[:-1] == 0)
     assert episode.dones[-1] == 1
-    padded = episode.padded(MockEnv.END_GAME * 2)
-    assert np.all(padded.dones[: MockEnv.END_GAME - 1] == 0)
-    assert np.all(padded.dones[MockEnv.END_GAME - 1 :] == 1)
+    padded = episode.padded(END_GAME * 2)
+    assert np.all(padded.dones[: END_GAME - 1] == 0)
+    assert np.all(padded.dones[END_GAME - 1 :] == 1)
 
 
 def test_masks():

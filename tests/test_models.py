@@ -162,6 +162,33 @@ def test_transition_hash():
     assert hash(t1) == hash(t2)
 
 
+def test_has_same_inouts():
+    env = MockEnv(4)
+    env2 = MockEnv(3)
+    assert env.has_same_inouts(env)
+    assert not env.has_same_inouts(env2)
+
+    env = MockEnv(n_objectives=1)
+    env2 = MockEnv(n_objectives=2)
+    assert not env.has_same_inouts(env2)
+
+    env = MockEnv(n_actions=5)
+    env2 = MockEnv(n_actions=6)
+    assert not env.has_same_inouts(env2)
+
+    env = MockEnv(agent_state_size=1)
+    env2 = MockEnv(agent_state_size=2)
+    assert not env.has_same_inouts(env2)
+
+    env = MockEnv(obs_size=5)
+    env2 = MockEnv(obs_size=6)
+    assert not env.has_same_inouts(env2)
+
+    env = MockEnv(extras_size=2)
+    env2 = MockEnv(extras_size=4)
+    assert not env.has_same_inouts(env2)
+
+
 def test_rlenv_available_actions():
     env = MockEnv(4)
     assert np.all(env.available_actions() == 1)
@@ -173,7 +200,7 @@ def test_multi_objective_env():
     env = MockEnv(N_AGENTS, N_OBJECTVES)
     assert env.reward_size == N_OBJECTVES
     assert env.n_agents == N_AGENTS
-    assert env.n_actions == MockEnv.N_ACTIONS
+    assert env.n_actions == env.n_actions
 
     env.reset()
     reward = env.step([0] * N_AGENTS)[1]

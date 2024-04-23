@@ -56,13 +56,13 @@ class RLEnv(ABC, Generic[A]):
         """The size of the reward signal. In general, this is 1, but it can be higher for multi-objective environments."""
         return self.reward_space.size
 
-    def available_actions(self) -> np.ndarray[np.float32, Any]:
+    def available_actions(self) -> np.ndarray[bool, Any]:
         """
         Get the currently available actions for each agent.
 
         The output array has shape (n_agents, n_actions) and contains 1 if the action is available and 0 otherwise.
         """
-        return np.ones((self.n_agents, self.n_actions), dtype=np.float32)
+        return np.full((self.n_agents, self.n_actions), True, dtype=bool)
 
     def seed(self, seed_value: int):
         """Set the environment seed"""
@@ -101,3 +101,18 @@ class RLEnv(ABC, Generic[A]):
     @abstractmethod
     def render(self, mode) -> None | np.ndarray[np.uint8, Any]:
         ...
+
+    def has_same_inouts(self, other: "RLEnv") -> bool:
+        """Alias for `have_same_inouts(self, other)`."""
+        return RLEnv.have_same_inouts(self, other)
+
+    @staticmethod
+    def have_same_inouts(env1: "RLEnv", env2: "RLEnv") -> bool:
+        """Check if two environments have the same input and output spaces."""
+        return (
+            env1.action_space == env2.action_space
+            and env1.observation_shape == env2.observation_shape
+            and env1.state_shape == env2.state_shape
+            and env1.extra_feature_shape == env2.extra_feature_shape
+            and env1.reward_space == env2.reward_space
+        )

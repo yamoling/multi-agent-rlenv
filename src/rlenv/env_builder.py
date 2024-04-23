@@ -59,20 +59,11 @@ def make(env: RLEnv[A]) -> RLEnv[A]:
 
 
 def make(env):
-    """Make an RLEnv from str, Gym, SMAC or PettingZoo"""
+    """Make an RLEnv from str (Gym) or PettingZoo"""
     match env:
         case RLEnv():
             return env
         case str():
-            if env.lower().startswith("smac"):
-                from rlenv.adapters import SMAC
-
-                env_name = env.lower()
-                map_name = env_name[len("smac:") :]
-                if len(map_name) == 0:
-                    map_name = "3m"
-                return SMAC(map_name)
-
             import gymnasium
             from rlenv.adapters import Gym
 

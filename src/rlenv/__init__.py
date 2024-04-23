@@ -12,6 +12,7 @@ __version__ = "1.0.2"
 from . import models
 from . import wrappers
 from . import adapters
+from .models import spaces
 
 
 from .env_builder import make, Builder
@@ -33,6 +34,7 @@ __all__ = [
     "models",
     "wrappers",
     "adapters",
+    "spaces",
     "make",
     "Builder",
     "RLEnv",

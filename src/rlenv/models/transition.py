@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from serde import serde
-from typing import Any, Iterable
+from typing import Any, Iterable, Optional
 import numpy as np
 import numpy.typing as npt
 
@@ -13,22 +13,24 @@ class Transition:
     """Transition model"""
 
     obs: Observation
-    action: npt.NDArray[np.int32]
+    action: npt.NDArray[np.int64]
     reward: npt.NDArray[np.float32]
     done: bool
     info: dict[str, Any]
     obs_: Observation
     truncated: bool
+    probs: npt.NDArray[np.float32] | None
 
     def __init__(
         self,
         obs: Observation,
-        action: npt.NDArray[np.int32],
+        action: npt.NDArray[np.int64],
         reward: npt.NDArray[np.float32] | Iterable[float],
         done: bool,
         info: dict[str, Any],
         obs_: Observation,
         truncated: bool,
+        probs: Optional[npt.NDArray[np.float32]] = None,
     ):
         self.obs = obs
         self.action = action
@@ -39,6 +41,7 @@ class Transition:
         self.info = info
         self.obs_ = obs_
         self.truncated = truncated
+        self.probs = probs
 
     @property
     def is_terminal(self) -> bool:

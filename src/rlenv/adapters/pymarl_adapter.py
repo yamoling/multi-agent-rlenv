@@ -6,13 +6,13 @@ from rlenv.wrappers import TimeLimit
 
 class PymarlAdapter:
     """
-    There is no official interface for PyMARL but this tries to comply
+    There is no official interface for PyMARL but aims at complying
     with the pymarl-qplex code base.
     """
 
     def __init__(self, env: RLEnv[DiscreteActionSpace], episode_limit: int):
-        assert len(env.observation_shape) == 1, "Only 1D observations are supported because they must be concatenated with 1D extras"
         self.env = TimeLimit(env, episode_limit)
+        # Required by PyMarl
         self.episode_limit = episode_limit
         self.current_observation = None
 
@@ -78,6 +78,9 @@ class PymarlAdapter:
             "n_actions": self.get_total_actions(),
             "n_agents": self.env.n_agents,
             "episode_limit": self.env.step_limit,
-            "unit_dim": self.env.agent_state_size,
         }
+        try:
+            env_info["unit_dim"] = self.env.agent_state_size
+        except NotImplementedError:
+            env_info["unit_dim"] = 0
         return env_info
