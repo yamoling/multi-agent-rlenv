@@ -7,7 +7,7 @@ RLEnv
     - works with gymnasium, pettingzoo and SMAC out of the box
     - provides helpful wrappers to add intrinsic rewards, agent ids, record videos, ...
 """
-__version__ = "1.0.2"
+__version__ = "1.0.3"
 
 from . import models
 from . import wrappers
