@@ -99,20 +99,37 @@ class RLEnv(ABC, Generic[A]):
         """Retrieve an image of the environment"""
 
     @abstractmethod
-    def render(self, mode) -> None | np.ndarray[np.uint8, Any]:
-        ...
+    def render(self, mode) -> None | np.ndarray[np.uint8, Any]: ...
+
+    @staticmethod
+    def assert_same_inouts(env1: "RLEnv", env2: "RLEnv") -> None:
+        """
+        Raise a `ValueError` if the inputs and output spaces of the environments are different.
+        """
+        if env1.action_space != env2.action_space:
+            raise ValueError(f"Action spaces are different: {env1.action_space} != {env2.action_space}")
+        if env1.observation_shape != env2.observation_shape:
+            raise ValueError(f"Observation shapes are different: {env1.observation_shape} != {env2.observation_shape}")
+        if env1.state_shape != env2.state_shape:
+            raise ValueError(f"State shapes are different: {env1.state_shape} != {env2.state_shape}")
+        if env1.extra_feature_shape != env2.extra_feature_shape:
+            raise ValueError(f"Extra feature shapes are different: {env1.extra_feature_shape} != {env2.extra_feature_shape}")
+        if env1.reward_space != env2.reward_space:
+            raise ValueError(f"Reward spaces are different: {env1.reward_space} != {env2.reward_space}")
 
     def has_same_inouts(self, other: "RLEnv") -> bool:
         """Alias for `have_same_inouts(self, other)`."""
-        return RLEnv.have_same_inouts(self, other)
+        try:
+            RLEnv.assert_same_inouts(self, other)
+            return True
+        except ValueError:
+            return False
 
     @staticmethod
     def have_same_inouts(env1: "RLEnv", env2: "RLEnv") -> bool:
         """Check if two environments have the same input and output spaces."""
-        return (
-            env1.action_space == env2.action_space
-            and env1.observation_shape == env2.observation_shape
-            and env1.state_shape == env2.state_shape
-            and env1.extra_feature_shape == env2.extra_feature_shape
-            and env1.reward_space == env2.reward_space
-        )
+        try:
+            RLEnv.assert_same_inouts(env1, env2)
+            return True
+        except ValueError:
+            return False
