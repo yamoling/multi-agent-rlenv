@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Generic, TypeVar, overload, Any, Literal, Optional
 import numpy as np
+import numpy.typing as npt
 from serde import serde
 from dataclasses import dataclass
 
@@ -56,7 +57,7 @@ class RLEnv(ABC, Generic[A]):
         """The size of the reward signal. In general, this is 1, but it can be higher for multi-objective environments."""
         return self.reward_space.size
 
-    def available_actions(self) -> np.ndarray[bool, Any]:
+    def available_actions(self) -> npt.NDArray[np.bool_]:
         """
         Get the currently available actions for each agent.
 
@@ -69,11 +70,11 @@ class RLEnv(ABC, Generic[A]):
         raise NotImplementedError("Method not implemented")
 
     @abstractmethod
-    def get_state(self) -> np.ndarray[np.float32, Any]:
+    def get_state(self) -> npt.NDArray[np.float32]:
         """Retrieve the current state of the environment."""
 
     @abstractmethod
-    def step(self, actions: list[int] | np.ndarray) -> tuple[Observation, np.ndarray[np.float32, Any], bool, bool, dict[str, Any]]:
+    def step(self, actions: list[int] | npt.NDArray) -> tuple[Observation, npt.NDArray[np.float32], bool, bool, dict[str, Any]]:
         """Perform a step in the environment.
 
         Returns:
@@ -95,11 +96,11 @@ class RLEnv(ABC, Generic[A]):
 
     @overload
     @abstractmethod
-    def render(self, mode: Literal["rgb_array"]) -> np.ndarray[np.uint8, Any]:
+    def render(self, mode: Literal["rgb_array"]) -> npt.NDArray[np.uint8]:
         """Retrieve an image of the environment"""
 
     @abstractmethod
-    def render(self, mode) -> None | np.ndarray[np.uint8, Any]: ...
+    def render(self, mode) -> None | npt.NDArray[np.uint8]: ...
 
     @staticmethod
     def assert_same_inouts(env1: "RLEnv", env2: "RLEnv") -> None:

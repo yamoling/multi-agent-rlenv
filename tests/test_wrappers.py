@@ -39,7 +39,7 @@ def test_penalty_wrapper():
     env = Builder(mock).time_penalty(0.1).build()
     done = False
     while not done:
-        _, reward, done, *_ = env.step(np.array([0]))
+        _, reward, done, *_ = env.step(np.array([0], dtype=np.int64))
         assert reward == [mock.reward_step - 0.1] * N_OBJECTIVES
 
 
@@ -163,6 +163,9 @@ def test_centralised_shape():
     assert env.n_agents == 1
     assert env.n_actions == mock.n_actions**2
     assert env.extra_feature_shape == (1,)
+    obs = env.reset()
+    assert obs.data.shape == (1, *env.observation_shape)
+    assert obs.extras.shape == (1, *env.extra_feature_shape)
 
 
 def test_centralised_action():
@@ -197,9 +200,9 @@ def test_centralised_available_actions():
     assert available.shape == (1, mock.n_actions**N_AGENTS)
     assert np.all(available == 1)
 
-    mask = np.zeros((N_AGENTS, mock.n_actions))
-    mask[0, 0] = 1
-    mask[1, 0] = 1
+    mask = np.zeros((N_AGENTS, mock.n_actions), dtype=np.bool_)
+    mask[0, 0] = True
+    mask[1, 0] = True
     env = Centralised(AvailableActionsMask(mock, mask))
     expected_joint_mask = np.zeros((1, mock.n_actions**N_AGENTS))
     expected_joint_mask[0, 0] = 1
@@ -215,13 +218,13 @@ def test_available_action_mask():
     wrapped = MockEnv(N_AGENTS, n_actions=N_ACTIONS)
 
     try:
-        AvailableActionsMask(wrapped, np.zeros((N_AGENTS, N_ACTIONS)))
+        AvailableActionsMask(wrapped, np.zeros((N_AGENTS, N_ACTIONS), dtype=np.float32))
         assert False, "It should not be possible to mask all actions"
     except AssertionError:
         pass
 
     try:
-        AvailableActionsMask(wrapped, np.zeros((N_AGENTS, N_ACTIONS + 1)))
+        AvailableActionsMask(wrapped, np.zeros((N_AGENTS, N_ACTIONS + 1), np.float32))
         assert False, "It should not be possible to mask all actions"
     except AssertionError:
         pass

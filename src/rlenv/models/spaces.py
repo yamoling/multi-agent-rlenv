@@ -24,7 +24,7 @@ class Space(ABC):
         self.labels = labels
 
     @abstractmethod
-    def sample(self, mask: Optional[np.ndarray] = None) -> Any:
+    def sample(self, mask: Optional[npt.NDArray[np.bool_]] = None) -> Any:
         """Sample a value from the space."""
 
 
@@ -39,11 +39,11 @@ class DiscreteSpace(Space):
         self.size = size
         self.space = np.arange(size)
 
-    def sample(self, mask: Optional[np.ndarray[bool, Any]] = None) -> int:
+    def sample(self, mask: Optional[npt.NDArray[np.bool_]] = None) -> int:
         space = self.space
         if mask is not None:
             space = space[mask]
-        return np.random.choice(space)
+        return int(np.random.choice(space))
 
 
 @serde
@@ -63,7 +63,7 @@ class MultiDiscreteSpace(Space):
     def from_sizes(cls, *sizes: int):
         return cls(*(DiscreteSpace(size) for size in sizes))
 
-    def sample(self, masks: Optional[np.ndarray[bool, Any] | list[np.ndarray[bool, Any]]] = None):
+    def sample(self, masks: Optional[npt.NDArray[np.bool_] | list[npt.NDArray[np.bool_]]] = None):
         if masks is None:
             return np.array([space.sample() for space in self.spaces], dtype=np.int32)
         return np.array([space.sample(mask) for mask, space in zip(masks, self.spaces)], dtype=np.int32)
@@ -81,8 +81,8 @@ class ContinuousSpace(Space):
 
     def __init__(
         self,
-        low: list | np.ndarray[np.float32, Any],
-        high: list | np.ndarray[np.float32, Any],
+        low: list | npt.NDArray[np.float32],
+        high: list | npt.NDArray[np.float32],
         labels: Optional[list[str]] = None,
     ):
         if isinstance(low, list):

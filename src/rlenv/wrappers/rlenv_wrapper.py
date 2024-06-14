@@ -1,8 +1,9 @@
-from typing import TypeVar, Literal, overload, Optional, Any
+from typing import TypeVar, Literal, overload, Optional
 from dataclasses import dataclass
 from serde import serde
 from abc import ABC
 import numpy as np
+import numpy.typing as npt
 from rlenv.models import RLEnv, ActionSpace, DiscreteSpace
 
 A = TypeVar("A", bound=ActionSpace)
@@ -61,7 +62,7 @@ class RLEnvWrapper(RLEnv[A], ABC):
         """Render the environment in a window"""
 
     @overload
-    def render(self, mode: Literal["rgb_array"]) -> np.ndarray[np.uint8, Any]:
+    def render(self, mode: Literal["rgb_array"]) -> npt.NDArray[np.uint8]:
         """Retrieve an image of the environment"""
 
     def render(self, mode):

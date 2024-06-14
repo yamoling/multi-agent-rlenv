@@ -18,7 +18,7 @@ class Episode:
     _extras: npt.NDArray[np.float32]
     actions: npt.NDArray[np.int64]
     rewards: npt.NDArray[np.float32]
-    _available_actions: npt.NDArray[np.float32]
+    _available_actions: npt.NDArray[np.bool_]
     _states: npt.NDArray[np.float32]
     actions_probs: npt.NDArray[np.float32] | None
     metrics: dict[str, float]
@@ -40,7 +40,7 @@ class Episode:
         actions = np.concatenate([self.actions, np.zeros((padding_size, self.n_agents), dtype=np.int64)])
         rewards_padding_shape = (padding_size, *self.rewards.shape[1:])
         rewards = np.concatenate([self.rewards, np.zeros(rewards_padding_shape, dtype=np.float32)])
-        availables = np.concatenate([self._available_actions, np.ones((padding_size, self.n_agents, self.n_actions), dtype=np.float32)])
+        availables = np.concatenate([self._available_actions, np.full((padding_size, self.n_agents, self.n_actions), True)])
         states = np.concatenate([self._states, np.zeros((padding_size, *self._states.shape[1:]), dtype=np.float32)])
         return Episode(
             _observations=obs,
@@ -132,7 +132,7 @@ class Episode:
                 ),
                 action=self.actions[i],
                 reward=self.rewards[i],
-                done=self.dones[i],
+                done=bool(self.dones[i]),
                 info={},
                 obs_=Observation(
                     data=self._observations[i + 1],
@@ -220,16 +220,19 @@ class EpisodeBuilder:
         self.metrics["episode_length"] = self.episode_len
         if extra_metrics is not None:
             self.metrics.update(extra_metrics)
+        action_probs = None
+        if len(self.action_probs) > 0:
+            action_probs = np.array(self.action_probs, dtype=np.float32)
         return Episode(
-            _observations=np.array(self.observations),
-            _extras=np.array(self.extras),
+            _observations=np.array(self.observations, dtype=np.float32),
+            _extras=np.array(self.extras, dtype=np.float32),
             actions=np.array(self.actions),
-            rewards=np.array(self.rewards),
+            rewards=np.array(self.rewards, np.float32),
             _states=np.array(self.states),
             metrics=self.metrics,
             episode_len=self.episode_len,
             _available_actions=np.array(self.available_actions),
-            actions_probs=np.array(self.action_probs),
+            actions_probs=action_probs,
             is_done=self._done,
         )
 

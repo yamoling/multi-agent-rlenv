@@ -71,8 +71,8 @@ def test_returns():
         done = i == n_steps - 1
         r = np.random.rand(5)
         rewards.append(r)
-        builder.add(Transition(obs, np.array([0, 0]), r, done, {}, obs, False))
-    rewards = np.array(rewards)
+        builder.add(Transition(obs, np.array([0, 0], dtype=np.int64), r, done, {}, obs, False))
+    rewards = np.array(rewards, dtype=np.float32)
     episode = builder.build()
     returns = episode.compute_returns(discount=gamma)
     for i, r in enumerate(returns):

@@ -17,11 +17,11 @@ A = TypeVar("A", bound=ActionSpace)
 class Blind(RLEnvWrapper[A]):
     p: float
 
-    def __init__(self, env: RLEnv[A], p: float):
+    def __init__(self, env: RLEnv[A], p: float | int):
         super().__init__(env)
-        self.p = p
+        self.p = float(p)
 
-    def step(self, actions: npt.NDArray[np.int32,]):
+    def step(self, actions: npt.NDArray[np.int64,]):
         obs, r, done, trunc, info = super().step(actions)
         if random.random() < self.p:
             obs.data = np.zeros_like(obs.data)

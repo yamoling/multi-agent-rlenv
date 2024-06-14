@@ -47,13 +47,15 @@ class Centralised(RLEnvWrapper[A]):
         individual_available = self.wrapped.available_actions()
         joint_available = list[float]()
         for actions in product(*individual_available):
-            joint_available.append(1.0 if all(actions) else 0.0)
-        available_actions = np.array(joint_available, dtype=np.float32)
+            joint_available.append(True if all(actions) else False)
+        available_actions = np.array(joint_available, dtype=bool)
         return available_actions.reshape((self.n_agents, self.n_actions))
 
     def _joint_observation(self, obs: Observation):
         obs.data = np.concatenate(obs.data, axis=0)
+        obs.extras = np.concatenate(obs.extras, axis=0)
         # Unsqueze the first dimension since there is one agent
         obs.data = np.expand_dims(obs.data, axis=0)
+        obs.extras = np.expand_dims(obs.extras, axis=0)
         obs.available_actions = self.available_actions()
         return obs

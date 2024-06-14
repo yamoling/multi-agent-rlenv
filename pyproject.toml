@@ -8,9 +8,9 @@ readme = "readme.md"
 
 [tool.poetry.dependencies]
 python = ">=3.10,<4"
-numpy = "^1.23.4"
-opencv-python = "^4.6.0"
-pyserde = "^0.12.3"
+numpy = ">=1.23.4"
+opencv-python = ">=4.6.0"
+pyserde = ">=0.17"
 smac = { git = "https://github.com/oxwhirl/smac.git", optional = true }
 gymnasium = { extras = [
     "atari",
@@ -45,8 +45,6 @@ build-backend = "poetry.core.masonry.api"
 
 # pytest configuration
 [tool.pytest.ini_options]
-testpaths = ["tests"]
-pythonpath = "src"
 filterwarnings = [
     # Ignore deprecation warnings related to Pysc2 (smac)
     "ignore:Call to deprecated create function Descriptor().*:DeprecationWarning",
@@ -55,6 +53,9 @@ filterwarnings = [
     "ignore:Call to deprecated create function EnumDescriptor().*:DeprecationWarning",
     "ignore:Call to deprecated create function FileDescriptor().*:DeprecationWarning",
     "ignore:pkg_resources is deprecated as an API*:DeprecationWarning",
+    "ignore:protobuf",
 ]
 # Run tests on two cores with xdist
 addopts = "-n 4"
+testpaths = ["tests"]
+pythonpath = "src"
