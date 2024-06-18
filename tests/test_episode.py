@@ -20,9 +20,9 @@ def test_episode_builder_is_done():
     # Set the 'done' flag
     builder = EpisodeBuilder()
     assert not builder.is_finished
-    builder.add(Transition(obs, np.array([0, 0]), [0], False, {}, obs, False))
+    builder.add(Transition(obs, [0, 0], [0], False, {}, obs, False))
     assert not builder.is_finished
-    builder.add(Transition(obs, np.array([0, 0]), [0], True, {}, obs, False))
+    builder.add(Transition(obs, [0, 0], [0], True, {}, obs, False))
     assert builder.is_finished
 
     # Set the 'truncated' flag

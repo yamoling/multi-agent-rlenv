@@ -45,7 +45,7 @@ class RLEnvWrapper(RLEnv[A], ABC):
     def agent_state_size(self):
         return self.wrapped.agent_state_size
 
-    def step(self, actions: list[int] | np.ndarray):
+    def step(self, actions: npt.ArrayLike):
         return self.wrapped.step(actions)
 
     def reset(self):
