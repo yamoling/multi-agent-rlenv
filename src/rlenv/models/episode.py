@@ -17,7 +17,7 @@ class Episode:
 
     _observations: npt.NDArray[np.float32]
     _extras: npt.NDArray[np.float32]
-    actions: npt.NDArray[np.int64]
+    actions: np.ndarray
     rewards: npt.NDArray[np.float32]
     _available_actions: npt.NDArray[np.bool_]
     _states: npt.NDArray[np.float32]
@@ -38,7 +38,7 @@ class Episode:
         obs = np.concatenate([self._observations, padding])
         extras_padding_shape = (padding_size, *self._extras.shape[1:])
         extras = np.concatenate([self._extras, np.zeros(extras_padding_shape, dtype=np.float32)])
-        actions = np.concatenate([self.actions, np.zeros((padding_size, self.n_agents), dtype=np.int64)])
+        actions = np.concatenate([self.actions, np.zeros((padding_size, self.n_agents), dtype=self.actions.dtype)])
         rewards_padding_shape = (padding_size, *self.rewards.shape[1:])
         rewards = np.concatenate([self.rewards, np.zeros(rewards_padding_shape, dtype=np.float32)])
         availables = np.concatenate([self._available_actions, np.full((padding_size, self.n_agents, self.n_actions), True)])
