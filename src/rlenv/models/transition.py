@@ -13,13 +13,13 @@ class Transition:
     """Transition model"""
 
     obs: Observation
-    action: npt.NDArray[np.int64]
-    reward: npt.NDArray[np.float32]
+    action: np.ndarray
+    reward: np.ndarray
     done: bool
     info: dict[str, Any]
     obs_: Observation
     truncated: bool
-    probs: npt.NDArray[np.float32] | None
+    probs: np.ndarray | None
 
     def __init__(
         self,
@@ -30,20 +30,20 @@ class Transition:
         info: dict[str, Any],
         obs_: Observation,
         truncated: bool,
-        probs: Optional[npt.NDArray[np.float32]] = None,
+        action_probs: Optional[np.ndarray] = None,
     ):
         self.obs = obs
         if not isinstance(action, np.ndarray):
-            action = np.array(action, dtype=np.int64)
+            action = np.array(action)
         self.action = action
         if not isinstance(reward, np.ndarray):
-            reward = np.array(reward, dtype=np.float32)
+            reward = np.array(reward)
         self.reward = reward
         self.done = done
         self.info = info
         self.obs_ = obs_
         self.truncated = truncated
-        self.probs = probs
+        self.probs = action_probs
 
     @property
     def is_terminal(self) -> bool:

@@ -174,7 +174,7 @@ class EpisodeBuilder:
         self.rewards = list[np.ndarray]()
         self.available_actions = list[np.ndarray]()
         self.states = list[np.ndarray]()
-        self.action_probs = []
+        self.action_probs = list[np.ndarray]()
         self.episode_len = 0
         self.metrics = {}
         self._done = False
@@ -198,6 +198,8 @@ class EpisodeBuilder:
         self.rewards.append(transition.reward)
         self.available_actions.append(transition.obs.available_actions)
         self.states.append(transition.obs.state)
+        if transition.probs is not None:
+            self.action_probs.append(transition.probs)
         if transition.is_terminal:
             # Only set the truncated flag if the episode is not done (both could happen with a time limit)
             self._truncated = transition.truncated
