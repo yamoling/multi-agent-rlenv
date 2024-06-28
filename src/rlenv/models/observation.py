@@ -1,11 +1,9 @@
 from typing import Optional
 from dataclasses import dataclass
-from serde import serde
 import numpy as np
 import numpy.typing as npt
 
 
-@serde
 @dataclass
 class Observation:
     """

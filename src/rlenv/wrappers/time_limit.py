@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from serde import serde
 from typing import Optional, TypeVar
 import numpy as np
 
@@ -9,7 +8,6 @@ from .rlenv_wrapper import RLEnvWrapper, RLEnv
 A = TypeVar("A", bound=ActionSpace)
 
 
-@serde
 @dataclass
 class TimeLimit(RLEnvWrapper[A]):
     """

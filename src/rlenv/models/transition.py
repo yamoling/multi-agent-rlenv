@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from serde import serde
 from typing import Any, Optional
 import numpy as np
 import numpy.typing as npt
@@ -7,7 +6,6 @@ import numpy.typing as npt
 from .observation import Observation
 
 
-@serde
 @dataclass
 class Transition:
     """Transition model"""

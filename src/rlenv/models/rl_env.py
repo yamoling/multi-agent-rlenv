@@ -2,7 +2,6 @@ from abc import ABC, abstractmethod
 from typing import Generic, TypeVar, overload, Any, Literal, Optional
 import numpy as np
 import numpy.typing as npt
-from serde import serde
 from dataclasses import dataclass
 
 
@@ -12,7 +11,6 @@ from .observation import Observation
 A = TypeVar("A", bound=ActionSpace)
 
 
-@serde
 @dataclass
 class RLEnv(ABC, Generic[A]):
     """This interface defines the attributes and methods that must be implemented to work with this framework"""

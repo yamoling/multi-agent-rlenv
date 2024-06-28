@@ -1,11 +1,9 @@
 from dataclasses import dataclass
-from serde import serde
 import numpy as np
 import numpy.typing as npt
 from .rlenv_wrapper import RLEnvWrapper, RLEnv
 
 
-@serde
 @dataclass
 class TimePenalty(RLEnvWrapper):
     penalty: float

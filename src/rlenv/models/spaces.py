@@ -3,13 +3,11 @@ from abc import abstractmethod, ABC
 import numpy as np
 import numpy.typing as npt
 import math
-from serde import serde
 from dataclasses import dataclass
 
 S = TypeVar("S", bound="Space")
 
 
-@serde
 @dataclass
 class Space(ABC):
     shape: tuple[int, ...]
@@ -28,7 +26,6 @@ class Space(ABC):
         """Sample a value from the space."""
 
 
-@serde
 @dataclass
 class DiscreteSpace(Space):
     size: int
@@ -46,7 +43,6 @@ class DiscreteSpace(Space):
         return int(np.random.choice(space))
 
 
-@serde
 @dataclass
 class MultiDiscreteSpace(Space):
     n_dims: int
@@ -69,7 +65,6 @@ class MultiDiscreteSpace(Space):
         return np.array([space.sample(mask) for mask, space in zip(masks, self.spaces)], dtype=np.int32)
 
 
-@serde
 @dataclass
 class ContinuousSpace(Space):
     """A continuous space (box) in R^n."""
@@ -99,7 +94,6 @@ class ContinuousSpace(Space):
         return np.random.random(self.shape) * (self.high - self.low) + self.low
 
 
-@serde
 @dataclass
 class ActionSpace(Space, Generic[S]):
     n_agents: int

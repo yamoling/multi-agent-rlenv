@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from serde import serde
 import beartype.typing as bt
 from typing import Optional
 import numpy as np
@@ -10,7 +9,6 @@ from .transition import Transition
 from .observation import Observation
 
 
-@serde
 @dataclass
 class Episode:
     """Episode model made of observations, actions, rewards, ..."""

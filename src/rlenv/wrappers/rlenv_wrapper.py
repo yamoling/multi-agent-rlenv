@@ -1,6 +1,5 @@
 from typing import TypeVar, Literal, overload, Optional
 from dataclasses import dataclass
-from serde import serde
 from abc import ABC
 import numpy as np
 import numpy.typing as npt
@@ -9,7 +8,6 @@ from rlenv.models import RLEnv, ActionSpace, DiscreteSpace
 A = TypeVar("A", bound=ActionSpace)
 
 
-@serde
 @dataclass
 class RLEnvWrapper(RLEnv[A], ABC):
     """Parent class for all RLEnv wrappers"""

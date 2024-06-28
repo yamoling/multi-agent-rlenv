@@ -1,8 +1,6 @@
 import pickle
 import rlenv
-import json
 from dataclasses import asdict
-from serde.json import to_json
 
 from rlenv import MockEnv
 
@@ -36,25 +34,3 @@ def test_registry_wrapper():
     assert restored_env.state_shape == env.state_shape
     assert restored_env.extra_feature_shape == env.extra_feature_shape
     assert restored_env.n_actions == env.n_actions
-
-
-def test_action_space_json():
-    space = rlenv.DiscreteActionSpace(1, 4)
-    to_json(space)
-    space = rlenv.ContinuousActionSpace(1, [0, 0], [1, 1])
-    to_json(space)
-
-
-def test_env_serialization_json():
-    env = MockEnv(4)
-    to_json(env)
-    json.dumps(asdict(env))
-
-
-def test_gym_adapter_json():
-    env = rlenv.make("CartPole-v1")
-    data = to_json(env)
-    assert "observation_shape" in data
-    assert "state_shape" in data
-    assert "extra_feature_shape" in data
-    assert "n_actions" in data
