@@ -1,6 +1,5 @@
 from dataclasses import dataclass
-import beartype.typing as bt
-from typing import Optional
+from typing import Optional, Iterable
 import numpy as np
 import numpy.typing as npt
 from functools import cached_property
@@ -119,7 +118,7 @@ class Episode:
             dones[self.episode_len - 1 :] = 1.0
         return dones
 
-    def transitions(self) -> bt.Iterable[Transition]:
+    def transitions(self) -> Iterable[Transition]:
         """The transitions that compose the episode"""
         for i in range(self.episode_len):
             yield Transition(
@@ -142,7 +141,7 @@ class Episode:
                 truncated=not self.is_done and i == self.episode_len - 1,
             )
 
-    def __iter__(self) -> bt.Iterable[Transition]:
+    def __iter__(self) -> Iterable[Transition]:
         return self.transitions()
 
     def __len__(self):
