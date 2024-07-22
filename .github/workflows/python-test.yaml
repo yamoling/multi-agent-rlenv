@@ -43,18 +43,9 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - name: UV setup
+      - name: UV setup and install dependencies
         run: |
           pip install uv
-          uv venv
-      - name: Install dependencies in the virtual environment and run pytest
-        if: ${{ matrix.os == 'Windows' }}
-        run: |
-          .venv\Scripts\activate
-          uv pip install -r pyproject.toml --extra pettingzoo gymnasium
-          pytest -n 4
-        if: ${{ matrix.os != 'Windows' }}
-        run: |
-          . .venv/bin/activate
-          uv pip install -r pyproject.toml --extra pettingzoo gymnasium
-          pytest -n 4
+          uv install -r pyproject.toml --extra pettingzoo gymnasium
+      - name: Pytest
+        run: pytest -n 4
