@@ -46,6 +46,6 @@ jobs:
       - name: UV setup and install dependencies
         run: |
           pip install uv
-          uv install -r pyproject.toml --extra pettingzoo gymnasium
+          uv pip install -r pyproject.toml --extra pettingzoo gymnasium
       - name: Pytest
         run: pytest -n 4
