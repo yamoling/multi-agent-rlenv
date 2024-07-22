@@ -1,38 +1,24 @@
-[tool.poetry]
+[project]
 name = "rlenv"
 version = "1.0.4"
 description = "A strongly typed Multi-Agent Reinforcement Learning framework"
-authors = ["Yannick Molinghen <yannick.molinghen@ulb.be>"]
+authors = [{ name = "Yannick Molinghen", email = "yannick.molinghen@ulb.be" }]
 license = "MIT"
 readme = "readme.md"
 
-[tool.poetry.dependencies]
-python = ">=3.10,<4"
-numpy = ">=1.23.4"
-opencv-python = ">=4.6.0"
-smac = { git = "https://github.com/oxwhirl/smac.git", optional = true }
-gymnasium = { extras = [
-    "atari",
-    "accept-rom-license",
-], version = "^0.28.1", optional = true }
-pettingzoo = { version = "^1.22.3", optional = true }
-pysc2 = { git = "https://github.com/deepmind/pysc2.git", optional = true }
-pygame = { version = "^2.5.2", optional = true }
-pymunk = { version = "^6.6.0", optional = true }
+dependencies = ["numpy>=1.23", "opencv-python>=4.6.0", "pytest", "pytest-xdist"]
 
-[tool.poetry.extras]
-all = ["gymnasium", "pettingzoo", "smac"]
-tests = ["gymnasium", "pettingzoo"]
-atari = ["gymnasium"]
+
+[project.optional-dependencies]
+smac = [
+    "smac@git+https://github.com/oxwhirl/smac.git",
+    "pysc2@git+https://github.com/google-deepmind/pysc2.git", # Required to fix a bug in pysc2
+    "pygame==2.5.2",
+    "pymunk==6.6.0",
+]
+gymnasium = ["gymnasium"]
 pettingzoo = ["pettingzoo"]
-smac = ["smac", "pysc2", "pygame", "pymunk"]
 
-
-[tool.poetry.dev-dependencies]
-pytest = "^7.4"
-
-[tool.poetry.group.dev.dependencies]
-pytest-xdist = "^3.4.0"
 
 [tool.ruff]
 line-length = 140
