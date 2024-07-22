@@ -3,7 +3,6 @@ name = "rlenv"
 version = "1.0.4"
 description = "A strongly typed Multi-Agent Reinforcement Learning framework"
 authors = [{ name = "Yannick Molinghen", email = "yannick.molinghen@ulb.be" }]
-license = "MIT"
 readme = "readme.md"
 
 dependencies = ["numpy>=1.23", "opencv-python>=4.6.0", "pytest", "pytest-xdist"]
