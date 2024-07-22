@@ -53,7 +53,7 @@ jobs:
           pip install uv
           uv venv
           source .venv/bin/activate
-          uv pip install -r pyproject.toml --extra smac pettingzoo gymnasium
+          uv pip install -r pyproject.toml --extra pettingzoo gymnasium
       - name: Pytest
         run: |
           source .venv/bin/activate
