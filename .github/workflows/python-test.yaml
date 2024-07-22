@@ -43,9 +43,22 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - name: UV setup and install dependencies
+      - name: Install UV and create venv
         run: |
           pip install uv
+          uv venv .venv
+      - name: Activate virtual environment (Windows)
+        if: ${{ runner.os == 'Windows' }}
+        run: |
+          "VIRTUAL_ENV=.venv" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "$PWD/.venv/Scripts" | Out-File -FilePath $env:GITHUB_PATH -Append
+      - name: Activate virtual environment (Unix)
+        if: ${{ runner.os != 'Windows' }}
+        run: |
+          echo "VIRTUAL_ENV=.venv" >> $GITHUB_ENV
+          echo "$PWD/.venv/bin" >> $GITHUB_PATH
+        # From here on, the virtual environment is active
+        run: |
           uv pip install -r pyproject.toml --extra pettingzoo gymnasium
       - name: Pytest
         run: pytest -n 4
