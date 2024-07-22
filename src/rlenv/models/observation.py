@@ -1,11 +1,9 @@
 from typing import Optional
 from dataclasses import dataclass
-from serde import serde
 import numpy as np
 import numpy.typing as npt
 
 
-@serde
 @dataclass
 class Observation:
     """
@@ -14,7 +12,7 @@ class Observation:
 
     data: npt.NDArray[np.float32]
     """The actual environment observation. The shape is [n_agents, *obs_shape]"""
-    available_actions: npt.NDArray[np.float32]
+    available_actions: npt.NDArray[np.bool_]
     """The available actions at the time of the observation"""
     state: npt.NDArray[np.float32]
     """The environment state at the time of the observation"""
@@ -24,7 +22,7 @@ class Observation:
     def __init__(
         self,
         data: npt.NDArray[np.float32],
-        available_actions: npt.NDArray[np.float32],
+        available_actions: npt.NDArray[np.bool_],
         state: npt.NDArray[np.float32],
         extras: Optional[npt.NDArray[np.float32]] = None,
     ):
@@ -50,15 +48,6 @@ class Observation:
     def extras_shape(self) -> tuple[int, ...]:
         """The shape of the observation extras"""
         return self.extras.shape
-
-    def to_json(self) -> dict:
-        """Returns a json-serializable dictionary of the observation"""
-        return {
-            "data": self.data.tolist(),
-            "extras": self.extras.tolist(),
-            "stats": self.state.tolist(),
-            "available_actions": self.available_actions.tolist(),
-        }
 
     def __hash__(self):
         return hash((self.data.tobytes(), self.state.tobytes(), self.extras.tobytes()))

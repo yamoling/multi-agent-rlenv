@@ -1,47 +1,47 @@
 from dataclasses import dataclass
-from serde import serde
-from typing import Any, Iterable, Optional
+from typing import Any, Optional
 import numpy as np
 import numpy.typing as npt
 
 from .observation import Observation
 
 
-@serde
 @dataclass
 class Transition:
     """Transition model"""
 
     obs: Observation
-    action: npt.NDArray[np.int64]
-    reward: npt.NDArray[np.float32]
+    action: np.ndarray
+    reward: np.ndarray
     done: bool
     info: dict[str, Any]
     obs_: Observation
     truncated: bool
-    probs: npt.NDArray[np.float32] | None
+    probs: np.ndarray | None
 
     def __init__(
         self,
         obs: Observation,
-        action: npt.NDArray[np.int64],
-        reward: npt.NDArray[np.float32] | Iterable[float],
+        action: npt.ArrayLike,
+        reward: npt.ArrayLike,
         done: bool,
         info: dict[str, Any],
         obs_: Observation,
         truncated: bool,
-        probs: Optional[npt.NDArray[np.float32]] = None,
+        action_probs: Optional[np.ndarray] = None,
     ):
         self.obs = obs
+        if not isinstance(action, np.ndarray):
+            action = np.array(action)
         self.action = action
         if not isinstance(reward, np.ndarray):
-            reward = np.array(reward, dtype=np.float32)
+            reward = np.array(reward)
         self.reward = reward
         self.done = done
         self.info = info
         self.obs_ = obs_
         self.truncated = truncated
-        self.probs = probs
+        self.probs = action_probs
 
     @property
     def is_terminal(self) -> bool:
@@ -56,16 +56,6 @@ class Transition:
     @property
     def n_actions(self) -> int:
         return int(self.obs.available_actions.shape[-1])
-
-    def to_json(self) -> dict:
-        """Returns a json-serializable dictionary of the transition"""
-        return {
-            "obs": self.obs.to_json(),
-            "obs_": self.obs_.to_json(),
-            "action": self.action.tolist(),
-            "reward": self.reward,
-            "done": self.done,
-        }
 
     def __hash__(self) -> int:
         return hash((self.obs, self.action.tobytes(), self.reward.tobytes(), self.done, self.obs_))

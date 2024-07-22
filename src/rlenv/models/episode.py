@@ -1,6 +1,5 @@
 from dataclasses import dataclass
-from serde import serde
-from typing import Iterable, Optional
+from typing import Optional, Iterable
 import numpy as np
 import numpy.typing as npt
 from functools import cached_property
@@ -9,16 +8,15 @@ from .transition import Transition
 from .observation import Observation
 
 
-@serde
 @dataclass
 class Episode:
     """Episode model made of observations, actions, rewards, ..."""
 
     _observations: npt.NDArray[np.float32]
     _extras: npt.NDArray[np.float32]
-    actions: npt.NDArray[np.int64]
+    actions: np.ndarray
     rewards: npt.NDArray[np.float32]
-    _available_actions: npt.NDArray[np.float32]
+    _available_actions: npt.NDArray[np.bool_]
     _states: npt.NDArray[np.float32]
     actions_probs: npt.NDArray[np.float32] | None
     metrics: dict[str, float]
@@ -37,10 +35,10 @@ class Episode:
         obs = np.concatenate([self._observations, padding])
         extras_padding_shape = (padding_size, *self._extras.shape[1:])
         extras = np.concatenate([self._extras, np.zeros(extras_padding_shape, dtype=np.float32)])
-        actions = np.concatenate([self.actions, np.zeros((padding_size, self.n_agents), dtype=np.int64)])
+        actions = np.concatenate([self.actions, np.zeros((padding_size, self.n_agents), dtype=self.actions.dtype)])
         rewards_padding_shape = (padding_size, *self.rewards.shape[1:])
         rewards = np.concatenate([self.rewards, np.zeros(rewards_padding_shape, dtype=np.float32)])
-        availables = np.concatenate([self._available_actions, np.ones((padding_size, self.n_agents, self.n_actions), dtype=np.float32)])
+        availables = np.concatenate([self._available_actions, np.full((padding_size, self.n_agents, self.n_actions), True)])
         states = np.concatenate([self._states, np.zeros((padding_size, *self._states.shape[1:]), dtype=np.float32)])
         return Episode(
             _observations=obs,
@@ -132,7 +130,7 @@ class Episode:
                 ),
                 action=self.actions[i],
                 reward=self.rewards[i],
-                done=self.dones[i],
+                done=bool(self.dones[i]),
                 info={},
                 obs_=Observation(
                     data=self._observations[i + 1],
@@ -173,7 +171,7 @@ class EpisodeBuilder:
         self.rewards = list[np.ndarray]()
         self.available_actions = list[np.ndarray]()
         self.states = list[np.ndarray]()
-        self.action_probs = []
+        self.action_probs = list[np.ndarray]()
         self.episode_len = 0
         self.metrics = {}
         self._done = False
@@ -197,6 +195,8 @@ class EpisodeBuilder:
         self.rewards.append(transition.reward)
         self.available_actions.append(transition.obs.available_actions)
         self.states.append(transition.obs.state)
+        if transition.probs is not None:
+            self.action_probs.append(transition.probs)
         if transition.is_terminal:
             # Only set the truncated flag if the episode is not done (both could happen with a time limit)
             self._truncated = transition.truncated
@@ -220,16 +220,19 @@ class EpisodeBuilder:
         self.metrics["episode_length"] = self.episode_len
         if extra_metrics is not None:
             self.metrics.update(extra_metrics)
+        action_probs = None
+        if len(self.action_probs) > 0:
+            action_probs = np.array(self.action_probs, dtype=np.float32)
         return Episode(
-            _observations=np.array(self.observations),
-            _extras=np.array(self.extras),
+            _observations=np.array(self.observations, dtype=np.float32),
+            _extras=np.array(self.extras, dtype=np.float32),
             actions=np.array(self.actions),
-            rewards=np.array(self.rewards),
+            rewards=np.array(self.rewards, np.float32),
             _states=np.array(self.states),
             metrics=self.metrics,
             episode_len=self.episode_len,
             _available_actions=np.array(self.available_actions),
-            actions_probs=np.array(self.action_probs),
+            actions_probs=action_probs,
             is_done=self._done,
         )
 

@@ -5,14 +5,14 @@ import numpy as np
 def test_obs_eq():
     obs1 = Observation(
         data=np.arange(20, dtype=np.float32),
-        available_actions=np.ones(5, dtype=np.float32),
+        available_actions=np.ones(5, dtype=bool),
         state=np.ones(10, dtype=np.float32),
         extras=np.arange(5, dtype=np.float32),
     )
 
     obs2 = Observation(
         data=np.arange(20, dtype=np.float32),
-        available_actions=np.ones(5, dtype=np.float32),
+        available_actions=np.full((5,), True),
         state=np.ones(10, dtype=np.float32),
         extras=np.arange(5, dtype=np.float32),
     )
@@ -23,14 +23,14 @@ def test_obs_eq():
 def test_obs_not_eq():
     obs1 = Observation(
         data=np.arange(20, dtype=np.float32),
-        available_actions=np.ones(5, dtype=np.float32),
+        available_actions=np.full((5,), True),
         state=np.ones(10, dtype=np.float32),
         extras=np.arange(5, dtype=np.float32),
     )
 
     obs2 = Observation(
-        data=np.arange(20, dtype=np.float32),
-        available_actions=np.zeros(5, dtype=np.float32),
+        data=np.arange(20, dtype=np.float32) + 1,
+        available_actions=np.full((5,), True),
         state=np.ones(10, dtype=np.float32),
         extras=np.arange(5, dtype=np.float32),
     )
@@ -41,14 +41,14 @@ def test_obs_not_eq():
 def test_obs_eq_extras_none():
     obs1 = Observation(
         data=np.arange(20, dtype=np.float32),
-        available_actions=np.ones(5, dtype=np.float32),
+        available_actions=np.full((5,), True),
         state=np.ones(10, dtype=np.float32),
         extras=None,
     )
 
     obs2 = Observation(
         data=np.arange(20, dtype=np.float32),
-        available_actions=np.ones(5, dtype=np.float32),
+        available_actions=np.full((5,), True),
         state=np.ones(10, dtype=np.float32),
         extras=None,
     )
@@ -59,14 +59,14 @@ def test_obs_eq_extras_none():
 def test_obs_hash():
     obs1 = Observation(
         data=np.arange(20, dtype=np.float32),
-        available_actions=np.ones(5, dtype=np.float32),
+        available_actions=np.full((5,), True),
         state=np.ones(10, dtype=np.float32),
         extras=np.arange(5, dtype=np.float32),
     )
 
     obs2 = Observation(
         data=np.arange(20, dtype=np.float32),
-        available_actions=np.ones(5, dtype=np.float32),
+        available_actions=np.full((5,), True),
         state=np.ones(10, dtype=np.float32),
         extras=np.arange(5, dtype=np.float32),
     )
@@ -78,17 +78,17 @@ def test_transition_eq():
     t1 = Transition(
         obs=Observation(
             data=np.arange(20, dtype=np.float32),
-            available_actions=np.ones(5, dtype=np.float32),
+            available_actions=np.full((5,), True),
             state=np.ones(10, dtype=np.float32),
             extras=np.arange(5, dtype=np.float32),
         ),
-        action=np.ones(5, dtype=np.float32),
+        action=np.ones(5, dtype=np.int64),
         reward=[1.0],
         done=False,
         info={},
         obs_=Observation(
             data=np.arange(20, dtype=np.float32),
-            available_actions=np.ones(5, dtype=np.float32),
+            available_actions=np.full((5,), True),
             state=np.ones(10, dtype=np.float32),
             extras=np.arange(5, dtype=np.float32),
         ),
@@ -98,17 +98,17 @@ def test_transition_eq():
     t2 = Transition(
         obs=Observation(
             data=np.arange(20, dtype=np.float32),
-            available_actions=np.ones(5, dtype=np.float32),
+            available_actions=np.full((5,), True),
             state=np.ones(10, dtype=np.float32),
             extras=np.arange(5, dtype=np.float32),
         ),
-        action=np.ones(5, dtype=np.float32),
+        action=np.ones(5, dtype=np.int64),
         reward=[1.0],
         done=False,
         info={},
         obs_=Observation(
             data=np.arange(20, dtype=np.float32),
-            available_actions=np.ones(5, dtype=np.float32),
+            available_actions=np.full((5,), True),
             state=np.ones(10, dtype=np.float32),
             extras=np.arange(5, dtype=np.float32),
         ),
@@ -122,17 +122,17 @@ def test_transition_hash():
     t1 = Transition(
         obs=Observation(
             data=np.arange(20, dtype=np.float32),
-            available_actions=np.ones(5, dtype=np.float32),
+            available_actions=np.full((5,), True),
             state=np.ones(10, dtype=np.float32),
             extras=np.arange(5, dtype=np.float32),
         ),
-        action=np.ones(5, dtype=np.float32),
+        action=np.ones(5, dtype=np.int64),
         reward=[1.0],
         done=False,
         info={},
         obs_=Observation(
             data=np.arange(20, dtype=np.float32),
-            available_actions=np.ones(5, dtype=np.float32),
+            available_actions=np.full((5,), True),
             state=np.ones(10, dtype=np.float32),
             extras=np.arange(5, dtype=np.float32),
         ),
@@ -142,17 +142,17 @@ def test_transition_hash():
     t2 = Transition(
         obs=Observation(
             data=np.arange(20, dtype=np.float32),
-            available_actions=np.ones(5, dtype=np.float32),
+            available_actions=np.full((5,), True),
             state=np.ones(10, dtype=np.float32),
             extras=np.arange(5, dtype=np.float32),
         ),
-        action=np.ones(5, dtype=np.float32),
+        action=np.ones(5, dtype=np.int64),
         reward=[1.0],
         done=False,
         info={},
         obs_=Observation(
             data=np.arange(20, dtype=np.float32),
-            available_actions=np.ones(5, dtype=np.float32),
+            available_actions=np.full((5,), True),
             state=np.ones(10, dtype=np.float32),
             extras=np.arange(5, dtype=np.float32),
         ),

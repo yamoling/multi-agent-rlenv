@@ -3,13 +3,11 @@ from abc import abstractmethod, ABC
 import numpy as np
 import numpy.typing as npt
 import math
-from serde import serde
 from dataclasses import dataclass
 
 S = TypeVar("S", bound="Space")
 
 
-@serde
 @dataclass
 class Space(ABC):
     shape: tuple[int, ...]
@@ -24,11 +22,10 @@ class Space(ABC):
         self.labels = labels
 
     @abstractmethod
-    def sample(self, mask: Optional[np.ndarray] = None) -> Any:
+    def sample(self, mask: Optional[npt.NDArray[np.bool_]] = None) -> Any:
         """Sample a value from the space."""
 
 
-@serde
 @dataclass
 class DiscreteSpace(Space):
     size: int
@@ -39,14 +36,13 @@ class DiscreteSpace(Space):
         self.size = size
         self.space = np.arange(size)
 
-    def sample(self, mask: Optional[np.ndarray[bool, Any]] = None) -> int:
+    def sample(self, mask: Optional[npt.NDArray[np.bool_]] = None) -> int:
         space = self.space
         if mask is not None:
             space = space[mask]
-        return np.random.choice(space)
+        return int(np.random.choice(space))
 
 
-@serde
 @dataclass
 class MultiDiscreteSpace(Space):
     n_dims: int
@@ -63,13 +59,12 @@ class MultiDiscreteSpace(Space):
     def from_sizes(cls, *sizes: int):
         return cls(*(DiscreteSpace(size) for size in sizes))
 
-    def sample(self, masks: Optional[np.ndarray[bool, Any] | list[np.ndarray[bool, Any]]] = None):
+    def sample(self, masks: Optional[npt.NDArray[np.bool_] | list[npt.NDArray[np.bool_]]] = None):
         if masks is None:
             return np.array([space.sample() for space in self.spaces], dtype=np.int32)
         return np.array([space.sample(mask) for mask, space in zip(masks, self.spaces)], dtype=np.int32)
 
 
-@serde
 @dataclass
 class ContinuousSpace(Space):
     """A continuous space (box) in R^n."""
@@ -81,8 +76,8 @@ class ContinuousSpace(Space):
 
     def __init__(
         self,
-        low: list | np.ndarray[np.float32, Any],
-        high: list | np.ndarray[np.float32, Any],
+        low: list | npt.NDArray[np.float32],
+        high: list | npt.NDArray[np.float32],
         labels: Optional[list[str]] = None,
     ):
         if isinstance(low, list):
@@ -99,7 +94,6 @@ class ContinuousSpace(Space):
         return np.random.random(self.shape) * (self.high - self.low) + self.low
 
 
-@serde
 @dataclass
 class ActionSpace(Space, Generic[S]):
     n_agents: int

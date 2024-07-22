@@ -3,13 +3,16 @@ from rlenv.models import EpisodeBuilder, Transition, Episode, RLEnv
 from rlenv import wrappers, MockEnv
 
 
-def generate_episode(env: RLEnv) -> Episode:
+def generate_episode(env: RLEnv, with_probs: bool = False) -> Episode:
     obs = env.reset()
     episode = EpisodeBuilder()
     while not episode.is_finished:
         action = env.action_space.sample()
+        probs = None
+        if with_probs:
+            probs = np.random.random(action.shape)
         next_obs, r, done, truncated, info = env.step(action)
-        episode.add(Transition(obs, action, r, done, info, next_obs, truncated))
+        episode.add(Transition(obs, action, r, done, info, next_obs, truncated, probs))
         obs = next_obs
     return episode.build()
 
@@ -20,9 +23,9 @@ def test_episode_builder_is_done():
     # Set the 'done' flag
     builder = EpisodeBuilder()
     assert not builder.is_finished
-    builder.add(Transition(obs, np.array([0, 0]), [0], False, {}, obs, False))
+    builder.add(Transition(obs, [0, 0], [0], False, {}, obs, False))
     assert not builder.is_finished
-    builder.add(Transition(obs, np.array([0, 0]), [0], True, {}, obs, False))
+    builder.add(Transition(obs, [0, 0], [0], True, {}, obs, False))
     assert builder.is_finished
 
     # Set the 'truncated' flag
@@ -71,8 +74,8 @@ def test_returns():
         done = i == n_steps - 1
         r = np.random.rand(5)
         rewards.append(r)
-        builder.add(Transition(obs, np.array([0, 0]), r, done, {}, obs, False))
-    rewards = np.array(rewards)
+        builder.add(Transition(obs, np.array([0, 0], dtype=np.int64), r, done, {}, obs, False))
+    rewards = np.array(rewards, dtype=np.float32)
     episode = builder.build()
     returns = episode.compute_returns(discount=gamma)
     for i, r in enumerate(returns):
@@ -175,3 +178,10 @@ def test_iterate_on_episode():
             assert t.truncated
         else:
             assert not t.truncated
+
+
+def test_episode_with_logprobs():
+    env = wrappers.TimeLimit(MockEnv(2), 10)
+    episode = generate_episode(env, with_probs=True)
+    assert episode.actions_probs is not None
+    assert len(episode.actions_probs) == 10

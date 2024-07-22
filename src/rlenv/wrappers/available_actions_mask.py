@@ -1,5 +1,5 @@
 import numpy as np
-from typing import Any
+import numpy.typing as npt
 
 from .rlenv_wrapper import RLEnv, RLEnvWrapper, A
 
@@ -7,7 +7,7 @@ from .rlenv_wrapper import RLEnv, RLEnvWrapper, A
 class AvailableActionsMask(RLEnvWrapper[A]):
     """Permanently masks a subset of the available actions."""
 
-    def __init__(self, env: RLEnv[A], action_mask: np.ndarray[np.float32, Any]):
+    def __init__(self, env: RLEnv[A], action_mask: npt.NDArray[np.bool_]):
         super().__init__(env, extra_feature_shape=(env.extra_feature_shape[0] + env.n_actions,))
         assert action_mask.shape == (env.n_agents, env.n_actions), "Action mask must have shape (n_agents, n_actions)."
         n_available_action_per_agent = action_mask.sum(axis=-1)
@@ -24,5 +24,5 @@ class AvailableActionsMask(RLEnvWrapper[A]):
         obs.available_actions = self.available_actions()
         return obs, reward, done, truncated, info
 
-    def available_actions(self) -> np.ndarray[np.float32, Any]:
+    def available_actions(self):
         return self.action_mask * self.wrapped.available_actions()

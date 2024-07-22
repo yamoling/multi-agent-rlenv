@@ -1,6 +1,5 @@
 from gymnasium import Env, spaces
 import numpy as np
-from serde import serde
 
 from rlenv.models import (
     RLEnv,
@@ -11,7 +10,6 @@ from rlenv.models import (
 )
 
 
-@serde
 class Gym(RLEnv[ActionSpace]):
     """Wraps a gym envronment in an RLEnv"""
 
