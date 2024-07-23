@@ -1,5 +1,5 @@
 import numpy as np
-from marlenv.models import DiscreteActionSpace, ContinuousActionSpace, DiscreteSpace, MultiDiscreteSpace, ContinuousSpace
+from rlenv.models import DiscreteActionSpace, ContinuousActionSpace, DiscreteSpace, MultiDiscreteSpace, ContinuousSpace
 
 
 def test_discrete_action_space():

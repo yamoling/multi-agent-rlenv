@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from abc import ABC
 import numpy as np
 import numpy.typing as npt
-from marlenv.models import RLEnv, ActionSpace, DiscreteSpace
+from rlenv.models import RLEnv, ActionSpace, DiscreteSpace
 
 A = TypeVar("A", bound=ActionSpace)
 

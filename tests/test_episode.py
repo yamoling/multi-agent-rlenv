@@ -1,6 +1,6 @@
 import numpy as np
-from marlenv.models import EpisodeBuilder, Transition, Episode, RLEnv
-from marlenv import wrappers, MockEnv
+from rlenv.models import EpisodeBuilder, Transition, Episode, RLEnv
+from rlenv import wrappers, MockEnv
 
 
 def generate_episode(env: RLEnv, with_probs: bool = False) -> Episode:

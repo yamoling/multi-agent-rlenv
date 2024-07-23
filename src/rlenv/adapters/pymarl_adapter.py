@@ -1,7 +1,7 @@
 from typing import Any
 import numpy as np
-from marlenv.models import RLEnv, DiscreteActionSpace
-from marlenv.wrappers import TimeLimit
+from rlenv.models import RLEnv, DiscreteActionSpace
+from rlenv.wrappers import TimeLimit
 
 
 class PymarlAdapter:
