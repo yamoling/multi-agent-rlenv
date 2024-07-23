@@ -16,7 +16,7 @@ permissions:
 
 jobs:
   test:
-    name: Build & Test
+    name: Test
     strategy:
       matrix:
         os:
@@ -50,20 +50,5 @@ jobs:
           poetry update
           poetry run pytest -n 4
 
-  build-publish:
-    if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' }}
-    runs-on: ubuntu-latest
-    needs: [test]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Python setup
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Build and publish to pypi
-        uses: JRubics/poetry-publish@v2.0
-        with:
-          pypi_token: ${{ secrets.PYPI_TOKEN }}
-
+ 
 

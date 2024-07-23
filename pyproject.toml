@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "marlenv"
-version = "2.0.0"
+version = "1.0.4"
 description = "A strongly typed Multi-Agent Reinforcement Learning framework"
 authors = ["Yannick Molinghen <yannick.molinghen@ulb.be>"]
 readme = "readme.md"
