@@ -1,6 +1,6 @@
 from itertools import product
 import numpy as np
-from rlenv.models import RLEnv, DiscreteSpace, Observation, ActionSpace
+from marlenv.models import RLEnv, DiscreteSpace, Observation, ActionSpace
 from .rlenv_wrapper import RLEnvWrapper, A
 
 

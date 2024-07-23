@@ -1,7 +1,7 @@
 from gymnasium import Env, spaces
 import numpy as np
 
-from rlenv.models import (
+from marlenv.models import (
     RLEnv,
     Observation,
     ActionSpace,

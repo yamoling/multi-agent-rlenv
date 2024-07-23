@@ -1,6 +1,6 @@
 import numpy as np
 import numpy.typing as npt
-from rlenv.models import Observation
+from marlenv.models import Observation
 from .rlenv_wrapper import RLEnvWrapper, RLEnv
 
 

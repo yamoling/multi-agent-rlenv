@@ -4,7 +4,7 @@ import numpy as np
 import numpy.typing as npt
 from dataclasses import dataclass
 
-from rlenv.models import RLEnv, ActionSpace
+from marlenv.models import RLEnv, ActionSpace
 from .rlenv_wrapper import RLEnvWrapper
 
 

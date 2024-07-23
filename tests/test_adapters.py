@@ -1,14 +1,14 @@
 import numpy as np
-import rlenv
+import marlenv
 
-from rlenv.adapters import PymarlAdapter
-from rlenv import MockEnv, Observation, DiscreteActionSpace
+from marlenv.adapters import PymarlAdapter
+from marlenv import MockEnv, Observation, DiscreteActionSpace
 
 try:
 
     def test_gym_adapter():
         # Discrete action space
-        env = rlenv.make("CartPole-v1")
+        env = marlenv.make("CartPole-v1")
         env.reset()
         assert env.n_actions == 2
         assert env.n_agents == 1
@@ -23,7 +23,7 @@ try:
         assert isinstance(info, dict)
 
         # Continuous action space
-        env = rlenv.make("Pendulum-v1")
+        env = marlenv.make("Pendulum-v1")
         env.reset()
 except ImportError:
     # Skip the test if gym is not installed
@@ -34,7 +34,7 @@ try:
 
     def test_pettingzoo_adapter_discrete_action():
         # https://pettingzoo.farama.org/environments/sisl/pursuit/#pursuit
-        env = rlenv.adapters.PettingZoo(pursuit_v4.parallel_env())
+        env = marlenv.adapters.PettingZoo(pursuit_v4.parallel_env())
         env.reset()
         action = env.action_space.sample()
         obs, r, done, truncated, info = env.step(action)
@@ -46,12 +46,12 @@ try:
         assert isinstance(info, dict)
         assert env.n_agents == 8
         assert env.n_actions == 5
-        assert isinstance(env.action_space, rlenv.DiscreteActionSpace)
+        assert isinstance(env.action_space, marlenv.DiscreteActionSpace)
 
     def test_pettingzoo_adapter_continuous_action():
         # https://pettingzoo.farama.org/environments/sisl/waterworld/
 
-        env = rlenv.adapters.PettingZoo(waterworld_v4.parallel_env())
+        env = marlenv.adapters.PettingZoo(waterworld_v4.parallel_env())
         env.reset()
         action = env.action_space.sample()
         obs, r, done, truncated, info = env.step(action)
@@ -63,14 +63,14 @@ try:
         assert isinstance(info, dict)
         assert env.n_actions == 2
         assert env.n_agents == 2
-        assert isinstance(env.action_space, rlenv.ContinuousActionSpace)
+        assert isinstance(env.action_space, marlenv.ContinuousActionSpace)
 except ImportError:
     # Skip the test if pettingzoo is not installed
     pass
 
 # Only perform the tests if SMAC is installed.
 try:
-    from rlenv.adapters import SMAC
+    from marlenv.adapters import SMAC
     from smac.env import StarCraft2Env
 
     def _check_env_3m(env: SMAC):

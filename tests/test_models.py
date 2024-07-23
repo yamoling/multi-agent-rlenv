@@ -1,4 +1,4 @@
-from rlenv import Observation, Transition, MockEnv
+from marlenv import Observation, Transition, MockEnv
 import numpy as np
 
 

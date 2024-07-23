@@ -1,6 +1,6 @@
 from pettingzoo import ParallelEnv
 from gymnasium import spaces  # pettingzoo uses gymnasium spaces
-from rlenv.models import RLEnv, Observation, ActionSpace, DiscreteActionSpace, ContinuousActionSpace, ContinuousSpace
+from marlenv.models import RLEnv, Observation, ActionSpace, DiscreteActionSpace, ContinuousActionSpace, ContinuousSpace
 import numpy as np
 import numpy.typing as npt
 

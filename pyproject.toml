@@ -1,5 +1,5 @@
 [project]
-name = "rlenv"
+name = "marl-env"
 version = "1.0.4"
 description = "A strongly typed Multi-Agent Reinforcement Learning framework"
 authors = [{ name = "Yannick Molinghen", email = "yannick.molinghen@ulb.be" }]
@@ -10,6 +10,7 @@ dependencies = ["numpy>=1.23", "opencv-python>=4.6.0", "pytest", "pytest-xdist"]
 
 [project.optional-dependencies]
 smac = [
+    "swig",
     "smac@git+https://github.com/oxwhirl/smac.git",
     "pysc2@git+https://github.com/google-deepmind/pysc2.git", # Required to fix a bug in pysc2
     "pygame==2.5.2",
