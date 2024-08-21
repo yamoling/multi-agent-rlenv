@@ -50,5 +50,45 @@ jobs:
           poetry update
           poetry run pytest -n 4
 
- 
+  build:
+    name: Build package 📦
+    if: startsWith(github.ref, 'refs/tags/')  # only publish to PyPI on tag pushes
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.10"
+    - name: Install UV
+      uses: yezz123/setup-uv@v4
+    - name: Build wheels
+      run: |
+        uv pip install pip build
+        uv run python -m build
+    
+    - name: Upload package distributions 📡
+      uses: actions/upload-artifact@v3
+      with:
+        name: wheels
+        path: dist/
 
+
+  publish-to-pypi:
+    name: Publish Python 🐍 distribution 📦 to PyPI
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/marl-env 
+    permissions:
+      id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
+    steps:
+    - name: Download all the dists
+      uses: actions/download-artifact@v3
+      with:
+        name: wheels
+        path: dist/
+    - name: Publish distribution 📦 to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1

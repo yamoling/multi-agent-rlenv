@@ -1,7 +1,7 @@
 import numpy as np
-from rlenv import Builder, MockEnv
-from rlenv.wrappers import Centralised, AvailableActionsMask
-import rlenv
+from marlenv import Builder, MockEnv
+from marlenv.wrappers import Centralised, AvailableActionsMask
+import marlenv
 
 
 def test_padding():
@@ -61,14 +61,14 @@ def test_time_limit_wrapper():
 
 def test_truncated_and_done():
     END_GAME = 10
-    env = rlenv.wrappers.TimeLimit(MockEnv(2, end_game=END_GAME), END_GAME)
+    env = marlenv.wrappers.TimeLimit(MockEnv(2, end_game=END_GAME), END_GAME)
     obs = env.reset()
-    episode = rlenv.EpisodeBuilder()
+    episode = marlenv.EpisodeBuilder()
     done = truncated = False
     while not episode.is_finished:
         action = env.action_space.sample()
         next_obs, r, done, truncated, info = env.step(action)
-        episode.add(rlenv.Transition(obs, action, r, done, info, next_obs, truncated))
+        episode.add(marlenv.Transition(obs, action, r, done, info, next_obs, truncated))
         obs = next_obs
     assert done
     assert not truncated, "The episode is done, so it does not have to be truncated even though the time limit is reached at the same time."
@@ -132,15 +132,15 @@ def test_time_limit_wrapper_with_truncation_penalty():
 
 
 def test_blind_wrapper():
-    def test(env: rlenv.RLEnv):
+    def test(env: marlenv.RLEnv):
         obs = env.reset()
         assert np.any(obs.data != 0)
         obs, r, done, truncated, info = env.step(env.action_space.sample())
         assert np.all(obs.data == 0)
 
-    env = rlenv.Builder(MockEnv(5)).blind(p=1).build()
+    env = marlenv.Builder(MockEnv(5)).blind(p=1).build()
     test(env)
-    env = rlenv.wrappers.Blind(MockEnv(5), p=1)
+    env = marlenv.wrappers.Blind(MockEnv(5), p=1)
     test(env)
 
 

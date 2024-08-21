@@ -1,8 +1,8 @@
 import pickle
-import rlenv
+import marlenv
 from dataclasses import asdict
 
-from rlenv import MockEnv
+from marlenv import MockEnv
 
 
 def test_registry():
@@ -17,7 +17,7 @@ def test_registry():
 
 
 def test_registry_gym():
-    env = rlenv.make("CartPole-v1")
+    env = marlenv.make("CartPole-v1")
     restored_env = pickle.loads(pickle.dumps(env))
     assert restored_env.n_agents == env.n_agents
     assert restored_env.observation_shape == env.observation_shape
@@ -27,7 +27,7 @@ def test_registry_gym():
 
 
 def test_registry_wrapper():
-    env = rlenv.Builder(MockEnv(4)).agent_id().time_limit(10).build()
+    env = marlenv.Builder(MockEnv(4)).agent_id().time_limit(10).build()
     restored_env = pickle.loads(pickle.dumps(env))
     assert restored_env.n_agents == env.n_agents
     assert restored_env.observation_shape == env.observation_shape

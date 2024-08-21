@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Optional, TypeVar
 import numpy as np
 
-from rlenv.models import ActionSpace, Observation
+from marlenv.models import ActionSpace, Observation
 from .rlenv_wrapper import RLEnvWrapper, RLEnv
 
 A = TypeVar("A", bound=ActionSpace)

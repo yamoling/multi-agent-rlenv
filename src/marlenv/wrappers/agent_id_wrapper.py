@@ -1,5 +1,5 @@
 import numpy as np
-from rlenv.models import RLEnv, Observation
+from marlenv.models import RLEnv, Observation
 from .rlenv_wrapper import RLEnvWrapper
 
 

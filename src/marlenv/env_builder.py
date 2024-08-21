@@ -62,12 +62,12 @@ def make(env):
             return env
         case str():
             import gymnasium
-            from rlenv.adapters import Gym
+            from marlenv.adapters import Gym
 
             return Gym(gymnasium.make(env, render_mode="rgb_array"))
 
     try:
-        from rlenv.adapters import PettingZoo
+        from marlenv.adapters import PettingZoo
 
         if isinstance(env, ParallelEnv):
             return PettingZoo(env)
@@ -75,7 +75,7 @@ def make(env):
         pass
     try:
         from smac.env import StarCraft2Env
-        from rlenv.adapters import SMAC
+        from marlenv.adapters import SMAC
 
         if isinstance(env, StarCraft2Env):
             return SMAC(env)

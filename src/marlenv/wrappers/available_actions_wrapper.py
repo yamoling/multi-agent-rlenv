@@ -1,7 +1,7 @@
 import numpy as np
 import numpy.typing as npt
 from typing import TypeVar
-from rlenv.models import ActionSpace, RLEnv
+from marlenv.models import ActionSpace, RLEnv
 from .rlenv_wrapper import RLEnvWrapper
 
 A = TypeVar("A", bound=ActionSpace)

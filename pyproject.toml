@@ -1,56 +1,46 @@
-[tool.poetry]
-name = "rlenv"
-version = "1.0.4"
+[project]
+name = "marl-env"
+version = "1.0.0"
 description = "A strongly typed Multi-Agent Reinforcement Learning framework"
-authors = ["Yannick Molinghen <yannick.molinghen@ulb.be>"]
-readme = "readme.md"
+authors = [
+    { "name" = "Yannick Molinghen", "email" = "yannick.molinghen@ulb.be" },
+]
+readme = "README.md"
+requires-python = ">=3.10, <4"
+dependencies = ["numpy>=2.0.0", "opencv-python>=4.10.0.84", "gymnasium>=0.29.1"]
+urls = { "repository" = "https://github.com/yamoling/ma-rlenv" }
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
 
 
-[tool.poetry.dependencies]
-python = ">=3.10,<4"
-opencv-python = ">=4.6.0"
-pettingzoo = "^1.24.3"
-numpy = "^2.0.1"
-gymnasium = "^0.29.1"
-
-# Optional dependencies (SMAC)
-pysc2 = { git = "https://github.com/deepmind/pysc2.git", optional = true } # Required to fix a bug (library version misatch) in pysc2
-smac = { git = "https://github.com/oxwhirl/smac.git", optional = true }
-pygame = { version = "^2.5.2", optional = true }
-pymunk = { version = "^6.6.0", optional = true }
+[project.optional-dependencies]
+smac = [
+    "pysc2 @ https://github.com/deepmind/pysc2.git", # Cloning from the git repo to fix a bug related to an outdated library.
+    "smac @ https://github.com/oxwhirl/smac.git",
+]
 
 
-[tool.poetry.extras]
-smac = ["smac", "pysc2", "pygame", "pymunk"]
-
-
-[tool.poetry.dev-dependencies]
-pytest = "^7.4"
-
-[tool.poetry.group.dev.dependencies]
-pytest-xdist = "^3.4.0"
-
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [tool.ruff]
 line-length = 140
 
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+[tool.hatch.build.targets.wheel]
+packages = ["src/marlenv"]
 
-# pytest configuration
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.uv]
+dev-dependencies = ["pytest>=8.3.2", "pytest-xdist>=3.6.1"]
+
+
 [tool.pytest.ini_options]
-filterwarnings = [
-    # Ignore deprecation warnings related to Pysc2 (smac)
-    "ignore:Call to deprecated create function Descriptor().*:DeprecationWarning",
-    "ignore:Call to deprecated create function FieldDescriptor().*:DeprecationWarning",
-    "ignore:Call to deprecated create function EnumValueDescriptor().*:DeprecationWarning",
-    "ignore:Call to deprecated create function EnumDescriptor().*:DeprecationWarning",
-    "ignore:Call to deprecated create function FileDescriptor().*:DeprecationWarning",
-    "ignore:pkg_resources is deprecated as an API*:DeprecationWarning",
-    "ignore:protobuf",
-]
-# Run tests on two cores with xdist
+# Run tests on 4 cores
 addopts = "-n 4"
 testpaths = ["tests"]
 pythonpath = "src"

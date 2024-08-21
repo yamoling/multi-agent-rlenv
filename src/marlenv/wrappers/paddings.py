@@ -1,6 +1,6 @@
 import numpy as np
 from dataclasses import dataclass
-from rlenv.models import Observation
+from marlenv.models import Observation
 from .rlenv_wrapper import RLEnvWrapper, RLEnv
 
 
