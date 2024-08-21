@@ -65,6 +65,7 @@ jobs:
           uv-version: 0.3.0
     - name: Build wheels
       run: |
+        uv venv
         uv pip install pip build
         uv run python -m build
     
