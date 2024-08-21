@@ -1,5 +1,5 @@
 [project]
-name = "marl-env"
+name = "multi-agent-rlenv"
 version = "1.0.0"
 description = "A strongly typed Multi-Agent Reinforcement Learning framework"
 authors = [

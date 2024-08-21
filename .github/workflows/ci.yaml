@@ -69,7 +69,7 @@ jobs:
         uv pip install pip build
         uv run python -m build
     
-    - name: Upload package distributions 📡
+    - name: 📡 Upload package distributions
       uses: actions/upload-artifact@v3
       with:
         name: wheels
@@ -82,7 +82,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: pypi
-      url: https://pypi.org/p/marl-env 
+      url: https://pypi.org/p/multi-agent-rlenv 
     permissions:
       id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
     steps:
