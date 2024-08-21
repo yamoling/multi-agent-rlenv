@@ -7,13 +7,7 @@ authors = [
 ]
 readme = "README.md"
 requires-python = ">=3.10, <4"
-dependencies = [
-    "numpy>=2.0.0",
-    "opencv-python>=4.10.0.84",
-    "gymnasium>=0.29.1",
-    "pysc2",
-    "smac",
-]
+dependencies = ["numpy>=2.0.0", "opencv-python>=4.10.0.84", "gymnasium>=0.29.1"]
 urls = { "repository" = "https://github.com/yamoling/ma-rlenv" }
 classifiers = [
     "Programming Language :: Python :: 3",
