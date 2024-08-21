@@ -86,7 +86,7 @@ jobs:
     permissions:
       id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
     steps:
-    - name: Download all the dists
+    - name: 📡 Download package distributions
       uses: actions/download-artifact@v3
       with:
         name: wheels
