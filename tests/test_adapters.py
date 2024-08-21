@@ -1,103 +1,126 @@
-import numpy as np
+try:
+    import gymnasium
+
+    skip_gym = False
+except ImportError:
+    skip_gym = True
+
+try:
+    import pettingzoo
+
+    skip_pettingzoo = False
+except ImportError:
+    skip_pettingzoo = True
+
+try:
+    import smac
+
+    skip_smac = False
+except ImportError:
+    skip_smac = True
+
+
 import marlenv
+import numpy as np
 
+from marlenv import Observation, MockEnv, RLEnv, DiscreteActionSpace
 from marlenv.adapters import PymarlAdapter
-from marlenv import MockEnv, Observation, DiscreteActionSpace
+import pytest
 
-try:
 
-    def test_gym_adapter():
-        # Discrete action space
-        env = marlenv.make("CartPole-v1")
-        env.reset()
-        assert env.n_actions == 2
-        assert env.n_agents == 1
-        assert env.reward_size == 1
+@pytest.mark.skipif(skip_gym, reason="Gymnasium is not installed")
+def test_gym_adapter():
+    # Discrete action space
+    env = marlenv.make("CartPole-v1")
+    env.reset()
+    assert env.n_actions == 2
+    assert env.n_agents == 1
+    assert env.reward_size == 1
 
-        obs, r, done, truncated, info = env.step(env.action_space.sample())
-        assert isinstance(obs, Observation)
-        assert isinstance(r, np.ndarray)
-        assert r.shape == (1,)
-        assert isinstance(done, bool)
-        assert isinstance(truncated, bool)
-        assert isinstance(info, dict)
+    obs, r, done, truncated, info = env.step(env.action_space.sample())
+    assert isinstance(obs, Observation)
+    assert isinstance(r, np.ndarray)
+    assert r.shape == (1,)
+    assert isinstance(done, bool)
+    assert isinstance(truncated, bool)
+    assert isinstance(info, dict)
 
-        # Continuous action space
-        env = marlenv.make("Pendulum-v1")
-        env.reset()
-except ImportError:
-    # Skip the test if gym is not installed
-    pass
+    # Continuous action space
+    env = marlenv.make("Pendulum-v1")
+    env.reset()
 
-try:
-    from pettingzoo.sisl import pursuit_v4, waterworld_v4
 
-    def test_pettingzoo_adapter_discrete_action():
-        # https://pettingzoo.farama.org/environments/sisl/pursuit/#pursuit
-        env = marlenv.adapters.PettingZoo(pursuit_v4.parallel_env())
-        env.reset()
-        action = env.action_space.sample()
-        obs, r, done, truncated, info = env.step(action)
-        assert isinstance(obs, Observation)
-        assert isinstance(r, np.ndarray)
-        assert r.shape == (1,)
-        assert isinstance(done, bool)
-        assert isinstance(truncated, bool)
-        assert isinstance(info, dict)
-        assert env.n_agents == 8
-        assert env.n_actions == 5
-        assert isinstance(env.action_space, marlenv.DiscreteActionSpace)
+@pytest.mark.skipif(skip_pettingzoo, reason="PettingZoo is not installed")
+def test_pettingzoo_adapter_discrete_action():
+    # https://pettingzoo.farama.org/environments/sisl/pursuit/#pursuit
+    from pettingzoo.sisl import pursuit_v4
 
-    def test_pettingzoo_adapter_continuous_action():
-        # https://pettingzoo.farama.org/environments/sisl/waterworld/
+    env = marlenv.adapters.PettingZoo(pursuit_v4.parallel_env())
+    env.reset()
+    action = env.action_space.sample()
+    obs, r, done, truncated, info = env.step(action)
+    assert isinstance(obs, Observation)
+    assert isinstance(r, np.ndarray)
+    assert r.shape == (1,)
+    assert isinstance(done, bool)
+    assert isinstance(truncated, bool)
+    assert isinstance(info, dict)
+    assert env.n_agents == 8
+    assert env.n_actions == 5
+    assert isinstance(env.action_space, marlenv.DiscreteActionSpace)
 
-        env = marlenv.adapters.PettingZoo(waterworld_v4.parallel_env())
-        env.reset()
-        action = env.action_space.sample()
-        obs, r, done, truncated, info = env.step(action)
-        assert isinstance(obs, Observation)
-        assert isinstance(r, np.ndarray)
-        assert r.shape == (1,)
-        assert isinstance(done, bool)
-        assert isinstance(truncated, bool)
-        assert isinstance(info, dict)
-        assert env.n_actions == 2
-        assert env.n_agents == 2
-        assert isinstance(env.action_space, marlenv.ContinuousActionSpace)
-except ImportError:
-    # Skip the test if pettingzoo is not installed
-    pass
 
-# Only perform the tests if SMAC is installed.
-try:
-    from marlenv.adapters import SMAC
+@pytest.mark.skipif(skip_pettingzoo, reason="PettingZoo is not installed")
+def test_pettingzoo_adapter_continuous_action():
+    from pettingzoo.sisl import waterworld_v4
+
+    # https://pettingzoo.farama.org/environments/sisl/waterworld/
+    env = marlenv.adapters.PettingZoo(waterworld_v4.parallel_env())
+    env.reset()
+    action = env.action_space.sample()
+    obs, r, done, truncated, info = env.step(action)
+    assert isinstance(obs, Observation)
+    assert isinstance(r, np.ndarray)
+    assert r.shape == (1,)
+    assert isinstance(done, bool)
+    assert isinstance(truncated, bool)
+    assert isinstance(info, dict)
+    assert env.n_actions == 2
+    assert env.n_agents == 2
+    assert isinstance(env.action_space, marlenv.ContinuousActionSpace)
+
+
+def _check_env_3m(env: RLEnv):
+    obs = env.reset()
+    assert isinstance(obs, Observation)
+    assert env.n_agents == 3
+    assert isinstance(env.action_space, DiscreteActionSpace)
+
+    obs, r, done, truncated, info = env.step(env.action_space.sample(env.available_actions()))
+    assert isinstance(obs, Observation)
+    assert isinstance(r, np.ndarray)
+    assert r.shape == (1,)
+    assert isinstance(done, bool)
+    assert isinstance(truncated, bool)
+    assert isinstance(info, dict)
+
+
+@pytest.mark.skipif(skip_smac, reason="SMAC is not installed")
+def test_smac_from_class():
     from smac.env import StarCraft2Env
+    from marlenv.adapters import SMAC
 
-    def _check_env_3m(env: SMAC):
-        obs = env.reset()
-        assert isinstance(obs, Observation)
-        assert env.n_agents == 3
-        assert isinstance(env.action_space, DiscreteActionSpace)
+    env = SMAC(StarCraft2Env("3m"))
+    _check_env_3m(env)
 
-        obs, r, done, truncated, info = env.step(env.action_space.sample(env.available_actions()))
-        assert isinstance(obs, Observation)
-        assert isinstance(r, np.ndarray)
-        assert r.shape == (1,)
-        assert isinstance(done, bool)
-        assert isinstance(truncated, bool)
-        assert isinstance(info, dict)
 
-    def test_smac_from_class():
-        env = SMAC(StarCraft2Env("3m"))
-        _check_env_3m(env)
+@pytest.mark.skipif(skip_smac, reason="SMAC is not installed")
+def test_smac_render():
+    from marlenv.adapters import SMAC
 
-    def test_smac_render():
-        env = SMAC("3m")
-        env.reset()
-        env.render("human")
-except ImportError:
-    # Skip the test if SMAC is not installed
-    pass
+    env = SMAC("3m")
+    env.reset()
+    env.render("human")
 
 
 def test_pymarl():

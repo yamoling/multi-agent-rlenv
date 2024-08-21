@@ -1,14 +1,14 @@
 """
-RLEnv is a strongly typed library for multi-agent and multi-objective reinforcement learning.
+`marlenv` is a strongly typed library for multi-agent and multi-objective reinforcement learning.
 
-RLEnv
-    - provides a simple and consistent interface for reinforcement learning environments
-    - provides fundamental models such as `Observation`s, `Episode`s, `Transition`s, ...
-    - works with gymnasium, pettingzoo and SMAC out of the box
-    - provides helpful wrappers to add intrinsic rewards, agent ids, record videos, ...
+It aims to
+    - provide a simple and consistent interface for reinforcement learning environments
+    - provide fundamental models such as `Observation`s, `Episode`s, `Transition`s, ...
+    - work with gymnasium, pettingzoo and SMAC out of the box
+    - provide helpful wrappers to add intrinsic rewards, agent ids, record videos, ...
 """
 
-__version__ = "1.0.4"
+__version__ = "1.0.1"
 
 from . import models
 from . import wrappers

@@ -1,6 +1,7 @@
 [project]
 name = "multi-agent-rlenv"
-version = "1.0.0"
+dynamic = ["version"]
+# version = "1.0.0"
 description = "A strongly typed Multi-Agent Reinforcement Learning framework"
 authors = [
     { "name" = "Yannick Molinghen", "email" = "yannick.molinghen@ulb.be" },
@@ -25,6 +26,9 @@ line-length = 140
 [tool.hatch.build.targets.wheel]
 packages = ["src/marlenv"]
 
+[tool.hatch]
+version = { "path" = "src/marlenv/__init__.py", "attr" = "__version__" }
+
 [tool.hatch.metadata]
 allow-direct-references = true
 
@@ -37,3 +41,5 @@ dev-dependencies = ["pytest>=8.3.2", "pytest-xdist>=3.6.1"]
 addopts = "-n auto"
 testpaths = ["tests"]
 pythonpath = "src"
+# Ignore deprecation warnings caused by SMAC
+filterwarnings = "ignore::DeprecationWarning"

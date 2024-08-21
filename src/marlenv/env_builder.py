@@ -40,13 +40,9 @@ except ImportError:
 
 
 @overload
-def make(env: str) -> RLEnv[ActionSpace]:
+def make(env: str, **kwargs) -> RLEnv[ActionSpace]:
     """
-    Make an RLEnv from a string.
-
-    Formats:
-        - "smac:<map_name>" for SMAC environments
-        - Any other string is assumed to be a Gymnasium environment (e.g. "CartPole-v1")
+    Make an RLEnv from the `gymnasium` registry (e.g: "CartPole-v1").
     """
 
 
@@ -55,16 +51,19 @@ def make(env: RLEnv[A]) -> RLEnv[A]:
     """Why would you do this ?"""
 
 
-def make(env):
+def make(env, **kwargs):
     """Make an RLEnv from str (Gym) or PettingZoo"""
     match env:
         case RLEnv():
             return env
         case str():
-            import gymnasium
+            try:
+                import gymnasium
+            except ImportError:
+                raise ImportError("Gymnasium is not installed !")
             from marlenv.adapters import Gym
 
-            return Gym(gymnasium.make(env, render_mode="rgb_array"))
+            return Gym(gymnasium.make(env, render_mode="rgb_array", **kwargs))
 
     try:
         from marlenv.adapters import PettingZoo
