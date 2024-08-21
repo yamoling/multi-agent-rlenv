@@ -7,7 +7,13 @@ authors = [
 ]
 readme = "README.md"
 requires-python = ">=3.10, <4"
-dependencies = ["numpy>=2.0.0", "opencv-python>=4.10.0.84", "gymnasium>=0.29.1"]
+dependencies = [
+    "numpy>=2.0.0",
+    "opencv-python>=4.10.0.84",
+    "gymnasium>=0.29.1",
+    "pysc2",
+    "smac",
+]
 urls = { "repository" = "https://github.com/yamoling/ma-rlenv" }
 classifiers = [
     "Programming Language :: Python :: 3",
@@ -16,9 +22,11 @@ classifiers = [
 
 
 [project.optional-dependencies]
+# These dependencies need to be installed directly from git (sources in section [tool.uv.sources]).
+# Otherwise, there is a bug in pysc2 related to library version mismatch.
 smac = [
-    "pysc2 @ https://github.com/deepmind/pysc2.git", # Cloning from the git repo to fix a bug related to an outdated library.
-    "smac @ https://github.com/oxwhirl/smac.git",
+    "pysc2",
+    "smac",
 ]
 
 
@@ -37,6 +45,10 @@ allow-direct-references = true
 
 [tool.uv]
 dev-dependencies = ["pytest>=8.3.2", "pytest-xdist>=3.6.1"]
+
+[tool.uv.sources]
+pysc2 = { git = "https://github.com/deepmind/pysc2.git" }
+smac = { git = "https://github.com/oxwhirl/smac.git" }
 
 
 [tool.pytest.ini_options]
