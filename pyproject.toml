@@ -21,15 +21,6 @@ classifiers = [
 ]
 
 
-[project.optional-dependencies]
-# These dependencies need to be installed directly from git (sources in section [tool.uv.sources]).
-# Otherwise, there is a bug in pysc2 related to library version mismatch.
-smac = [
-    "pysc2",
-    "smac",
-]
-
-
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
@@ -45,10 +36,6 @@ allow-direct-references = true
 
 [tool.uv]
 dev-dependencies = ["pytest>=8.3.2", "pytest-xdist>=3.6.1"]
-
-[tool.uv.sources]
-pysc2 = { git = "https://github.com/deepmind/pysc2.git" }
-smac = { git = "https://github.com/oxwhirl/smac.git" }
 
 
 [tool.pytest.ini_options]
