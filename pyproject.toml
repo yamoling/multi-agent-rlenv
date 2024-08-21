@@ -40,7 +40,7 @@ dev-dependencies = ["pytest>=8.3.2", "pytest-xdist>=3.6.1"]
 
 
 [tool.pytest.ini_options]
-# Run tests on 4 cores
-addopts = "-n 4"
+# Run tests on the maximum number of available CPUs
+addopts = "-n auto"
 testpaths = ["tests"]
 pythonpath = "src"
