@@ -1,9 +1,11 @@
 from dataclasses import dataclass
-from typing import Literal, Optional, TypeVar, Generic, overload
+from typing import Generic, Literal, Optional, TypeVar, overload
 
+import numpy as np
+import numpy.typing as npt
 
-from .models import RLEnv, ActionSpace, DiscreteActionSpace
 from . import wrappers
+from .models import ActionSpace, DiscreteActionSpace, RLEnv
 
 A = TypeVar("A", bound=ActionSpace, covariant=True)
 
@@ -74,6 +76,7 @@ def make(env, **kwargs):
         pass
     try:
         from smac.env import StarCraft2Env
+
         from marlenv.adapters import SMAC
 
         if isinstance(env, StarCraft2Env):
@@ -127,6 +130,10 @@ class Builder(Generic[A]):
         self._env = wrappers.LastAction(self._env)
         return self
 
+    def mask_actions(self, mask: npt.NDArray[np.bool]):
+        self._env = wrappers.ActionMask(self._env, mask)  # type: ignore
+        return self
+
     def centralised(self):
         """Centralises the observations and actions"""
         self._env = wrappers.Centralised(self._env)
@@ -137,7 +144,7 @@ class Builder(Generic[A]):
         folder: str,
         encoding: Literal["mp4", "avi"] = "mp4",
     ):
-        """Add video recording of runs. Onnly records tests by default."""
+        """Add video recording to the environment"""
         self._env = wrappers.VideoRecorder(self._env, folder, video_encoding=encoding)
         return self
 
@@ -146,8 +153,14 @@ class Builder(Generic[A]):
         self._env = wrappers.AvailableActions(self._env)
         return self
 
+    def available_actions_mask(self, mask: npt.NDArray[np.bool]):
+        """Masks a subset of the available actions.
+        The mask must have shape (n_agents, n_actions), where any False value will be masked."""
+        self._env = wrappers.AvailableActionsMask(self._env, mask)
+        return self
+
     def blind(self, p: float):
-        """Blinds the observations with probability p"""
+        """Blinds (replaces with zeros) the observations with probability p"""
         self._env = wrappers.Blind(self._env, p)
         return self
 

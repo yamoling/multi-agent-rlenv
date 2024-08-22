@@ -29,9 +29,6 @@ packages = ["src/marlenv"]
 [tool.hatch]
 version = { "path" = "src/marlenv/__init__.py", "attr" = "__version__" }
 
-[tool.hatch.metadata]
-allow-direct-references = true
-
 [tool.uv]
 dev-dependencies = ["pytest>=8.3.2", "pytest-xdist>=3.6.1"]
 

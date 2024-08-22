@@ -8,7 +8,7 @@ It aims to
     - provide helpful wrappers to add intrinsic rewards, agent ids, record videos, ...
 """
 
-__version__ = "1.0.1"
+__version__ = "1.0.2"
 
 from . import models
 from . import wrappers

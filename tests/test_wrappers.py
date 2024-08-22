@@ -218,18 +218,18 @@ def test_available_action_mask():
     wrapped = MockEnv(N_AGENTS, n_actions=N_ACTIONS)
 
     try:
-        AvailableActionsMask(wrapped, np.zeros((N_AGENTS, N_ACTIONS), dtype=np.float32))
+        AvailableActionsMask(wrapped, np.zeros((N_AGENTS, N_ACTIONS), dtype=bool))
         assert False, "It should not be possible to mask all actions"
     except AssertionError:
         pass
 
     try:
-        AvailableActionsMask(wrapped, np.zeros((N_AGENTS, N_ACTIONS + 1), np.float32))
+        AvailableActionsMask(wrapped, np.zeros((N_AGENTS, N_ACTIONS + 1), dtype=bool))
         assert False, "It should not be possible to mask all actions"
     except AssertionError:
         pass
 
-    mask = np.array([[0, 1, 0, 1, 0], [1, 0, 1, 0, 1]])
+    mask = np.array([[0, 1, 0, 1, 0], [1, 0, 1, 0, 1]], dtype=bool)
     env = AvailableActionsMask(wrapped, mask)
     obs = env.reset()
     assert np.array_equal(obs.available_actions, mask)

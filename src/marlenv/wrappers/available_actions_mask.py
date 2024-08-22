@@ -25,4 +25,4 @@ class AvailableActionsMask(RLEnvWrapper[A]):
         return obs, reward, done, truncated, info
 
     def available_actions(self):
-        return self.action_mask * self.wrapped.available_actions()
+        return self.action_mask & self.wrapped.available_actions()
