@@ -26,6 +26,9 @@ class PymarlAdapter:
         """Returns all agent observations in a list"""
         if self.current_observation is None:
             raise ValueError("No observation available. Call reset() first.")
+        # If there are no extras, return the data
+        if self.current_observation.extras.size == 0:
+            return self.current_observation.data
         return np.concatenate([self.current_observation.data, self.current_observation.extras], axis=-1)
 
     def get_obs_agent(self, agent_id: int):
