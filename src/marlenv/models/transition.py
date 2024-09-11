@@ -1,29 +1,32 @@
+from typing import Any, Optional, Generic, TypeVar
 from dataclasses import dataclass
-from typing import Any, Optional
 import numpy as np
 import numpy.typing as npt
 
-from .observation import Observation
+from .observation import Observation, D, S
+
+
+R = TypeVar("R")
 
 
 @dataclass
-class Transition:
+class Transition(Generic[R, S, D]):
     """Transition model"""
 
-    obs: Observation
+    obs: Observation[D, S]
     action: np.ndarray
-    reward: np.ndarray
+    reward: R
     done: bool
     info: dict[str, Any]
-    obs_: Observation
+    obs_: Observation[D, S]
     truncated: bool
-    probs: np.ndarray | None
+    probs: Optional[np.ndarray] = None
 
     def __init__(
         self,
         obs: Observation,
         action: npt.ArrayLike,
-        reward: npt.ArrayLike,
+        reward: R,
         done: bool,
         info: dict[str, Any],
         obs_: Observation,
@@ -58,7 +61,13 @@ class Transition:
         return int(self.obs.available_actions.shape[-1])
 
     def __hash__(self) -> int:
-        return hash((self.obs, self.action.tobytes(), self.reward.tobytes(), self.done, self.obs_))
+        ho = hash(self.obs)
+        ho_ = hash(self.obs_)
+        if isinstance(self.reward, np.ndarray):
+            hr = hash(self.reward.tobytes())
+        else:
+            hr = self.reward
+        return hash((ho, self.action.tobytes(), hr, self.done, ho_, self.truncated))
 
     def __ne__(self, other) -> bool:
         return not self.__eq__(other)

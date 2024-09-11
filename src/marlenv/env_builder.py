@@ -5,15 +5,21 @@ import numpy as np
 import numpy.typing as npt
 
 from . import wrappers
-from .models import ActionSpace, DiscreteActionSpace, RLEnv
+from .models import ActionSpace, MARLEnv
+from .adapters import PettingZoo
 
 A = TypeVar("A", bound=ActionSpace, covariant=True)
+D = TypeVar("D")
+S = TypeVar("S")
+R = TypeVar("R", bound=float | npt.NDArray[np.float32])
 
 try:
     from pettingzoo import ParallelEnv
 
     @overload
-    def make(env: ParallelEnv) -> RLEnv[ActionSpace]: ...
+    def make(
+        env: ParallelEnv,
+    ) -> PettingZoo: ...
 
     HAS_PETTINGZOO = True
 except ImportError:
@@ -22,9 +28,16 @@ except ImportError:
 
 try:
     from gymnasium import Env
+    from .adapters import Gym
 
     @overload
-    def make(env: Env) -> RLEnv[ActionSpace]: ...
+    def make(env: Env) -> Gym: ...
+
+    @overload
+    def make(env: str, **kwargs) -> Gym:
+        """
+        Make an RLEnv from the `gymnasium` registry (e.g: "CartPole-v1").
+        """
 
     HAS_GYM = True
 except ImportError:
@@ -32,9 +45,10 @@ except ImportError:
 
 try:
     from smac.env import StarCraft2Env
+    from .adapters import SMAC
 
     @overload
-    def make(env: StarCraft2Env) -> RLEnv[DiscreteActionSpace]: ...
+    def make(env: StarCraft2Env) -> SMAC: ...
 
     HAS_SMAC = True
 except ImportError:
@@ -42,21 +56,14 @@ except ImportError:
 
 
 @overload
-def make(env: str, **kwargs) -> RLEnv[ActionSpace]:
-    """
-    Make an RLEnv from the `gymnasium` registry (e.g: "CartPole-v1").
-    """
-
-
-@overload
-def make(env: RLEnv[A]) -> RLEnv[A]:
+def make(env: MARLEnv[A, D, S, R]) -> MARLEnv[A, D, S, R]:
     """Why would you do this ?"""
 
 
 def make(env, **kwargs):
     """Make an RLEnv from str (Gym) or PettingZoo"""
     match env:
-        case RLEnv():
+        case MARLEnv():
             return env
         case str():
             try:
@@ -88,12 +95,12 @@ def make(env, **kwargs):
 
 
 @dataclass
-class Builder(Generic[A]):
+class Builder(Generic[A, D, S, R]):
     """Builder for environments"""
 
-    _env: RLEnv[A]
+    _env: MARLEnv[A, D, S, R]
 
-    def __init__(self, env: RLEnv[A]):
+    def __init__(self, env: MARLEnv[A, D, S, R]):
         self._env = env
 
     def time_limit(self, n_steps: int, add_extra: bool = False, truncation_penalty: Optional[float] = None):
@@ -136,7 +143,7 @@ class Builder(Generic[A]):
 
     def centralised(self):
         """Centralises the observations and actions"""
-        self._env = wrappers.Centralised(self._env)
+        self._env = wrappers.Centralised(self._env)  # type: ignore
         return self
 
     def record(
@@ -161,13 +168,13 @@ class Builder(Generic[A]):
 
     def blind(self, p: float):
         """Blinds (replaces with zeros) the observations with probability p"""
-        self._env = wrappers.Blind(self._env, p)
+        self._env = wrappers.Blind(self._env, p)  # type: ignore
         return self
 
     def time_penalty(self, penalty: float):
         self._env = wrappers.TimePenalty(self._env, penalty)
         return self
 
-    def build(self) -> RLEnv[A]:
+    def build(self) -> MARLEnv[A, D, S, R]:
         """Build and return the environment"""
         return self._env

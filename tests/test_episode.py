@@ -1,9 +1,9 @@
 import numpy as np
-from marlenv.models import EpisodeBuilder, Transition, Episode, RLEnv
+from marlenv.models import EpisodeBuilder, Transition, Episode, MARLEnv
 from marlenv import wrappers, MockEnv
 
 
-def generate_episode(env: RLEnv, with_probs: bool = False) -> Episode:
+def generate_episode(env: MARLEnv, with_probs: bool = False) -> Episode:
     obs = env.reset()
     episode = EpisodeBuilder()
     while not episode.is_finished:

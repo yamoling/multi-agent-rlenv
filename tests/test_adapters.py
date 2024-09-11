@@ -23,7 +23,7 @@ except ImportError:
 import marlenv
 import numpy as np
 
-from marlenv import Observation, MockEnv, RLEnv, DiscreteActionSpace
+from marlenv import Observation, MockEnv, MARLEnv, DiscreteActionSpace
 from marlenv.adapters import PymarlAdapter
 import pytest
 
@@ -33,9 +33,10 @@ def test_gym_adapter():
     # Discrete action space
     env = marlenv.make("CartPole-v1")
     env.reset()
+    assert isinstance(env, MARLEnv)
+    assert not isinstance(env, marlenv.MOMARLEnv)
     assert env.n_actions == 2
     assert env.n_agents == 1
-    assert env.reward_size == 1
 
     obs, r, done, truncated, info = env.step(env.action_space.sample())
     assert isinstance(obs, Observation)
@@ -90,7 +91,7 @@ def test_pettingzoo_adapter_continuous_action():
     assert isinstance(env.action_space, marlenv.ContinuousActionSpace)
 
 
-def _check_env_3m(env: RLEnv):
+def _check_env_3m(env: MARLEnv):
     obs = env.reset()
     assert isinstance(obs, Observation)
     assert env.n_agents == 3

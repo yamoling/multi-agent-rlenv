@@ -1,16 +1,22 @@
 import numpy as np
 from dataclasses import dataclass
-from marlenv.models import Observation
-from .rlenv_wrapper import RLEnvWrapper, RLEnv
+from marlenv.models import Observation, ActionSpace
+from .rlenv_wrapper import RLEnvWrapper, MARLEnv
+from typing import TypeVar
+
+A = TypeVar("A", bound=ActionSpace)
+D = TypeVar("D")
+S = TypeVar("S")
+R = TypeVar("R", bound=float | np.ndarray)
 
 
 @dataclass
-class PadExtras(RLEnvWrapper):
+class PadExtras(RLEnvWrapper[A, D, S, R]):
     """RLEnv wrapper that adds extra zeros at the end of the observation extras."""
 
     n: int
 
-    def __init__(self, env: RLEnv, n_added: int):
+    def __init__(self, env: MARLEnv[A, D, S, R], n_added: int):
         assert len(env.extra_feature_shape) == 1, "PadExtras only accepts 1D extras"
         super().__init__(env, extra_feature_shape=(env.extra_feature_shape[0] + n_added,))
         self.n = n_added
@@ -27,10 +33,10 @@ class PadExtras(RLEnvWrapper):
         return obs
 
 
-class PadObservations(RLEnvWrapper):
+class PadObservations(RLEnvWrapper[A, D, S, R]):
     """RLEnv wrapper that adds extra zeros at the end of the observation data."""
 
-    def __init__(self, env: RLEnv, n_added: int) -> None:
+    def __init__(self, env: MARLEnv[A, D, S, R], n_added: int) -> None:
         assert len(env.observation_shape) == 1, "PadObservations only accepts 1D observations"
         super().__init__(env, observation_shape=(env.observation_shape[0] + n_added,))
         self.n = n_added

@@ -1,4 +1,4 @@
-from .rlenv_wrapper import RLEnvWrapper, RLEnv
+from .rlenv_wrapper import RLEnvWrapper, MARLEnv
 from .agent_id_wrapper import AgentId
 from .last_action_wrapper import LastAction
 from .video_recorder import VideoRecorder
@@ -12,7 +12,7 @@ from .available_actions_mask import AvailableActionsMask
 
 __all__ = [
     "RLEnvWrapper",
-    "RLEnv",
+    "MARLEnv",
     "AvailableActionsMask",
     "AgentId",
     "LastAction",

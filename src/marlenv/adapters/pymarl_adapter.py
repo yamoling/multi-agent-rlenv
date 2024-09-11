@@ -1,6 +1,7 @@
 from typing import Any
 import numpy as np
-from marlenv.models import RLEnv, DiscreteActionSpace
+import numpy.typing as npt
+from marlenv.models import MARLEnv, DiscreteActionSpace
 from marlenv.wrappers import TimeLimit
 
 
@@ -10,7 +11,7 @@ class PymarlAdapter:
     with the pymarl-qplex code base.
     """
 
-    def __init__(self, env: RLEnv[DiscreteActionSpace], episode_limit: int):
+    def __init__(self, env: MARLEnv[DiscreteActionSpace, npt.NDArray[np.float32], npt.NDArray[np.float32], float], episode_limit: int):
         self.env = TimeLimit(env, episode_limit)
         # Required by PyMarl
         self.episode_limit = episode_limit
@@ -20,7 +21,7 @@ class PymarlAdapter:
         """Returns reward, terminated, info"""
         obs, reward, done, truncated, info = self.env.step(actions)
         self.current_observation = obs
-        return list(reward)[0], done or truncated, info
+        return reward, done or truncated, info
 
     def get_obs(self):
         """Returns all agent observations in a list"""

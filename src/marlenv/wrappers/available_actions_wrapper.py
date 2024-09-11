@@ -1,16 +1,19 @@
 import numpy as np
 import numpy.typing as npt
 from typing import TypeVar
-from marlenv.models import ActionSpace, RLEnv
+from marlenv.models import ActionSpace, MARLEnv
 from .rlenv_wrapper import RLEnvWrapper
 
 A = TypeVar("A", bound=ActionSpace)
+D = TypeVar("D")
+S = TypeVar("S")
+R = TypeVar("R", bound=float | npt.NDArray[np.float32])
 
 
-class AvailableActions(RLEnvWrapper[A]):
+class AvailableActions(RLEnvWrapper[A, D, S, R]):
     """Adds the available actions (one-hot) as an extra feature to the observation."""
 
-    def __init__(self, env: RLEnv[A]):
+    def __init__(self, env: MARLEnv[A, D, S, R]):
         super().__init__(env, extra_feature_shape=(env.extra_feature_shape[0] + env.n_actions,))
 
     def reset(self):

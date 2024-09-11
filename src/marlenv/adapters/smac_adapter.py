@@ -3,10 +3,10 @@ import numpy.typing as npt
 from typing import Literal, overload
 from smac.env import StarCraft2Env
 
-from marlenv.models import RLEnv, Observation, DiscreteActionSpace
+from marlenv.models import MARLEnv, Observation, DiscreteActionSpace
 
 
-class SMAC(RLEnv[DiscreteActionSpace]):
+class SMAC(MARLEnv[DiscreteActionSpace, npt.NDArray[np.float32], npt.NDArray[np.float32], float]):
     """Wrapper for the SMAC environment to work with this framework"""
 
     @overload

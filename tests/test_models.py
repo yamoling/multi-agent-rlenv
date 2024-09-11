@@ -1,4 +1,4 @@
-from marlenv import Observation, Transition, MockEnv
+from marlenv import Observation, Transition, MockEnv, MOMockEnv
 import numpy as np
 
 
@@ -159,7 +159,28 @@ def test_transition_hash():
         truncated=False,
     )
 
+    t3 = Transition(
+        obs=Observation(
+            data=np.arange(20, dtype=np.float32),
+            available_actions=np.full((5,), True),
+            state=np.ones(10, dtype=np.float32),
+            extras=np.arange(5, dtype=np.float32),
+        ),
+        action=np.ones(5, dtype=np.int64),
+        reward=[1.0],
+        done=False,
+        info={},
+        obs_=Observation(
+            data=np.arange(20, dtype=np.float32),
+            available_actions=np.full((5,), True),
+            state=np.ones(10, dtype=np.float32),
+            extras=np.arange(5, dtype=np.float32),
+        ),
+        truncated=True,
+    )
+
     assert hash(t1) == hash(t2)
+    assert hash(t1) != hash(t3)
 
 
 def test_has_same_inouts():
@@ -168,8 +189,8 @@ def test_has_same_inouts():
     assert env.has_same_inouts(env)
     assert not env.has_same_inouts(env2)
 
-    env = MockEnv(n_objectives=1)
-    env2 = MockEnv(n_objectives=2)
+    env = MOMockEnv(n_objectives=1)
+    env2 = MOMockEnv(n_objectives=2)
     assert not env.has_same_inouts(env2)
 
     env = MockEnv(n_actions=5)
@@ -197,7 +218,7 @@ def test_rlenv_available_actions():
 def test_multi_objective_env():
     N_AGENTS = 2
     N_OBJECTVES = 3
-    env = MockEnv(N_AGENTS, N_OBJECTVES)
+    env = MOMockEnv(N_AGENTS, N_OBJECTVES)
     assert env.reward_size == N_OBJECTVES
     assert env.n_agents == N_AGENTS
     assert env.n_actions == env.n_actions
@@ -205,3 +226,11 @@ def test_multi_objective_env():
     env.reset()
     reward = env.step([0] * N_AGENTS)[1]
     assert len(reward) == N_OBJECTVES
+
+
+def test_is_multi_objective():
+    env = MockEnv(4)
+    assert not env.is_multi_objective()
+
+    env = MOMockEnv(4)
+    assert env.is_multi_objective()

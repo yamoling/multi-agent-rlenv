@@ -1,8 +1,9 @@
 from gymnasium import Env, spaces
 import numpy as np
+import numpy.typing as npt
 
 from marlenv.models import (
-    RLEnv,
+    MARLEnv,
     Observation,
     ActionSpace,
     DiscreteSpace,
@@ -10,7 +11,7 @@ from marlenv.models import (
 )
 
 
-class Gym(RLEnv[ActionSpace]):
+class Gym(MARLEnv[ActionSpace, npt.NDArray[np.float32], npt.NDArray[np.float32], float]):
     """Wraps a gym envronment in an RLEnv"""
 
     def __init__(self, env: Env):

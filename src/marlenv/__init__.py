@@ -5,10 +5,11 @@ It aims to
     - provide a simple and consistent interface for reinforcement learning environments
     - provide fundamental models such as `Observation`s, `Episode`s, `Transition`s, ...
     - work with gymnasium, pettingzoo and SMAC out of the box
+    - work with multi-objective environments
     - provide helpful wrappers to add intrinsic rewards, agent ids, record videos, ...
 """
 
-__version__ = "1.0.2"
+__version__ = "1.1.0"
 
 from . import models
 from . import wrappers
@@ -18,7 +19,8 @@ from .models import spaces
 
 from .env_builder import make, Builder
 from .models import (
-    RLEnv,
+    MARLEnv,
+    MOMARLEnv,
     Observation,
     Episode,
     EpisodeBuilder,
@@ -29,7 +31,7 @@ from .models import (
     DiscreteActionSpace,
     ContinuousActionSpace,
 )
-from .mock_env import MockEnv
+from .mock_env import MockEnv, MOMockEnv
 
 __all__ = [
     "models",
@@ -38,7 +40,8 @@ __all__ = [
     "spaces",
     "make",
     "Builder",
-    "RLEnv",
+    "MARLEnv",
+    "MOMARLEnv",
     "Observation",
     "Episode",
     "EpisodeBuilder",
@@ -49,4 +52,5 @@ __all__ = [
     "DiscreteActionSpace",
     "ContinuousActionSpace",
     "MockEnv",
+    "MOMockEnv",
 ]

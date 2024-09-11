@@ -4,18 +4,20 @@ import numpy as np
 import numpy.typing as npt
 from dataclasses import dataclass
 
-from marlenv.models import RLEnv, ActionSpace
+from marlenv.models import MARLEnv, ActionSpace
 from .rlenv_wrapper import RLEnvWrapper
 
 
 A = TypeVar("A", bound=ActionSpace)
+S = TypeVar("S")
+R = TypeVar("R", bound=float | npt.NDArray)
 
 
 @dataclass
-class Blind(RLEnvWrapper[A]):
+class Blind(RLEnvWrapper[A, npt.NDArray, S, R]):
     p: float
 
-    def __init__(self, env: RLEnv[A], p: float | int):
+    def __init__(self, env: MARLEnv[A, npt.NDArray, S, R], p: float | int):
         super().__init__(env)
         self.p = float(p)
 

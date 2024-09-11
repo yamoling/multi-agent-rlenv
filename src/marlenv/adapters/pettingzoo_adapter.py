@@ -1,11 +1,11 @@
 from pettingzoo import ParallelEnv
 from gymnasium import spaces  # pettingzoo uses gymnasium spaces
-from marlenv.models import RLEnv, Observation, ActionSpace, DiscreteActionSpace, ContinuousActionSpace, ContinuousSpace
+from marlenv.models import MARLEnv, Observation, ActionSpace, DiscreteActionSpace, ContinuousActionSpace
 import numpy as np
 import numpy.typing as npt
 
 
-class PettingZoo(RLEnv[ActionSpace]):
+class PettingZoo(MARLEnv[ActionSpace, npt.NDArray[np.float32], npt.NDArray[np.float32], float]):
     def __init__(self, env: ParallelEnv):
         env.reset()
         aspace = env.action_space(env.possible_agents[0])

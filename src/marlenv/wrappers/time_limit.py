@@ -1,15 +1,15 @@
 from dataclasses import dataclass
-from typing import Optional, TypeVar
+from typing import Optional
+
 import numpy as np
 
-from marlenv.models import ActionSpace, Observation
-from .rlenv_wrapper import RLEnvWrapper, RLEnv
+from marlenv.models import Observation
 
-A = TypeVar("A", bound=ActionSpace)
+from .rlenv_wrapper import A, D, MARLEnv, RLEnvWrapper, S, R
 
 
 @dataclass
-class TimeLimit(RLEnvWrapper[A]):
+class TimeLimit(RLEnvWrapper[A, D, S, R]):
     """
     Limits the number of time steps for an episode. When the number of steps is reached, then the episode is truncated.
 
@@ -25,7 +25,13 @@ class TimeLimit(RLEnvWrapper[A]):
     add_extra: bool
     truncation_penalty: float
 
-    def __init__(self, env: RLEnv[A], step_limit: int, add_extra: bool = False, truncation_penalty: Optional[float] = None) -> None:
+    def __init__(
+        self,
+        env: MARLEnv[A, D, S, R],
+        step_limit: int,
+        add_extra: bool = False,
+        truncation_penalty: Optional[float] = None,
+    ) -> None:
         assert len(env.extra_feature_shape) == 1
         extras_shape = env.extra_feature_shape
         if add_extra:
@@ -49,7 +55,7 @@ class TimeLimit(RLEnvWrapper[A]):
             self.add_time_extra(obs)
         return obs
 
-    def step(self, actions):
+    def step(self, actions) -> tuple[Observation[D, S], R, bool, bool, dict]:
         self._current_step += 1
         obs_, reward, done, truncated, info = super().step(actions)
         if self.add_extra:
@@ -64,7 +70,7 @@ class TimeLimit(RLEnvWrapper[A]):
                     done = True
         if truncated:
             reward -= self.truncation_penalty
-        return obs_, reward, done, truncated, info
+        return obs_, reward, done, truncated, info  # type: ignore
 
     def add_time_extra(self, obs: Observation):
         time_ratio = np.full(

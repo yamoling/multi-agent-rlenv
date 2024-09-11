@@ -1,5 +1,7 @@
-from marlenv import Builder
+import numpy as np
+from marlenv import Builder, Transition, Observation
 from marlenv.adapters import SMAC
 
-env = Builder(SMAC("3m")).agent_id().time_limit(20).build()
-print(env.extra_feature_shape)
+o = Observation("a", [True, True], "state")
+
+t = Transition(obs=o, action=np.array([1]), info={}, done=False, reward=[0.5], obs_=o, truncated=False)

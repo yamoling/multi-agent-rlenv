@@ -1,5 +1,5 @@
 import numpy as np
-from marlenv import Builder, MockEnv
+from marlenv import Builder, MockEnv, MOMockEnv
 from marlenv.wrappers import Centralised, AvailableActionsMask
 import marlenv
 
@@ -35,12 +35,13 @@ def test_agent_id():
 
 def test_penalty_wrapper():
     N_OBJECTIVES = 5
-    mock = MockEnv(1, N_OBJECTIVES)
+    mock = MOMockEnv(1, N_OBJECTIVES, reward_step=1)
     env = Builder(mock).time_penalty(0.1).build()
+    expected = np.array([0.9] * N_OBJECTIVES, dtype=np.float32)
     done = False
     while not done:
         _, reward, done, *_ = env.step(np.array([0], dtype=np.int64))
-        assert reward == [mock.reward_step - 0.1] * N_OBJECTIVES
+        assert np.array_equal(reward, expected)
 
 
 def test_time_limit_wrapper():
@@ -132,7 +133,7 @@ def test_time_limit_wrapper_with_truncation_penalty():
 
 
 def test_blind_wrapper():
-    def test(env: marlenv.RLEnv):
+    def test(env: marlenv.MARLEnv):
         obs = env.reset()
         assert np.any(obs.data != 0)
         obs, r, done, truncated, info = env.step(env.action_space.sample())

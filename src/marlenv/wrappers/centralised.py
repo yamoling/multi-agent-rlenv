@@ -1,11 +1,18 @@
 from itertools import product
+from typing import TypeVar
 import numpy as np
-from marlenv.models import RLEnv, DiscreteSpace, Observation, ActionSpace
-from .rlenv_wrapper import RLEnvWrapper, A
+import numpy.typing as npt
+from marlenv.models import MARLEnv, DiscreteSpace, Observation, ActionSpace
+from .rlenv_wrapper import RLEnvWrapper
 
 
-class Centralised(RLEnvWrapper[A]):
-    def __init__(self, env: RLEnv[A]):
+A = TypeVar("A", bound=ActionSpace)
+S = TypeVar("S")
+R = TypeVar("R", bound=float | npt.NDArray[np.float32])
+
+
+class Centralised(RLEnvWrapper[A, np.ndarray, S, R]):
+    def __init__(self, env: MARLEnv[A, np.ndarray, S, R]):
         if not isinstance(env.action_space.individual_action_space, DiscreteSpace):
             raise NotImplementedError(f"Action space {env.action_space} not supported")
         joint_observation_shape = (env.observation_shape[0] * env.n_agents, *env.observation_shape[1:])
@@ -21,7 +28,7 @@ class Centralised(RLEnvWrapper[A]):
         obs = super().reset()
         return self._joint_observation(obs)
 
-    def _make_joint_action_space(self, env: RLEnv[A]):
+    def _make_joint_action_space(self, env: MARLEnv[A, npt.NDArray[np.float32], S]):
         agent_actions = list[list[str]]()
         for agent in range(env.n_agents):
             agent_actions.append([f"{agent}-{action}" for action in env.action_space.action_names])
@@ -51,7 +58,7 @@ class Centralised(RLEnvWrapper[A]):
         available_actions = np.array(joint_available, dtype=bool)
         return available_actions.reshape((self.n_agents, self.n_actions))
 
-    def _joint_observation(self, obs: Observation):
+    def _joint_observation(self, obs: Observation[npt.NDArray[np.float32], S]):
         obs.data = np.concatenate(obs.data, axis=0)
         obs.extras = np.concatenate(obs.extras, axis=0)
         # Unsqueze the first dimension since there is one agent
