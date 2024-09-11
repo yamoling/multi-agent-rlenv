@@ -164,7 +164,7 @@ class MOMARLEnv(MARLEnv[A, D, S, npt.NDArray[np.float32]], ABC):
         return self.reward_space.size
 
     @abstractmethod
-    def step(self, actions: npt.ArrayLike) -> tuple[Observation[D, S], npt.NDArray[np.float32], bool, bool, dict[str, Any]]:
+    def step(self, actions) -> tuple[Observation[D, S], npt.NDArray[np.float32], bool, bool, dict[str, Any]]:
         """Perform a step in the environment.
 
         Returns:
