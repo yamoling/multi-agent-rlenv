@@ -3,7 +3,7 @@ import numpy as np
 import numpy.typing as npt
 from marlenv.models import ActionSpace
 from .rlenv_wrapper import RLEnvWrapper, MARLEnv
-from ..models.rl_env import MOMARLEnv
+# from ..models.rl_env import MOMARLEnv
 
 from typing import TypeVar
 
@@ -19,14 +19,14 @@ class TimePenalty(RLEnvWrapper[A, D, S, R]):
 
     def __init__(self, env: MARLEnv[A, D, S, R], penalty: float | list[float]):
         super().__init__(env)
-        if not isinstance(env, MOMARLEnv):
+
+        if env.is_multi_objective:
+            if isinstance(penalty, float):
+                penalty = [penalty] * env.reward_space.size
+            self.penalty = np.array(penalty, dtype=np.float32)
+        else:
             assert isinstance(penalty, float)
             self.penalty = penalty
-        else:
-            if isinstance(penalty, float):
-                penalty = [penalty] * env.reward_size
-            assert len(penalty) == env.reward_size  # type: ignore
-            self.penalty = np.array(penalty, dtype=np.float32)
 
     def step(self, action: npt.NDArray[np.int64]):
         obs, reward, *rest = self.wrapped.step(action)

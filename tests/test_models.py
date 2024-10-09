@@ -219,7 +219,7 @@ def test_multi_objective_env():
     N_AGENTS = 2
     N_OBJECTVES = 3
     env = MOMockEnv(N_AGENTS, N_OBJECTVES)
-    assert env.reward_size == N_OBJECTVES
+    assert env.reward_space.size == N_OBJECTVES
     assert env.n_agents == N_AGENTS
     assert env.n_actions == env.n_actions
 
@@ -230,7 +230,7 @@ def test_multi_objective_env():
 
 def test_is_multi_objective():
     env = MockEnv(4)
-    assert not env.is_multi_objective()
+    assert not env.is_multi_objective
 
     env = MOMockEnv(4)
-    assert env.is_multi_objective()
+    assert env.is_multi_objective

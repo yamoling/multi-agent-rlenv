@@ -1,6 +1,6 @@
 import numpy as np
 from marlenv import MARLEnv, Observation, DiscreteActionSpace, DiscreteSpace
-from .models.rl_env import MOMARLEnv
+# from .models.rl_env import MOMARLEnv
 
 
 class MockEnv(MARLEnv[DiscreteActionSpace, np.ndarray, np.ndarray]):
@@ -62,7 +62,7 @@ class MockEnv(MARLEnv[DiscreteActionSpace, np.ndarray, np.ndarray]):
         )
 
 
-class MOMockEnv(MOMARLEnv[DiscreteActionSpace, np.ndarray, np.ndarray]):
+class MOMockEnv(MARLEnv[DiscreteActionSpace, np.ndarray, np.ndarray]):
     """Multi-Objective Mock Environment"""
 
     def __init__(

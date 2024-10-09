@@ -20,7 +20,7 @@ from .models import spaces
 from .env_builder import make, Builder
 from .models import (
     MARLEnv,
-    MOMARLEnv,
+    # MOMARLEnv,
     Observation,
     Episode,
     EpisodeBuilder,
@@ -41,7 +41,7 @@ __all__ = [
     "make",
     "Builder",
     "MARLEnv",
-    "MOMARLEnv",
+    # "MOMARLEnv",
     "Observation",
     "Episode",
     "EpisodeBuilder",

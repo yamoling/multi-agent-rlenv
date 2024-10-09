@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Generic, overload, Any, Literal
+from typing import Generic, Optional, overload, Any, Literal
 from typing_extensions import TypeVar
 import numpy as np
 import numpy.typing as npt
@@ -43,6 +43,7 @@ class MARLEnv(ABC, Generic[A, D, S, R]):
         observation_shape: tuple[int, ...],
         state_shape: tuple[int, ...],
         extra_feature_shape: tuple[int, ...] = (0,),
+        reward_space: Optional[DiscreteSpace] = None,
     ):
         super().__init__()
         self.name = self.__class__.__name__
@@ -52,11 +53,19 @@ class MARLEnv(ABC, Generic[A, D, S, R]):
         self.observation_shape = observation_shape
         self.state_shape = state_shape
         self.extra_feature_shape = extra_feature_shape
+        self.reward_space = reward_space or DiscreteSpace(1, labels=["Reward"])
+        """The reward space has shape (1, ) for single-objective environments."""
+        print(R)
 
     @property
     def agent_state_size(self) -> int:
         """The size of the state for a single agent."""
         raise NotImplementedError(f"{self.name} does not support unit_state_size")
+
+    @property
+    def is_multi_objective(self) -> bool:
+        """Whether the environment is multi-objective."""
+        return self.reward_space.size > 1
 
     def available_actions(self) -> npt.NDArray[np.bool_]:
         """
@@ -108,24 +117,22 @@ class MARLEnv(ABC, Generic[A, D, S, R]):
         """
         Raise a `ValueError` if the inputs and output spaces of the environments are different.
         """
-        if env1.action_space != env2.action_space:
-            raise ValueError(f"Action spaces are different: {env1.action_space} != {env2.action_space}")
-        if env1.observation_shape != env2.observation_shape:
-            raise ValueError(f"Observation shapes are different: {env1.observation_shape} != {env2.observation_shape}")
-        if env1.state_shape != env2.state_shape:
-            raise ValueError(f"State shapes are different: {env1.state_shape} != {env2.state_shape}")
-        if env1.extra_feature_shape != env2.extra_feature_shape:
-            raise ValueError(f"Extra feature shapes are different: {env1.extra_feature_shape} != {env2.extra_feature_shape}")
 
     def has_same_inouts(self, other) -> bool:
         """Alias for `have_same_inouts(self, other)`."""
         if not isinstance(other, MARLEnv):
             return False
-        try:
-            MARLEnv.assert_same_inouts(self, other)  # type: ignore
-            return True
-        except ValueError:
+        if self.action_space != other.action_space:
             return False
+        if self.observation_shape != other.observation_shape:
+            return False
+        if self.state_shape != other.state_shape:
+            return False
+        if self.extra_feature_shape != other.extra_feature_shape:
+            return False
+        if self.reward_space != other.reward_space:
+            return False
+        return True
 
     @staticmethod
     def have_same_inouts(env1: "MARLEnv", env2: "MARLEnv") -> bool:
@@ -136,56 +143,53 @@ class MARLEnv(ABC, Generic[A, D, S, R]):
         except ValueError:
             return False
 
-    def is_multi_objective(self):
-        return isinstance(self, MOMARLEnv)
 
+# @dataclass
+# class MOMARLEnv(MARLEnv[A, D, S, npt.NDArray[np.float32]], ABC):
+#     """Multi-Objective Multi-Agent Reinforcement Learning environment."""
 
-@dataclass
-class MOMARLEnv(MARLEnv[A, D, S, npt.NDArray[np.float32]], ABC):
-    """Multi-Objective Multi-Agent Reinforcement Learning environment."""
+#     reward_space: DiscreteSpace
+#     """Desription of the reward space. In general, this is a single scalar, but it can be multi-objective."""
 
-    reward_space: DiscreteSpace
-    """Desription of the reward space. In general, this is a single scalar, but it can be multi-objective."""
+#     def __init__(
+#         self,
+#         action_space: A,
+#         observation_shape: tuple[int, ...],
+#         state_shape: tuple[int, ...],
+#         reward_space: DiscreteSpace,
+#         extra_feature_shape: tuple[int, ...] = (0,),
+#     ):
+#         super().__init__(action_space, observation_shape, state_shape, extra_feature_shape)
+#         self.reward_space = reward_space
 
-    def __init__(
-        self,
-        action_space: A,
-        observation_shape: tuple[int, ...],
-        state_shape: tuple[int, ...],
-        reward_space: DiscreteSpace,
-        extra_feature_shape: tuple[int, ...] = (0,),
-    ):
-        super().__init__(action_space, observation_shape, state_shape, extra_feature_shape)
-        self.reward_space = reward_space
+#     @property
+#     def reward_size(self) -> int:
+#         """The size of the reward signal. In general, this is 1, but it can be higher for multi-objective environments."""
+#         return self.reward_space.size
 
-    @property
-    def reward_size(self) -> int:
-        """The size of the reward signal. In general, this is 1, but it can be higher for multi-objective environments."""
-        return self.reward_space.size
+#     @abstractmethod
+#     def step(self, actions) -> tuple[Observation[D, S], npt.NDArray[np.float32], bool, bool, dict[str, Any]]:
+#         """Perform a step in the environment.
 
-    @abstractmethod
-    def step(self, actions) -> tuple[Observation[D, S], npt.NDArray[np.float32], bool, bool, dict[str, Any]]:
-        """Perform a step in the environment.
+#         Returns:
+#         - observations: The observation resulting from the action.
+#         - rewards: The 1D-array of rewards (one per objective).
+#         - done: Whether the episode is over
+#         - truncated: Whether the episode is truncated
+#         - info: Extra information
+#         """
 
-        Returns:
-        - observations: The observation resulting from the action.
-        - rewards: The 1D-array of rewards (one per objective).
-        - done: Whether the episode is over
-        - truncated: Whether the episode is truncated
-        - info: Extra information
-        """
+#     def has_same_inouts(self, other) -> bool:
+#         if not isinstance(other, MOMARLEnv):
+#             return False
+#         if self.reward_space != other.reward_space:
+#             return False
+#         return super().has_same_inouts(other)
 
-    def has_same_inouts(self, other) -> bool:
-        if not isinstance(other, MOMARLEnv):
-            return False
-        if self.reward_space != other.reward_space:
-            return False
-        return super().has_same_inouts(other)
-
-    @staticmethod
-    def assert_same_inouts(env1: "MOMARLEnv", env2: MARLEnv) -> None:
-        if not isinstance(env2, MOMARLEnv):
-            raise ValueError(f"Environment 2 is not a MultiObjectiveRLEnv: {env2}")
-        if env1.reward_space != env2.reward_space:
-            raise ValueError(f"Reward spaces are different: {env1.reward_space} != {env2.reward_space}")
-        return MARLEnv.assert_same_inouts(env1, env2)
+#     @staticmethod
+#     def assert_same_inouts(env1: "MOMARLEnv", env2: MARLEnv) -> None:
+#         if not isinstance(env2, MOMARLEnv):
+#             raise ValueError(f"Environment 2 is not a MultiObjectiveRLEnv: {env2}")
+#         if env1.reward_space != env2.reward_space:
+#             raise ValueError(f"Reward spaces are different: {env1.reward_space} != {env2.reward_space}")
+#         return MARLEnv.assert_same_inouts(env1, env2)
