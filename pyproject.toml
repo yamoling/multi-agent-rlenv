@@ -30,14 +30,10 @@ packages = ["src/marlenv"]
 version = { "path" = "src/marlenv/__init__.py", "attr" = "__version__" }
 
 [tool.uv]
-dev-dependencies = [
-    "pytest>=8.3.2",
-]
+dev-dependencies = ["pytest>=8.3.2"]
 
 
 [tool.pytest.ini_options]
-# Run tests on the maximum number of available CPUs
-addopts = "-n auto"
 testpaths = ["tests"]
 pythonpath = "src"
 # Ignore deprecation warnings caused by SMAC
