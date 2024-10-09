@@ -236,3 +236,11 @@ def test_available_action_mask():
     assert np.array_equal(obs.available_actions, mask)
     obs, *_ = env.step([0, 1])
     assert np.array_equal(obs.available_actions, mask)
+
+
+def test_wrapper_reward_shape():
+    mock = MOMockEnv(1)
+    env = Builder(mock).time_penalty(0.1).last_action().available_actions().build()
+
+    assert mock.is_multi_objective == env.is_multi_objective
+    assert mock.reward_space == env.reward_space

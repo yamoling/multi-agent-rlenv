@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from abc import ABC
 import numpy as np
 import numpy.typing as npt
-from marlenv.models import MARLEnv, ActionSpace
+from marlenv.models import MARLEnv, ActionSpace, DiscreteSpace
 
 
 A = TypeVar("A", bound=ActionSpace)
@@ -27,12 +27,14 @@ class RLEnvWrapper(MARLEnv[A, D, S, R], ABC):
         state_shape: Optional[tuple[int, ...]] = None,
         extra_feature_shape: Optional[tuple[int, ...]] = None,
         action_space: Optional[A] = None,
+        reward_space: Optional[DiscreteSpace] = None,
     ):
         super().__init__(
             action_space=action_space or env.action_space,
             observation_shape=observation_shape or env.observation_shape,
             state_shape=state_shape or env.state_shape,
             extra_feature_shape=extra_feature_shape or env.extra_feature_shape,
+            reward_space=reward_space or env.reward_space,
         )
         self.wrapped = env
         if isinstance(env, RLEnvWrapper):
