@@ -55,7 +55,6 @@ class MARLEnv(ABC, Generic[A, D, S, R]):
         self.extra_feature_shape = extra_feature_shape
         self.reward_space = reward_space or DiscreteSpace(1, labels=["Reward"])
         """The reward space has shape (1, ) for single-objective environments."""
-        print(R)
 
     @property
     def agent_state_size(self) -> int:
