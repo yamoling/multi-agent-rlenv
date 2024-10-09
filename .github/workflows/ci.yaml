@@ -42,11 +42,11 @@ jobs:
       - name: Install uv
         uses: yezz123/setup-uv@v4
         with:
-          uv-version: 0.3.0
+          uv-version: 0.4.11
       - name: Install dependencies and run pytest
         run: |
           uv sync
-          uv run pytest -n 4
+          uv run pytest
 
   build:
     name: 📦 Build package
