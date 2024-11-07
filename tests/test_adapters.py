@@ -40,8 +40,7 @@ def test_gym_adapter():
 
     obs, r, done, truncated, info = env.step(env.action_space.sample())
     assert isinstance(obs, Observation)
-    assert isinstance(r, np.ndarray)
-    assert r.shape == (1,)
+    assert isinstance(r, float)
     assert isinstance(done, bool)
     assert isinstance(truncated, bool)
     assert isinstance(info, dict)
