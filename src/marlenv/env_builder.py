@@ -138,7 +138,7 @@ class Builder(Generic[A, D, S, R]):
         return self
 
     def mask_actions(self, mask: npt.NDArray[np.bool]):
-        self._env = wrappers.ActionMask(self._env, mask)  # type: ignore
+        self._env = wrappers.AvailableActionsMask(self._env, mask)  # type: ignore
         return self
 
     def centralised(self):

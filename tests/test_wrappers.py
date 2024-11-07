@@ -244,3 +244,11 @@ def test_wrapper_reward_shape():
 
     assert mock.is_multi_objective == env.is_multi_objective
     assert mock.reward_space == env.reward_space
+
+
+def test_builder_action_mask():
+    env = MockEnv()
+    mask = np.full((env.n_agents, env.n_actions), True)
+    mask[0, 0] = False
+    mask[1, 1] = False
+    marlenv.Builder(env).mask_actions(mask).build()
