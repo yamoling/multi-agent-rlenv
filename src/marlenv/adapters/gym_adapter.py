@@ -44,7 +44,7 @@ class Gym(MARLEnv[ActionSpace, npt.NDArray[np.float32], npt.NDArray[np.float32],
             self.available_actions(),
             self.get_state(),
         )
-        return obs_, np.array([reward], dtype=np.float32), done, truncated, info
+        return obs_, reward, done, truncated, info
 
     def get_state(self):
         return np.zeros(1, dtype=np.float32)
