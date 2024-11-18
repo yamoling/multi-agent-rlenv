@@ -12,7 +12,7 @@ class AvailableActionsMask(RLEnvWrapper[A, D, S, R]):
     """Permanently masks a subset of the available actions."""
 
     def __init__(self, env: MARLEnv[A, D, S, R], action_mask: npt.NDArray[np.bool_]):
-        super().__init__(env, extra_feature_shape=(env.extra_feature_shape[0] + env.n_actions,))
+        super().__init__(env)
         assert action_mask.shape == (env.n_agents, env.n_actions), "Action mask must have shape (n_agents, n_actions)."
         n_available_action_per_agent = action_mask.sum(axis=-1)
         assert np.all(n_available_action_per_agent >= 1), "At least one action must be available for each agent."

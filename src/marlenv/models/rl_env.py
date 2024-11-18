@@ -9,9 +9,9 @@ from dataclasses import dataclass
 from .spaces import ActionSpace, DiscreteSpace
 from .observation import Observation
 
-A = TypeVar("A", bound=ActionSpace)
-D = TypeVar("D")
-S = TypeVar("S")
+A = TypeVar("A", bound=ActionSpace, default=ActionSpace)
+D = TypeVar("D", default=np.ndarray)
+S = TypeVar("S", default=np.ndarray)
 R = TypeVar("R", bound=float | npt.NDArray[np.float32], default=float)
 
 

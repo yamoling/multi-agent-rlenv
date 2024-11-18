@@ -251,4 +251,5 @@ def test_builder_action_mask():
     mask = np.full((env.n_agents, env.n_actions), True)
     mask[0, 0] = False
     mask[1, 1] = False
-    marlenv.Builder(env).mask_actions(mask).build()
+    new_env = marlenv.Builder(env).mask_actions(mask).build()
+    assert env.extra_feature_shape == new_env.extra_feature_shape
