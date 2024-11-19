@@ -12,7 +12,7 @@ class PymarlAdapter:
     """
 
     def __init__(self, env: MARLEnv[DiscreteActionSpace, npt.NDArray[np.float32], npt.NDArray[np.float32], float], episode_limit: int):
-        self.env = TimeLimit(env, episode_limit)
+        self.env = TimeLimit(env, episode_limit, add_extra=False)
         # Required by PyMarl
         self.episode_limit = episode_limit
         self.current_observation = None

@@ -12,7 +12,7 @@ def test_registry():
     assert restored_env.n_agents == env.n_agents
     assert restored_env.observation_shape == env.observation_shape
     assert restored_env.state_shape == env.state_shape
-    assert restored_env.extra_feature_shape == env.extra_feature_shape
+    assert restored_env.extra_shape == env.extra_shape
     assert restored_env.n_actions == env.n_actions
 
 
@@ -22,7 +22,7 @@ def test_registry_gym():
     assert restored_env.n_agents == env.n_agents
     assert restored_env.observation_shape == env.observation_shape
     assert restored_env.state_shape == env.state_shape
-    assert restored_env.extra_feature_shape == env.extra_feature_shape
+    assert restored_env.extra_shape == env.extra_shape
     assert restored_env.n_actions == env.n_actions
 
 
@@ -32,5 +32,5 @@ def test_registry_wrapper():
     assert restored_env.n_agents == env.n_agents
     assert restored_env.observation_shape == env.observation_shape
     assert restored_env.state_shape == env.state_shape
-    assert restored_env.extra_feature_shape == env.extra_feature_shape
+    assert restored_env.extra_shape == env.extra_shape
     assert restored_env.n_actions == env.n_actions

@@ -16,20 +16,24 @@ class Observation(Generic[D, S]):
 
     data: D
     """The actual environment observation. The shape is [n_agents, *obs_shape]"""
+    extras: npt.NDArray[np.float32]
+    """The extra information to provide to the dqn alongisde the features (agent ID, last action, ...)"""
     available_actions: npt.NDArray[np.bool_]
     """The available actions at the time of the observation"""
     state: S
     """The environment state at the time of the observation"""
-    extras: npt.NDArray[np.float32]
-    """The extra information to provide to the dqn alongisde the features (agent ID, last action, ...)"""
+    state_extras: npt.NDArray[np.float32]
+    """The extra state information (e.g. time, ...)"""
+
     n_agents: int
 
     def __init__(
         self,
         data: D,
-        available_actions: Sequence[bool] | np.ndarray,
+        available_actions: Sequence[bool] | npt.NDArray[np.bool],
         state: S,
         extras: Optional[npt.NDArray[np.float32]] = None,
+        state_extras: Optional[npt.NDArray[np.float32]] = None,
     ):
         self.data = data
         if not isinstance(available_actions, np.ndarray):
@@ -41,11 +45,20 @@ class Observation(Generic[D, S]):
             self.extras = extras
         else:
             self.extras = np.zeros((self.n_agents, 0), dtype=np.float32)
+        if state_extras is not None:
+            self.state_extras = state_extras
+        else:
+            self.state_extras = np.zeros((0,), dtype=np.float32)
 
     @property
     def extras_shape(self) -> tuple[int, ...]:
         """The shape of the observation extras"""
         return self.extras.shape
+
+    @property
+    def state_extras_shape(self) -> tuple[int, ...]:
+        """The shape of the state extras"""
+        return self.state_extras.shape
 
     def __hash__(self):
         if isinstance(self.data, np.ndarray):

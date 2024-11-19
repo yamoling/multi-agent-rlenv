@@ -4,6 +4,7 @@ from typing_extensions import TypeVar
 import numpy as np
 import numpy.typing as npt
 from dataclasses import dataclass
+from itertools import product
 
 
 from .spaces import ActionSpace, DiscreteSpace, DiscreteActionSpace, ContinuousActionSpace
@@ -30,9 +31,10 @@ class MARLEnv(ABC, Generic[A, D, S, R]):
     action_space: A
     observation_shape: tuple[int, ...]
     """The shape of an observation for a single agent."""
+    extra_shape: tuple[int, ...]
+    """The shape of the extras features for a single agent (or the state)"""
     state_shape: tuple[int, ...]
     """The shape of the state."""
-    extra_feature_shape: tuple[int, ...]
     n_agents: int
     n_actions: int
     name: str
@@ -42,7 +44,7 @@ class MARLEnv(ABC, Generic[A, D, S, R]):
         action_space: A,
         observation_shape: tuple[int, ...],
         state_shape: tuple[int, ...],
-        extra_feature_shape: tuple[int, ...] = (0,),
+        extra_shape: tuple[int, ...] = (0,),
         reward_space: Optional[DiscreteSpace] = None,
     ):
         super().__init__()
@@ -52,7 +54,7 @@ class MARLEnv(ABC, Generic[A, D, S, R]):
         self.n_agents = action_space.n_agents
         self.observation_shape = observation_shape
         self.state_shape = state_shape
-        self.extra_feature_shape = extra_feature_shape
+        self.extra_shape = extra_shape
         self.reward_space = reward_space or DiscreteSpace(1, labels=["Reward"])
         """The reward space has shape (1, ) for single-objective environments."""
 
@@ -66,21 +68,34 @@ class MARLEnv(ABC, Generic[A, D, S, R]):
         """Whether the environment is multi-objective."""
         return self.reward_space.size > 1
 
-    def available_actions(self) -> npt.NDArray[np.bool_]:
+    def available_actions(self) -> npt.NDArray[np.bool]:
         """
         Get the currently available actions for each agent.
 
         The output array has shape (n_agents, n_actions) and contains 1 if the action is available and 0 otherwise.
         """
-        return np.full((self.n_agents, self.n_actions), True, dtype=bool)
+        return np.full((self.n_agents, self.n_actions), True, dtype=np.bool)
+
+    def available_joint_actions(self) -> list[tuple]:
+        """Get the possible joint actions."""
+        agents_available_actions = [np.nonzero(available)[0] for available in self.available_actions()]
+        return list(product(*agents_available_actions))
 
     def seed(self, seed_value: int):
         """Set the environment seed"""
         raise NotImplementedError("Method not implemented")
 
     @abstractmethod
-    def get_state(self) -> npt.NDArray[np.float32]:
+    def get_observation(self) -> Observation[D, S]:
+        """Retrieve the current observation of the environment."""
+
+    @abstractmethod
+    def get_state(self) -> S:
         """Retrieve the current state of the environment."""
+
+    def set_state(self, state: S) -> None:
+        """Set the state of the environment."""
+        raise NotImplementedError("Method not implemented")
 
     @abstractmethod
     def step(self, actions: Sequence[int] | Sequence[float] | npt.NDArray) -> tuple[Observation[D, S], R, bool, bool, dict[str, Any]]:
@@ -127,7 +142,7 @@ class MARLEnv(ABC, Generic[A, D, S, R]):
             return False
         if self.state_shape != other.state_shape:
             return False
-        if self.extra_feature_shape != other.extra_feature_shape:
+        if self.extra_shape != other.extra_shape:
             return False
         if self.reward_space != other.reward_space:
             return False

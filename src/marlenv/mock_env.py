@@ -17,7 +17,7 @@ class DiscreteMockEnv(DiscreteMARLEnv[np.ndarray, np.ndarray]):
             DiscreteActionSpace(n_agents, n_actions),
             (obs_size,),
             (n_agents * agent_state_size,),
-            extra_feature_shape=(extras_size,),
+            extra_shape=(extras_size,),
         )
         self.obs_size = obs_size
         self.extra_size = extras_size
@@ -33,9 +33,9 @@ class DiscreteMockEnv(DiscreteMARLEnv[np.ndarray, np.ndarray]):
 
     def reset(self):
         self.t = 0
-        return self.observation()
+        return self.get_observation()
 
-    def observation(self):
+    def get_observation(self):
         obs_data = np.array(
             [np.arange(self.t + agent, self.t + agent + self.obs_size) for agent in range(self.n_agents)],
             dtype=np.float32,
@@ -53,7 +53,7 @@ class DiscreteMockEnv(DiscreteMARLEnv[np.ndarray, np.ndarray]):
         self.t += 1
         self.actions_history.append(actions)
         return (
-            self.observation(),
+            self.get_observation(),
             self.reward_step,
             self.t >= self.end_game,
             False,
@@ -79,7 +79,7 @@ class DiscreteMOMockEnv(MARLEnv[DiscreteActionSpace, np.ndarray, np.ndarray, np.
             DiscreteActionSpace(n_agents, n_actions),
             (obs_size,),
             (n_agents * agent_state_size,),
-            extra_feature_shape=(extras_size,),
+            extra_shape=(extras_size,),
             reward_space=DiscreteSpace(n_objectives),
         )
         self.obs_size = obs_size
@@ -96,9 +96,9 @@ class DiscreteMOMockEnv(MARLEnv[DiscreteActionSpace, np.ndarray, np.ndarray, np.
 
     def reset(self):
         self.t = 0
-        return self.observation()
+        return self.get_observation()
 
-    def observation(self):
+    def get_observation(self):
         obs_data = np.array(
             [np.arange(self.t + agent, self.t + agent + self.obs_size) for agent in range(self.n_agents)],
             dtype=np.float32,
@@ -116,7 +116,7 @@ class DiscreteMOMockEnv(MARLEnv[DiscreteActionSpace, np.ndarray, np.ndarray, np.
         self.t += 1
         self.actions_history.append(action)
         return (
-            self.observation(),
+            self.get_observation(),
             np.full(self.reward_space.shape, self.reward_step, dtype=np.float32),
             self.t >= self.end_game,
             False,

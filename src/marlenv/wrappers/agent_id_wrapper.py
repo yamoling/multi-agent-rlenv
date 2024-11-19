@@ -14,8 +14,8 @@ class AgentId(RLEnvWrapper[A, D, S, R]):
     """RLEnv wrapper that adds a one-hot encoding of the agent id."""
 
     def __init__(self, env: MARLEnv[A, D, S, R]):
-        assert len(env.extra_feature_shape) == 1, "AgentIdWrapper only works with single dimension extras"
-        super().__init__(env, extra_feature_shape=(env.n_agents + env.extra_feature_shape[0],))
+        assert len(env.extra_shape) == 1, "AgentIdWrapper only works with single dimension extras"
+        super().__init__(env, extra_shape=(env.n_agents + env.extra_shape[0],))
         self._identity = np.identity(env.n_agents, dtype=np.float32)
 
     def step(self, actions):

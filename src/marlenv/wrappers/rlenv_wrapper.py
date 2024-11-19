@@ -25,7 +25,7 @@ class RLEnvWrapper(MARLEnv[A, D, S, R], ABC):
         env: MARLEnv[A, D, S, R],
         observation_shape: Optional[tuple[int, ...]] = None,
         state_shape: Optional[tuple[int, ...]] = None,
-        extra_feature_shape: Optional[tuple[int, ...]] = None,
+        extra_shape: Optional[tuple[int, ...]] = None,
         action_space: Optional[A] = None,
         reward_space: Optional[DiscreteSpace] = None,
     ):
@@ -33,7 +33,7 @@ class RLEnvWrapper(MARLEnv[A, D, S, R], ABC):
             action_space=action_space or env.action_space,
             observation_shape=observation_shape or env.observation_shape,
             state_shape=state_shape or env.state_shape,
-            extra_feature_shape=extra_feature_shape or env.extra_feature_shape,
+            extra_shape=extra_shape or env.extra_shape,
             reward_space=reward_space or env.reward_space,
         )
         self.wrapped = env
@@ -45,6 +45,9 @@ class RLEnvWrapper(MARLEnv[A, D, S, R], ABC):
             self.full_name = f"{self.__class__.__name__}({env.name})"
             self.unwrapped = env
         self.name = env.name
+
+    def get_observation(self):
+        return self.wrapped.get_observation()
 
     @property
     def agent_state_size(self):
@@ -58,6 +61,9 @@ class RLEnvWrapper(MARLEnv[A, D, S, R], ABC):
 
     def get_state(self):
         return self.wrapped.get_state()
+
+    def set_state(self, state: S):
+        return self.wrapped.set_state(state)
 
     def available_actions(self):
         return self.wrapped.available_actions()

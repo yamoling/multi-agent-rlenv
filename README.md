@@ -58,7 +58,7 @@ from marlenv import Builder
 from marlenv.adapters import SMAC
 
 env = Builder(SMAC("3m")).agent_id().time_limit(20).build()
-print(env.extra_feature_shape) # -> (3, ) because there are 3 agents
+print(env.extra_shape) # -> (4, ) because there are 3 agents and the time counter
 ```
 
 

@@ -7,7 +7,6 @@ import numpy.typing as npt
 
 class PettingZoo(MARLEnv[ActionSpace, npt.NDArray[np.float32], npt.NDArray[np.float32], float]):
     def __init__(self, env: ParallelEnv):
-        env.reset()
         aspace = env.action_space(env.possible_agents[0])
 
         match aspace:
@@ -31,6 +30,7 @@ class PettingZoo(MARLEnv[ActionSpace, npt.NDArray[np.float32], npt.NDArray[np.fl
         self._env = env
         super().__init__(space, obs_space.shape, self.get_state().shape)
         self.agents = env.possible_agents
+        self.last_observation = None
 
     def get_state(self):
         try:
@@ -43,13 +43,19 @@ class PettingZoo(MARLEnv[ActionSpace, npt.NDArray[np.float32], npt.NDArray[np.fl
         obs, reward, term, trunc, info = self._env.step(action_dict)
         obs_data = np.array([v for v in obs.values()])
         reward = np.sum([r for r in reward.values()], keepdims=True)
-        observation = Observation(obs_data, self.available_actions(), self.get_state())
-        return observation, reward, any(term.values()), any(trunc.values()), info
+        self.last_observation = Observation(obs_data, self.available_actions(), self.get_state())
+        return self.last_observation, reward, any(term.values()), any(trunc.values()), info
 
-    def reset(self) -> Observation:
+    def reset(self):
         obs = self._env.reset()[0]
         obs_data = np.array([v for v in obs.values()])
-        return Observation(obs_data, self.available_actions(), self.get_state())
+        self.last_observation = Observation(obs_data, self.available_actions(), self.get_state())
+        return self.last_observation
+
+    def get_observation(self):
+        if self.last_observation is None:
+            raise ValueError("No observation available. Call reset() first.")
+        return self.last_observation
 
     def seed(self, seed_value: int):
         self._env.reset(seed=seed_value)

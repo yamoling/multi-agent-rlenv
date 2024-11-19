@@ -1,4 +1,4 @@
-from marlenv import Observation, Transition, DiscreteMockEnv, DiscreteMOMockEnv
+from marlenv import Observation, Transition, DiscreteMockEnv, DiscreteMOMockEnv, Builder
 import numpy as np
 
 
@@ -213,6 +213,27 @@ def test_has_same_inouts():
 def test_rlenv_available_actions():
     env = DiscreteMockEnv(4)
     assert np.all(env.available_actions() == 1)
+
+
+def test_available_joint_actions():
+    env = DiscreteMockEnv(n_agents=2, n_actions=3)
+    res = env.available_joint_actions()
+    assert len(res) == env.n_actions**env.n_agents
+
+    possibilities = [(0, 0), (0, 1), (0, 2), (1, 0), (1, 1), (1, 2), (2, 0), (2, 1), (2, 2)]
+    for joint_action in res:
+        assert len(joint_action) == env.n_agents
+        assert joint_action in possibilities
+
+
+def test_available_joint_actions_masked():
+    env = Builder(DiscreteMockEnv(n_agents=2, n_actions=3)).mask_actions(np.array([[0, 1, 1], [1, 0, 1]])).build()
+    res = env.available_joint_actions()
+
+    possibilities = [(1, 0), (1, 2), (2, 0), (2, 2)]
+    for joint_action in res:
+        assert len(joint_action) == env.n_agents
+        assert joint_action in possibilities
 
 
 def test_multi_objective_env():

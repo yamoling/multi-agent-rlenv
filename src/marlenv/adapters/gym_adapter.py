@@ -36,27 +36,33 @@ class Gym(MARLEnv[ActionSpace, npt.NDArray[np.float32], npt.NDArray[np.float32],
             self.name = self.env.unwrapped.spec.id
         else:
             self.name = "gym-no-id"
+        self.last_obs = None
+
+    def get_observation(self):
+        if self.last_obs is None:
+            raise ValueError("No observation available. Call reset() first.")
+        return self.last_obs
 
     def step(self, actions):
-        obs_, reward, done, truncated, info = self.env.step(list(actions)[0])
-        obs_ = Observation(
-            np.array([obs_], dtype=np.float32),
+        obs, reward, done, truncated, info = self.env.step(list(actions)[0])
+        self.last_obs = Observation(
+            np.array([obs], dtype=np.float32),
             self.available_actions(),
             self.get_state(),
         )
-        return obs_, reward, done, truncated, info
+        return self.last_obs, reward, done, truncated, info
 
     def get_state(self):
         return np.zeros(1, dtype=np.float32)
 
     def reset(self):
         obs_data, _info = self.env.reset()
-        obs = Observation(
+        self.last_obs = Observation(
             np.array([obs_data], dtype=np.float32),
             self.available_actions(),
             self.get_state(),
         )
-        return obs
+        return self.last_obs
 
     def render(self, mode: str = "human"):
         return self.env.render()

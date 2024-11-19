@@ -103,7 +103,7 @@ class Builder(Generic[A, D, S, R]):
     def __init__(self, env: MARLEnv[A, D, S, R]):
         self._env = env
 
-    def time_limit(self, n_steps: int, add_extra: bool = False, truncation_penalty: Optional[float] = None):
+    def time_limit(self, n_steps: int, add_extra: bool = True, truncation_penalty: Optional[float] = None):
         """
         Limits the number of time steps for an episode. When the number of steps is reached, then the episode is truncated.
 

@@ -29,15 +29,15 @@ class TimeLimit(RLEnvWrapper[A, D, S, R]):
         self,
         env: MARLEnv[A, D, S, R],
         step_limit: int,
-        add_extra: bool = False,
+        add_extra: bool = True,
         truncation_penalty: Optional[float] = None,
     ) -> None:
-        assert len(env.extra_feature_shape) == 1
-        extras_shape = env.extra_feature_shape
+        assert len(env.extra_shape) == 1
+        extras_shape = env.extra_shape
         if add_extra:
-            dims = env.extra_feature_shape[0]
+            dims = env.extra_shape[0]
             extras_shape = (dims + 1,)
-        super().__init__(env, extra_feature_shape=extras_shape)
+        super().__init__(env, extra_shape=extras_shape)
         self.step_limit = step_limit
         self._current_step = 0
         self.add_extra = add_extra
@@ -73,9 +73,11 @@ class TimeLimit(RLEnvWrapper[A, D, S, R]):
         return obs_, reward, done, truncated, info  # type: ignore
 
     def add_time_extra(self, obs: Observation):
+        counter = self._current_step / self.step_limit
         time_ratio = np.full(
             (self.n_agents, 1),
-            self._current_step / self.step_limit,
+            counter,
             dtype=np.float32,
         )
         obs.extras = np.concatenate([obs.extras, time_ratio], axis=-1)
+        obs.state_extras = np.concatenate([obs.state_extras, [counter]])

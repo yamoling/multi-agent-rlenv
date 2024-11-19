@@ -20,7 +20,7 @@ class Centralised(RLEnvWrapper[A, np.ndarray, S, R]):
             env,
             joint_observation_shape,
             env.state_shape,
-            env.extra_feature_shape,
+            env.extra_shape,
             action_space=self._make_joint_action_space(env),  # type: ignore
         )
 

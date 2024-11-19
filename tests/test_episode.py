@@ -1,9 +1,10 @@
+from typing import Any
 import numpy as np
 from marlenv.models import EpisodeBuilder, Transition, Episode, MARLEnv
 from marlenv import wrappers, DiscreteMockEnv
 
 
-def generate_episode(env: MARLEnv, with_probs: bool = False) -> Episode:
+def generate_episode(env: MARLEnv[Any], with_probs: bool = False) -> Episode:
     obs = env.reset()
     episode = EpisodeBuilder()
     while not episode.is_finished:
@@ -88,7 +89,7 @@ def test_returns():
 def test_dones_not_set_when_truncated():
     END_GAME = 10
     # The time limit issues a 'truncated' flag at t=10 but the episode should not be done
-    env = wrappers.TimeLimit(DiscreteMockEnv(2, end_game=END_GAME), END_GAME - 1)
+    env = wrappers.TimeLimit(DiscreteMockEnv(2, end_game=END_GAME), END_GAME - 1, add_extra=False)
     episode = generate_episode(env)
     # The episode sould be truncated but not done
     assert np.all(episode.dones == 0)
@@ -139,7 +140,7 @@ def test_padded_raises_error_with_too_small_size():
 
 
 def test_padded():
-    env = wrappers.TimeLimit(DiscreteMockEnv(2), 10)
+    env = wrappers.TimeLimit(DiscreteMockEnv(2), 10, add_extra=False)
 
     for i in range(5, 11):
         env.step_limit = i
@@ -160,7 +161,7 @@ def test_padded():
 
 
 def test_retrieve_episode_transitions():
-    env = wrappers.TimeLimit(DiscreteMockEnv(2), 10)
+    env = wrappers.TimeLimit(DiscreteMockEnv(2), 10, add_extra=False)
     episode = generate_episode(env)
     transitions = list(episode.transitions())
     assert len(transitions) == 10
@@ -170,7 +171,7 @@ def test_retrieve_episode_transitions():
 
 
 def test_iterate_on_episode():
-    env = wrappers.TimeLimit(DiscreteMockEnv(2), 10)
+    env = wrappers.TimeLimit(DiscreteMockEnv(2), 10, add_extra=False)
     episode = generate_episode(env)
     for i, t in enumerate(episode):  # type: ignore
         assert not t.done
@@ -181,7 +182,7 @@ def test_iterate_on_episode():
 
 
 def test_episode_with_logprobs():
-    env = wrappers.TimeLimit(DiscreteMockEnv(2), 10)
+    env = wrappers.TimeLimit(DiscreteMockEnv(2), 10, add_extra=False)
     episode = generate_episode(env, with_probs=True)
     assert episode.actions_probs is not None
     assert len(episode.actions_probs) == 10
