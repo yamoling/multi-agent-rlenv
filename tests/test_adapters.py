@@ -23,7 +23,7 @@ except ImportError:
 import marlenv
 import numpy as np
 
-from marlenv import Observation, MockEnv, MARLEnv, DiscreteActionSpace
+from marlenv import Observation, DiscreteMockEnv, MARLEnv, DiscreteActionSpace
 from marlenv.adapters import PymarlAdapter
 import pytest
 
@@ -131,7 +131,7 @@ def test_pymarl():
     OBS_SIZE = 42
     REWARD_STEP = 1
     env = PymarlAdapter(
-        MockEnv(
+        DiscreteMockEnv(
             N_AGENTS,
             n_actions=N_ACTIONS,
             agent_state_size=UNIT_STATE_SIZE,

@@ -1,7 +1,8 @@
 import numpy as np
 from marlenv import Builder, Transition, Observation
 from marlenv.adapters import SMAC
+from marlenv.mock_env import DiscreteMockEnv
 
-o = Observation("a", [True, True], "state")
 
-t = Transition(obs=o, action=np.array([1]), info={}, done=False, reward=[0.5], obs_=o, truncated=False)
+env = DiscreteMockEnv()
+env.step(np.array([0.1, 20.5]))

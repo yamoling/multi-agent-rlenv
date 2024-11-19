@@ -1,23 +1,23 @@
 import numpy as np
-from marlenv import Builder, MockEnv, MOMockEnv
+from marlenv import Builder, DiscreteMOMockEnv, DiscreteMockEnv
 from marlenv.wrappers import Centralised, AvailableActionsMask
 import marlenv
 
 
 def test_padding():
     PAD_SIZE = 2
-    mock = MockEnv(5)
+    mock = DiscreteMockEnv(5)
     env = Builder(mock).pad("extra", PAD_SIZE).build()
     assert env.extra_feature_shape == (PAD_SIZE + mock.extra_feature_shape[0],)
 
-    mock = MockEnv(5)
+    mock = DiscreteMockEnv(5)
     env = Builder(mock).pad("obs", PAD_SIZE).build()
     assert env.observation_shape == (mock.observation_shape[0] + PAD_SIZE,)
 
 
 def test_available_actions():
     N_AGENTS = 5
-    mock = MockEnv(N_AGENTS)
+    mock = DiscreteMockEnv(N_AGENTS)
     env = Builder(mock).available_actions().build()
 
     assert env.extra_feature_shape == (5 + mock.extra_feature_shape[0],)
@@ -26,7 +26,7 @@ def test_available_actions():
 
 
 def test_agent_id():
-    env = Builder(MockEnv(5)).agent_id().build()
+    env = Builder(DiscreteMockEnv(5)).agent_id().build()
 
     assert env.extra_feature_shape == (5,)
     obs = env.reset()
@@ -35,7 +35,7 @@ def test_agent_id():
 
 def test_penalty_wrapper():
     N_OBJECTIVES = 5
-    mock = MOMockEnv(1, N_OBJECTIVES, reward_step=1)
+    mock = DiscreteMOMockEnv(1, N_OBJECTIVES, reward_step=1)
     env = Builder(mock).time_penalty(0.1).build()
     expected = np.array([0.9] * N_OBJECTIVES, dtype=np.float32)
     done = False
@@ -46,7 +46,7 @@ def test_penalty_wrapper():
 
 def test_time_limit_wrapper():
     MAX_T = 5
-    env = Builder(MockEnv(1)).time_limit(MAX_T).build()
+    env = Builder(DiscreteMockEnv(1)).time_limit(MAX_T).build()
     assert env.extra_feature_shape == (0,)
     stop = False
     t = 0
@@ -62,7 +62,7 @@ def test_time_limit_wrapper():
 
 def test_truncated_and_done():
     END_GAME = 10
-    env = marlenv.wrappers.TimeLimit(MockEnv(2, end_game=END_GAME), END_GAME)
+    env = marlenv.wrappers.TimeLimit(DiscreteMockEnv(2, end_game=END_GAME), END_GAME)
     obs = env.reset()
     episode = marlenv.EpisodeBuilder()
     done = truncated = False
@@ -84,7 +84,7 @@ def test_time_limit_wrapper_with_extra():
     When an extra is given as input, the environment should be 'done' and 'truncated' when the time limit is reached.
     """
     MAX_T = 5
-    env = Builder(MockEnv(5)).time_limit(MAX_T, add_extra=True).build()
+    env = Builder(DiscreteMockEnv(5)).time_limit(MAX_T, add_extra=True).build()
     assert env.extra_feature_shape == (1,)
     obs = env.reset()
     assert obs.extras.shape == (5, 1)
@@ -102,13 +102,13 @@ def test_time_limit_wrapper_with_extra():
 
 def test_wrong_truncation_penalty():
     try:
-        Builder(MockEnv(1)).time_limit(5, add_extra=True, truncation_penalty=-0.1).build()
+        Builder(DiscreteMockEnv(1)).time_limit(5, add_extra=True, truncation_penalty=-0.1).build()
         assert False, "It should not be possible to set a negative truncation penalty"
     except AssertionError:
         pass
 
     try:
-        Builder(MockEnv(1)).time_limit(5, add_extra=False, truncation_penalty=0.1).build()
+        Builder(DiscreteMockEnv(1)).time_limit(5, add_extra=False, truncation_penalty=0.1).build()
         assert False, "It should not be possible to set a truncation penalty without adding the extra feature"
     except AssertionError:
         pass
@@ -116,7 +116,7 @@ def test_wrong_truncation_penalty():
 
 def test_time_limit_wrapper_with_truncation_penalty():
     MAX_T = 5
-    env = Builder(MockEnv(5)).time_limit(MAX_T, add_extra=True, truncation_penalty=0.1).build()
+    env = Builder(DiscreteMockEnv(5)).time_limit(MAX_T, add_extra=True, truncation_penalty=0.1).build()
     assert env.extra_feature_shape == (1,)
     obs = env.reset()
     assert obs.extras.shape == (5, 1)
@@ -139,14 +139,14 @@ def test_blind_wrapper():
         obs, r, done, truncated, info = env.step(env.action_space.sample())
         assert np.all(obs.data == 0)
 
-    env = marlenv.Builder(MockEnv(5)).blind(p=1).build()
+    env = marlenv.Builder(DiscreteMockEnv(5)).blind(p=1).build()
     test(env)
-    env = marlenv.wrappers.Blind(MockEnv(5), p=1)
+    env = marlenv.wrappers.Blind(DiscreteMockEnv(5), p=1)
     test(env)
 
 
 def test_last_action():
-    env = Builder(MockEnv(2)).last_action().build()
+    env = Builder(DiscreteMockEnv(2)).last_action().build()
     assert env.extra_feature_shape == (env.n_actions,)
     obs = env.reset()
     assert np.all(obs.extras == 0)
@@ -158,7 +158,7 @@ def test_last_action():
 
 
 def test_centralised_shape():
-    mock = MockEnv(2)
+    mock = DiscreteMockEnv(2)
     env = Builder(mock).centralised().time_limit(50, True).build()
     assert env.observation_shape == (2 * mock.obs_size,)
     assert env.n_agents == 1
@@ -170,7 +170,7 @@ def test_centralised_shape():
 
 
 def test_centralised_action():
-    mock = MockEnv(2)
+    mock = DiscreteMockEnv(2)
     env = Centralised(mock)
     for action1 in range(mock.n_actions):
         for action2 in range(mock.n_actions):
@@ -181,7 +181,7 @@ def test_centralised_action():
 
 
 def test_centralised_obs_and_state():
-    wrapped = MockEnv(2)
+    wrapped = DiscreteMockEnv(2)
     env = Centralised(wrapped)
     assert env.observation_shape == (2 * wrapped.obs_size,)
     assert env.state_shape == (wrapped.agent_state_size * wrapped.n_agents,)
@@ -195,7 +195,7 @@ def test_centralised_obs_and_state():
 
 def test_centralised_available_actions():
     N_AGENTS = 2
-    mock = MockEnv(N_AGENTS)
+    mock = DiscreteMockEnv(N_AGENTS)
     env = Builder(mock).centralised().build()
     available = env.available_actions()
     assert available.shape == (1, mock.n_actions**N_AGENTS)
@@ -216,7 +216,7 @@ def test_centralised_available_actions():
 def test_available_action_mask():
     N_AGENTS = 2
     N_ACTIONS = 5
-    wrapped = MockEnv(N_AGENTS, n_actions=N_ACTIONS)
+    wrapped = DiscreteMockEnv(N_AGENTS, n_actions=N_ACTIONS)
 
     try:
         AvailableActionsMask(wrapped, np.zeros((N_AGENTS, N_ACTIONS), dtype=bool))
@@ -239,7 +239,7 @@ def test_available_action_mask():
 
 
 def test_wrapper_reward_shape():
-    mock = MOMockEnv(1)
+    mock = DiscreteMOMockEnv(1)
     env = Builder(mock).time_penalty(0.1).last_action().available_actions().build()
 
     assert mock.is_multi_objective == env.is_multi_objective
@@ -247,7 +247,7 @@ def test_wrapper_reward_shape():
 
 
 def test_builder_action_mask():
-    env = MockEnv()
+    env = DiscreteMockEnv()
     mask = np.full((env.n_agents, env.n_actions), True)
     mask[0, 0] = False
     mask[1, 1] = False

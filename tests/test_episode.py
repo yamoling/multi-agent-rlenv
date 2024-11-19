@@ -1,6 +1,6 @@
 import numpy as np
 from marlenv.models import EpisodeBuilder, Transition, Episode, MARLEnv
-from marlenv import wrappers, MockEnv
+from marlenv import wrappers, DiscreteMockEnv
 
 
 def generate_episode(env: MARLEnv, with_probs: bool = False) -> Episode:
@@ -18,7 +18,7 @@ def generate_episode(env: MARLEnv, with_probs: bool = False) -> Episode:
 
 
 def test_episode_builder_is_done():
-    env = MockEnv(2)
+    env = DiscreteMockEnv(2)
     obs = env.reset()
     # Set the 'done' flag
     builder = EpisodeBuilder()
@@ -44,7 +44,7 @@ def test_build_not_finished_episode_fails():
         assert False, "Should have raised an AssertionError"
     except AssertionError:
         pass
-    env = MockEnv(2)
+    env = DiscreteMockEnv(2)
     obs = env.reset()
     builder.add(
         Transition(
@@ -65,7 +65,7 @@ def test_build_not_finished_episode_fails():
 
 
 def test_returns():
-    obs = MockEnv(2).reset()
+    obs = DiscreteMockEnv(2).reset()
     builder = EpisodeBuilder()
     n_steps = 20
     gamma = 0.95
@@ -88,7 +88,7 @@ def test_returns():
 def test_dones_not_set_when_truncated():
     END_GAME = 10
     # The time limit issues a 'truncated' flag at t=10 but the episode should not be done
-    env = wrappers.TimeLimit(MockEnv(2, end_game=END_GAME), END_GAME - 1)
+    env = wrappers.TimeLimit(DiscreteMockEnv(2, end_game=END_GAME), END_GAME - 1)
     episode = generate_episode(env)
     # The episode sould be truncated but not done
     assert np.all(episode.dones == 0)
@@ -98,7 +98,7 @@ def test_dones_not_set_when_truncated():
 
 def test_done_when_time_limit_reached_with_extras():
     END_GAME = 10
-    env = wrappers.TimeLimit(MockEnv(2, end_game=END_GAME), END_GAME - 1, add_extra=True)
+    env = wrappers.TimeLimit(DiscreteMockEnv(2, end_game=END_GAME), END_GAME - 1, add_extra=True)
     episode = generate_episode(env)
     # The episode sould be truncated but not done
     assert episode.dones[-1] == 1.0
@@ -109,7 +109,7 @@ def test_done_when_time_limit_reached_with_extras():
 def test_dones_set_with_paddings():
     # The time limit issues a 'truncated' flag at t=10 but the episode should not be done
     END_GAME = 1
-    env = MockEnv(2, end_game=END_GAME)
+    env = DiscreteMockEnv(2, end_game=END_GAME)
     episode = generate_episode(env)
     # The episode sould be truncated but not done
     assert np.all(episode.dones[:-1] == 0)
@@ -120,7 +120,7 @@ def test_dones_set_with_paddings():
 
 
 def test_masks():
-    env = wrappers.TimeLimit(MockEnv(2), 10)
+    env = wrappers.TimeLimit(DiscreteMockEnv(2), 10)
     episode = generate_episode(env)
     assert np.all(episode.mask == 1)
     padded = episode.padded(25)
@@ -129,7 +129,7 @@ def test_masks():
 
 
 def test_padded_raises_error_with_too_small_size():
-    env = MockEnv(2)
+    env = DiscreteMockEnv(2)
     episode = generate_episode(env)
     try:
         episode.padded(1)
@@ -139,7 +139,7 @@ def test_padded_raises_error_with_too_small_size():
 
 
 def test_padded():
-    env = wrappers.TimeLimit(MockEnv(2), 10)
+    env = wrappers.TimeLimit(DiscreteMockEnv(2), 10)
 
     for i in range(5, 11):
         env.step_limit = i
@@ -160,7 +160,7 @@ def test_padded():
 
 
 def test_retrieve_episode_transitions():
-    env = wrappers.TimeLimit(MockEnv(2), 10)
+    env = wrappers.TimeLimit(DiscreteMockEnv(2), 10)
     episode = generate_episode(env)
     transitions = list(episode.transitions())
     assert len(transitions) == 10
@@ -170,7 +170,7 @@ def test_retrieve_episode_transitions():
 
 
 def test_iterate_on_episode():
-    env = wrappers.TimeLimit(MockEnv(2), 10)
+    env = wrappers.TimeLimit(DiscreteMockEnv(2), 10)
     episode = generate_episode(env)
     for i, t in enumerate(episode):  # type: ignore
         assert not t.done
@@ -181,7 +181,7 @@ def test_iterate_on_episode():
 
 
 def test_episode_with_logprobs():
-    env = wrappers.TimeLimit(MockEnv(2), 10)
+    env = wrappers.TimeLimit(DiscreteMockEnv(2), 10)
     episode = generate_episode(env, with_probs=True)
     assert episode.actions_probs is not None
     assert len(episode.actions_probs) == 10

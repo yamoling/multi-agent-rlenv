@@ -1,4 +1,3 @@
-from typing import Sequence
 import numpy as np
 from marlenv import MARLEnv, Observation, DiscreteActionSpace, DiscreteSpace, DiscreteMARLEnv
 
@@ -62,7 +61,7 @@ class DiscreteMockEnv(DiscreteMARLEnv[np.ndarray, np.ndarray]):
         )
 
 
-class MOMockEnv(MARLEnv[DiscreteActionSpace, np.ndarray, np.ndarray]):
+class DiscreteMOMockEnv(MARLEnv[DiscreteActionSpace, np.ndarray, np.ndarray, np.ndarray]):
     """Multi-Objective Mock Environment"""
 
     def __init__(

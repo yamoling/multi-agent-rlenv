@@ -32,7 +32,7 @@ from .models import (
     DiscreteActionSpace,
     ContinuousActionSpace,
 )
-from .mock_env import MOMockEnv
+from .mock_env import DiscreteMockEnv, DiscreteMOMockEnv
 
 __all__ = [
     "models",
@@ -53,6 +53,6 @@ __all__ = [
     "ContinuousSpace",
     "DiscreteActionSpace",
     "ContinuousActionSpace",
-    "MockEnv",
-    "MOMockEnv",
+    "DiscreteMockEnv",
+    "DiscreteMOMockEnv",
 ]

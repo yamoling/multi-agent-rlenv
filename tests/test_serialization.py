@@ -2,11 +2,11 @@ import pickle
 import marlenv
 from dataclasses import asdict
 
-from marlenv import MockEnv
+from marlenv import DiscreteMockEnv
 
 
 def test_registry():
-    env = MockEnv(4)
+    env = DiscreteMockEnv(4)
     serialized = pickle.dumps(env)
     restored_env = pickle.loads(serialized)
     assert restored_env.n_agents == env.n_agents
@@ -27,7 +27,7 @@ def test_registry_gym():
 
 
 def test_registry_wrapper():
-    env = marlenv.Builder(MockEnv(4)).agent_id().time_limit(10).build()
+    env = marlenv.Builder(DiscreteMockEnv(4)).agent_id().time_limit(10).build()
     restored_env = pickle.loads(pickle.dumps(env))
     assert restored_env.n_agents == env.n_agents
     assert restored_env.observation_shape == env.observation_shape
