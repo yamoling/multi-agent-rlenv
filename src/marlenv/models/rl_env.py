@@ -1,17 +1,17 @@
 from abc import ABC, abstractmethod
-from typing import Generic, Optional, overload, Any, Literal
+from typing import Generic, Optional, Sequence, overload, Any, Literal
 from typing_extensions import TypeVar
 import numpy as np
 import numpy.typing as npt
 from dataclasses import dataclass
 
 
-from .spaces import ActionSpace, DiscreteSpace
+from .spaces import ActionSpace, DiscreteSpace, DiscreteActionSpace, ContinuousActionSpace
 from .observation import Observation
 
 A = TypeVar("A", bound=ActionSpace, default=ActionSpace)
-D = TypeVar("D", default=np.ndarray)
-S = TypeVar("S", default=np.ndarray)
+D = TypeVar("D", default=npt.NDArray[np.float32])
+S = TypeVar("S", default=npt.NDArray[np.float32])
 R = TypeVar("R", bound=float | npt.NDArray[np.float32], default=float)
 
 
@@ -83,7 +83,7 @@ class MARLEnv(ABC, Generic[A, D, S, R]):
         """Retrieve the current state of the environment."""
 
     @abstractmethod
-    def step(self, actions) -> tuple[Observation[D, S], R, bool, bool, dict[str, Any]]:
+    def step(self, actions: Sequence[int] | Sequence[float] | npt.NDArray) -> tuple[Observation[D, S], R, bool, bool, dict[str, Any]]:
         """Perform a step in the environment.
 
         Returns:
@@ -143,52 +143,11 @@ class MARLEnv(ABC, Generic[A, D, S, R]):
             return False
 
 
-# @dataclass
-# class MOMARLEnv(MARLEnv[A, D, S, npt.NDArray[np.float32]], ABC):
-#     """Multi-Objective Multi-Agent Reinforcement Learning environment."""
+class DiscreteMARLEnv(MARLEnv[DiscreteActionSpace, D, S, R]):
+    def step(self, actions: Sequence[int] | npt.NDArray[np.int32]):
+        return super().step(actions)
 
-#     reward_space: DiscreteSpace
-#     """Desription of the reward space. In general, this is a single scalar, but it can be multi-objective."""
 
-#     def __init__(
-#         self,
-#         action_space: A,
-#         observation_shape: tuple[int, ...],
-#         state_shape: tuple[int, ...],
-#         reward_space: DiscreteSpace,
-#         extra_feature_shape: tuple[int, ...] = (0,),
-#     ):
-#         super().__init__(action_space, observation_shape, state_shape, extra_feature_shape)
-#         self.reward_space = reward_space
-
-#     @property
-#     def reward_size(self) -> int:
-#         """The size of the reward signal. In general, this is 1, but it can be higher for multi-objective environments."""
-#         return self.reward_space.size
-
-#     @abstractmethod
-#     def step(self, actions) -> tuple[Observation[D, S], npt.NDArray[np.float32], bool, bool, dict[str, Any]]:
-#         """Perform a step in the environment.
-
-#         Returns:
-#         - observations: The observation resulting from the action.
-#         - rewards: The 1D-array of rewards (one per objective).
-#         - done: Whether the episode is over
-#         - truncated: Whether the episode is truncated
-#         - info: Extra information
-#         """
-
-#     def has_same_inouts(self, other) -> bool:
-#         if not isinstance(other, MOMARLEnv):
-#             return False
-#         if self.reward_space != other.reward_space:
-#             return False
-#         return super().has_same_inouts(other)
-
-#     @staticmethod
-#     def assert_same_inouts(env1: "MOMARLEnv", env2: MARLEnv) -> None:
-#         if not isinstance(env2, MOMARLEnv):
-#             raise ValueError(f"Environment 2 is not a MultiObjectiveRLEnv: {env2}")
-#         if env1.reward_space != env2.reward_space:
-#             raise ValueError(f"Reward spaces are different: {env1.reward_space} != {env2.reward_space}")
-#         return MARLEnv.assert_same_inouts(env1, env2)
+class ContinuousMARLEnv(MARLEnv[ContinuousActionSpace, D, S, R]):
+    def step(self, actions: Sequence[float] | npt.NDArray[np.float32]):
+        return super().step(actions)

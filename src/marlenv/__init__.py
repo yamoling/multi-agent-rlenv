@@ -9,7 +9,7 @@ It aims to
     - provide helpful wrappers to add intrinsic rewards, agent ids, record videos, ...
 """
 
-__version__ = "1.2.5"
+__version__ = "1.2.6"
 
 from . import models
 from . import wrappers
@@ -20,7 +20,8 @@ from .models import spaces
 from .env_builder import make, Builder
 from .models import (
     MARLEnv,
-    # MOMARLEnv,
+    DiscreteMARLEnv,
+    ContinuousMARLEnv,
     Observation,
     Episode,
     EpisodeBuilder,
@@ -31,7 +32,7 @@ from .models import (
     DiscreteActionSpace,
     ContinuousActionSpace,
 )
-from .mock_env import MockEnv, MOMockEnv
+from .mock_env import MOMockEnv
 
 __all__ = [
     "models",
@@ -41,7 +42,8 @@ __all__ = [
     "make",
     "Builder",
     "MARLEnv",
-    # "MOMARLEnv",
+    "DiscreteMARLEnv",
+    "ContinuousMARLEnv",
     "Observation",
     "Episode",
     "EpisodeBuilder",

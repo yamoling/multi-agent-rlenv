@@ -1,9 +1,9 @@
+from typing import Sequence
 import numpy as np
-from marlenv import MARLEnv, Observation, DiscreteActionSpace, DiscreteSpace
-# from .models.rl_env import MOMARLEnv
+from marlenv import MARLEnv, Observation, DiscreteActionSpace, DiscreteSpace, DiscreteMARLEnv
 
 
-class MockEnv(MARLEnv[DiscreteActionSpace, np.ndarray, np.ndarray]):
+class DiscreteMockEnv(DiscreteMARLEnv[np.ndarray, np.ndarray]):
     def __init__(
         self,
         n_agents: int = 4,
@@ -50,9 +50,9 @@ class MockEnv(MARLEnv[DiscreteActionSpace, np.ndarray, np.ndarray]):
     def render(self, mode: str = "human"):
         return
 
-    def step(self, action):
+    def step(self, actions):
         self.t += 1
-        self.actions_history.append(action)
+        self.actions_history.append(actions)
         return (
             self.observation(),
             self.reward_step,
