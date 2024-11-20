@@ -6,13 +6,9 @@ authors = [
     { "name" = "Yannick Molinghen", "email" = "yannick.molinghen@ulb.be" },
 ]
 readme = "README.md"
-requires-python = ">=3.10, <4"
-dependencies = [
-    "numpy>=2.0.0",
-    "opencv-python>=4.10.0.84",
-    "gymnasium>=0.29.1",
-]
-urls = { "repository" = "https://github.com/yamoling/ma-rlenv" }
+requires-python = ">=3.11, <4"
+dependencies = ["numpy>=2.0.0", "opencv-python>=4.10.0.84", "gymnasium>=0.29.1"]
+urls = { "repository" = "https://github.com/yamoling/multi-agent-rlenv" }
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
