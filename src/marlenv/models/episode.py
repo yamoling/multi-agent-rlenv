@@ -182,7 +182,7 @@ class EpisodeBuilder:
         self.observations = list[np.ndarray]()
         self.extras = list[np.ndarray]()
         self.actions = list[np.ndarray]()
-        self.rewards = list[float | np.ndarray]()
+        self.rewards = list()
         self.available_actions = list[np.ndarray]()
         self.states = list[np.ndarray]()
         self.state_extras = list[np.ndarray]()
@@ -233,7 +233,7 @@ class EpisodeBuilder:
         assert (
             self.is_finished
         ), "Cannot build an episode that is not finished. Set truncated=True when adding the last transition of the episode."
-        self.metrics["score"] = float(sum(self.rewards))
+        self.metrics["score"] = float(np.sum(self.rewards))
         self.metrics["episode_length"] = self.episode_len
         if extra_metrics is not None:
             self.metrics.update(extra_metrics)
