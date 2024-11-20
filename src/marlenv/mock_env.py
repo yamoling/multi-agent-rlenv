@@ -1,5 +1,5 @@
 import numpy as np
-from marlenv import MARLEnv, Observation, DiscreteActionSpace, DiscreteSpace, DiscreteMARLEnv
+from marlenv import MARLEnv, Observation, DiscreteActionSpace, DiscreteSpace, DiscreteMARLEnv, Step, State
 
 
 class DiscreteMockEnv(DiscreteMARLEnv[np.ndarray, np.ndarray]):
@@ -33,7 +33,7 @@ class DiscreteMockEnv(DiscreteMARLEnv[np.ndarray, np.ndarray]):
 
     def reset(self):
         self.t = 0
-        return self.get_observation()
+        return self.get_observation(), self.get_state()
 
     def get_observation(self):
         obs_data = np.array(
@@ -41,10 +41,10 @@ class DiscreteMockEnv(DiscreteMARLEnv[np.ndarray, np.ndarray]):
             dtype=np.float32,
         )
         extras = np.arange(self.n_agents * self.extra_size, dtype=np.float32).reshape((self.n_agents, self.extra_size))
-        return Observation(obs_data, self.available_actions(), self.get_state(), extras)
+        return Observation(obs_data, self.available_actions(), extras)
 
     def get_state(self):
-        return np.full((self.n_agents * self.agent_state_size,), self.t, dtype=np.float32)
+        return State(np.full((self.n_agents * self.agent_state_size,), self.t, dtype=np.float32))
 
     def render(self, mode: str = "human"):
         return
@@ -52,12 +52,11 @@ class DiscreteMockEnv(DiscreteMARLEnv[np.ndarray, np.ndarray]):
     def step(self, actions):
         self.t += 1
         self.actions_history.append(actions)
-        return (
+        return Step(
             self.get_observation(),
+            self.get_state(),
             self.reward_step,
             self.t >= self.end_game,
-            False,
-            {},
         )
 
 
@@ -86,7 +85,7 @@ class DiscreteMOMockEnv(MARLEnv[DiscreteActionSpace, np.ndarray, np.ndarray, np.
         self.extra_size = extras_size
         self._agent_state_size = agent_state_size
         self.end_game = end_game
-        self.reward_step = reward_step
+        self.reward_step = np.full((n_objectives,), reward_step, dtype=np.float32)
         self.t = 0
         self.actions_history = []
 
@@ -96,7 +95,7 @@ class DiscreteMOMockEnv(MARLEnv[DiscreteActionSpace, np.ndarray, np.ndarray, np.
 
     def reset(self):
         self.t = 0
-        return self.get_observation()
+        return self.get_observation(), self.get_state()
 
     def get_observation(self):
         obs_data = np.array(
@@ -104,21 +103,19 @@ class DiscreteMOMockEnv(MARLEnv[DiscreteActionSpace, np.ndarray, np.ndarray, np.
             dtype=np.float32,
         )
         extras = np.arange(self.n_agents * self.extra_size, dtype=np.float32).reshape((self.n_agents, self.extra_size))
-        return Observation(obs_data, self.available_actions(), self.get_state(), extras)
+        return Observation(obs_data, self.available_actions(), extras)
 
     def get_state(self):
-        return np.full((self.n_agents * self.agent_state_size,), self.t, dtype=np.float32)
-
-    def render(self, mode: str = "human"):
-        return
+        s = State(np.full((self.n_agents * self.agent_state_size,), self.t, dtype=np.float32))
+        s.add_extra(self.t)
+        return s
 
     def step(self, action):
         self.t += 1
         self.actions_history.append(action)
-        return (
+        return Step(
             self.get_observation(),
-            np.full(self.reward_space.shape, self.reward_step, dtype=np.float32),
+            self.get_state(),
+            self.reward_step,
             self.t >= self.end_game,
-            False,
-            {},
         )

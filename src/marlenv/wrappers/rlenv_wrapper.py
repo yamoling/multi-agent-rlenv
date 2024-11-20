@@ -1,9 +1,9 @@
-from typing import TypeVar, Literal, overload, Optional
+from typing import TypeVar, Optional
 from dataclasses import dataclass
 from abc import ABC
 import numpy as np
 import numpy.typing as npt
-from marlenv.models import MARLEnv, ActionSpace, DiscreteSpace
+from marlenv.models import MARLEnv, ActionSpace, DiscreteSpace, State
 
 
 A = TypeVar("A", bound=ActionSpace)
@@ -62,22 +62,17 @@ class RLEnvWrapper(MARLEnv[A, D, S, R], ABC):
     def get_state(self):
         return self.wrapped.get_state()
 
-    def set_state(self, state: S):
+    def set_state(self, state: State[S]):
         return self.wrapped.set_state(state)
 
     def available_actions(self):
         return self.wrapped.available_actions()
 
-    @overload
-    def render(self, mode: Literal["human"]) -> None:
-        """Render the environment in a window"""
+    def render(self):
+        return self.wrapped.render()
 
-    @overload
-    def render(self, mode: Literal["rgb_array"]) -> npt.NDArray[np.uint8]:
-        """Retrieve an image of the environment"""
-
-    def render(self, mode):
-        return self.wrapped.render(mode)
+    def get_image(self):
+        return self.wrapped.get_image()
 
     def seed(self, seed_value: int):
         return self.wrapped.seed(seed_value)

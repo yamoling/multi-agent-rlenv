@@ -17,11 +17,11 @@ class AvailableActions(RLEnvWrapper[A, D, S, R]):
         super().__init__(env, extra_shape=(env.extra_shape[0] + env.n_actions,))
 
     def reset(self):
-        obs = self.wrapped.reset()
-        obs.extras = np.concatenate([obs.extras, self.available_actions().astype(np.float32)], axis=-1)
-        return obs
+        obs, state = self.wrapped.reset()
+        obs.add_extra(self.available_actions().astype(np.float32))
+        return obs, state
 
     def step(self, actions: npt.NDArray[np.int32]):
-        obs, reward, done, truncated, info = self.wrapped.step(actions)
-        obs.extras = np.concatenate([obs.extras, self.available_actions().astype(np.float32)], axis=-1)
-        return obs, reward, done, truncated, info
+        step = self.wrapped.step(actions)
+        step.obs.add_extra(self.available_actions().astype(np.float32))
+        return step

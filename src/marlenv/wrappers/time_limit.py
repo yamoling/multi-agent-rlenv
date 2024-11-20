@@ -3,7 +3,7 @@ from typing import Optional
 
 import numpy as np
 
-from marlenv.models import Observation
+from marlenv.models import Observation, State
 
 from .rlenv_wrapper import A, D, MARLEnv, RLEnvWrapper, S, R
 
@@ -50,34 +50,34 @@ class TimeLimit(RLEnvWrapper[A, D, S, R]):
 
     def reset(self):
         self._current_step = 0
-        obs = super().reset()
+        obs, state = super().reset()
         if self.add_extra:
-            self.add_time_extra(obs)
-        return obs
+            self.add_time_extra(obs, state)
+        return obs, state
 
-    def step(self, actions) -> tuple[Observation[D, S], R, bool, bool, dict]:
+    def step(self, actions):
         self._current_step += 1
-        obs_, reward, done, truncated, info = super().step(actions)
+        step = super().step(actions)
+        step.obs
         if self.add_extra:
-            self.add_time_extra(obs_)
+            self.add_time_extra(step.obs, step.state)
         # If we reach the time limit
         if self._current_step >= self.step_limit:
             # And the episode is not done
-            if not done:
+            if not step.done:
                 # then we set the truncation flag
-                truncated = True
+                step.truncated = True
+                step.reward -= self.truncation_penalty  # type: ignore
                 if self.add_extra:
-                    done = True
-        if truncated:
-            reward -= self.truncation_penalty
-        return obs_, reward, done, truncated, info  # type: ignore
+                    step.done = True
+        return step
 
-    def add_time_extra(self, obs: Observation):
+    def add_time_extra(self, obs: Observation[D], state: State[S]):
         counter = self._current_step / self.step_limit
+        state.add_extra(counter)
         time_ratio = np.full(
             (self.n_agents, 1),
             counter,
             dtype=np.float32,
         )
-        obs.extras = np.concatenate([obs.extras, time_ratio], axis=-1)
-        obs.state_extras = np.concatenate([obs.state_extras, [counter]])
+        obs.add_extra(time_ratio)

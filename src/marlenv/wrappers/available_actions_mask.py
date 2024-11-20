@@ -19,14 +19,14 @@ class AvailableActionsMask(RLEnvWrapper[A, D, S, R]):
         self.action_mask = action_mask
 
     def reset(self):
-        obs = self.wrapped.reset()
+        obs, state = self.wrapped.reset()
         obs.available_actions = self.available_actions()
-        return obs
+        return obs, state
 
     def step(self, actions):
-        obs, reward, done, truncated, info = self.wrapped.step(actions)
-        obs.available_actions = self.available_actions()
-        return obs, reward, done, truncated, info
+        step = self.wrapped.step(actions)
+        step.obs.available_actions = self.available_actions()
+        return step
 
     def available_actions(self):
         return self.action_mask & self.wrapped.available_actions()

@@ -22,15 +22,14 @@ def test_available_actions():
     env = Builder(mock).available_actions().build()
 
     assert env.extra_shape == (5 + mock.extra_shape[0],)
-    obs = env.reset()
+    obs, _ = env.reset()
     assert np.array_equal(obs.extras, np.ones((N_AGENTS, env.n_actions), dtype=np.float32))
 
 
 def test_agent_id():
     env = Builder(DiscreteMockEnv(5)).agent_id().build()
-
     assert env.extra_shape == (5,)
-    obs = env.reset()
+    obs, _ = env.reset()
     assert np.array_equal(obs.extras, np.identity(5, dtype=np.float32))
 
 
@@ -41,7 +40,7 @@ def test_penalty_wrapper():
     expected = np.array([0.9] * N_OBJECTIVES, dtype=np.float32)
     done = False
     while not done:
-        _, reward, done, *_ = env.step(np.array([0], dtype=np.int64))
+        _, _, reward, done, *_ = env.step([0]).astuple()
         assert np.array_equal(reward, expected)
 
 
@@ -52,9 +51,9 @@ def test_time_limit_wrapper():
     done = False
     t = 0
     while not done:
-        obs, _, done, truncated, _ = env.step(np.array([0]))
+        obs, state, _, done, truncated, _ = env.step(np.array([0])).astuple()
         assert obs.extras.shape == (env.n_agents, 1)
-        assert obs.state_extras.shape == (1,)
+        assert state.extras_shape == (1,)
         t += 1
     assert t == MAX_T
     assert truncated
@@ -64,14 +63,15 @@ def test_time_limit_wrapper():
 def test_truncated_and_done():
     END_GAME = 10
     env = marlenv.wrappers.TimeLimit(DiscreteMockEnv(2, end_game=END_GAME), END_GAME)
-    obs = env.reset()
+    obs, state = env.reset()
     episode = marlenv.EpisodeBuilder()
     done = truncated = False
     while not episode.is_finished:
         action = env.action_space.sample()
-        next_obs, r, done, truncated, info = env.step(action)
-        episode.add(marlenv.Transition(obs, action, r, done, info, next_obs, truncated))
+        next_obs, next_state, r, done, truncated, info = env.step(action).astuple()
+        episode.add(marlenv.Transition(obs, state, action, r, done, info, next_obs, next_state, truncated))
         obs = next_obs
+        state = next_state
     assert done
     assert not truncated, "The episode is done, so it does not have to be truncated even though the time limit is reached at the same time."
     episode = episode.build()
@@ -87,12 +87,12 @@ def test_time_limit_wrapper_with_extra():
     MAX_T = 5
     env = Builder(DiscreteMockEnv(5)).time_limit(MAX_T, add_extra=True).build()
     assert env.extra_shape == (1,)
-    obs = env.reset()
+    obs, _ = env.reset()
     assert obs.extras.shape == (5, 1)
     stop = False
     t = 0
     while not stop:
-        obs, _, done, truncated, _ = env.step(np.array([0]))
+        obs, _, _, done, truncated, _ = env.step(np.array([0])).astuple()
         stop = done or truncated
         t += 1
     assert t == MAX_T
@@ -119,12 +119,12 @@ def test_time_limit_wrapper_with_truncation_penalty():
     MAX_T = 5
     env = Builder(DiscreteMockEnv(5)).time_limit(MAX_T, add_extra=True, truncation_penalty=0.1).build()
     assert env.extra_shape == (1,)
-    obs = env.reset()
+    obs, _ = env.reset()
     assert obs.extras.shape == (5, 1)
     stop = False
     t = 0
     while not stop:
-        obs, _, done, truncated, _ = env.step(np.array([0]))
+        obs, _, _, done, truncated, _ = env.step(np.array([0])).astuple()
         stop = done or truncated
         t += 1
     assert t == MAX_T
@@ -135,10 +135,10 @@ def test_time_limit_wrapper_with_truncation_penalty():
 
 def test_blind_wrapper():
     def test(env: marlenv.MARLEnv[Any]):
-        obs = env.reset()
+        obs, _ = env.reset()
         assert np.any(obs.data != 0)
-        obs, r, done, truncated, info = env.step(env.action_space.sample())
-        assert np.all(obs.data == 0)
+        step = env.step(env.action_space.sample())
+        assert np.all(step.obs.data == 0)
 
     env = marlenv.Builder(DiscreteMockEnv(5)).blind(p=1).build()
     test(env)
@@ -149,13 +149,13 @@ def test_blind_wrapper():
 def test_last_action():
     env = Builder(DiscreteMockEnv(2)).last_action().build()
     assert env.extra_shape == (env.n_actions,)
-    obs = env.reset()
+    obs, _ = env.reset()
     assert np.all(obs.extras == 0)
-    obs, _, _, _, _ = env.step(np.array([0, 1]))
+    step = env.step(np.array([0, 1]))
     one_hot_actions = np.zeros((2, env.n_actions), dtype=np.float32)
     one_hot_actions[0, 0] = 1.0
     one_hot_actions[1, 1] = 1.0
-    assert np.all(obs.extras == one_hot_actions)
+    assert np.all(step.obs.extras == one_hot_actions)
 
 
 def test_centralised_shape():
@@ -165,7 +165,7 @@ def test_centralised_shape():
     assert env.n_agents == 1
     assert env.n_actions == mock.n_actions**2
     assert env.extra_shape == (1,)
-    obs = env.reset()
+    obs, _ = env.reset()
     assert obs.data.shape == (1, *env.observation_shape)
     assert obs.extras.shape == (1, *env.extra_shape)
 
@@ -186,12 +186,12 @@ def test_centralised_obs_and_state():
     env = Centralised(wrapped)
     assert env.observation_shape == (2 * wrapped.obs_size,)
     assert env.state_shape == (wrapped.agent_state_size * wrapped.n_agents,)
-    obs = env.reset()
+    obs, state = env.reset()
     assert obs.data.shape == (1, *env.observation_shape)
-    assert obs.state.shape == env.state_shape
-    obs, *_ = env.step(np.array([0]))
-    assert obs.data.shape == (1, *env.observation_shape)
-    assert obs.state.shape == env.state_shape
+    assert state.data.shape == env.state_shape
+    step = env.step(np.array([0]))
+    assert step.obs.data.shape == (1, *env.observation_shape)
+    assert step.state.data.shape == env.state_shape
 
 
 def test_centralised_available_actions():
@@ -208,10 +208,10 @@ def test_centralised_available_actions():
     env = Centralised(AvailableActionsMask(mock, mask))
     expected_joint_mask = np.zeros((1, mock.n_actions**N_AGENTS))
     expected_joint_mask[0, 0] = 1
-    obs = env.reset()
+    obs, _ = env.reset()
     assert np.array_equal(obs.available_actions, expected_joint_mask)
-    obs, *_ = env.step([0])
-    assert np.array_equal(obs.available_actions, expected_joint_mask)
+    step = env.step([0])
+    assert np.array_equal(step.obs.available_actions, expected_joint_mask)
 
 
 def test_available_action_mask():
@@ -233,10 +233,10 @@ def test_available_action_mask():
 
     mask = np.array([[0, 1, 0, 1, 0], [1, 0, 1, 0, 1]], dtype=bool)
     env = AvailableActionsMask(wrapped, mask)
-    obs = env.reset()
+    obs, _ = env.reset()
     assert np.array_equal(obs.available_actions, mask)
-    obs, *_ = env.step([0, 1])
-    assert np.array_equal(obs.available_actions, mask)
+    step = env.step([0, 1])
+    assert np.array_equal(step.obs.available_actions, mask)
 
 
 def test_wrapper_reward_shape():

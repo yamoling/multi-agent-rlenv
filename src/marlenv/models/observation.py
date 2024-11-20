@@ -1,75 +1,55 @@
-from typing import Optional, Generic, Sequence, TypeVar
-from dataclasses import dataclass
+from typing import Optional, Sequence, Generic
+from typing_extensions import TypeVar
 import numpy as np
 import numpy.typing as npt
 
-
-D = TypeVar("D")
-S = TypeVar("S")
+ObsType = TypeVar("ObsType", default=npt.NDArray[np.float32])
 
 
-@dataclass
-class Observation(Generic[D, S]):
+class Observation(Generic[ObsType]):
     """
     Container class for policy input arguments.
     """
 
-    data: D
+    data: ObsType
     """The actual environment observation. The shape is [n_agents, *obs_shape]"""
     extras: npt.NDArray[np.float32]
     """The extra information to provide to the dqn alongisde the features (agent ID, last action, ...)"""
     available_actions: npt.NDArray[np.bool_]
     """The available actions at the time of the observation"""
-    state: S
-    """The environment state at the time of the observation"""
-    state_extras: npt.NDArray[np.float32]
-    """The extra state information (e.g. time, ...)"""
-
     n_agents: int
 
     def __init__(
         self,
-        data: D,
+        data: ObsType,
         available_actions: Sequence[bool] | npt.NDArray[np.bool],
-        state: S,
         extras: Optional[npt.NDArray[np.float32]] = None,
-        state_extras: Optional[npt.NDArray[np.float32]] = None,
     ):
         self.data = data
         if not isinstance(available_actions, np.ndarray):
             available_actions = np.array(available_actions)
         self.available_actions = available_actions
-        self.state = state
         self.n_agents = len(available_actions)
         if extras is not None:
             self.extras = extras
         else:
             self.extras = np.zeros((self.n_agents, 0), dtype=np.float32)
-        if state_extras is not None:
-            self.state_extras = state_extras
-        else:
-            self.state_extras = np.zeros((0,), dtype=np.float32)
+
+    def add_extra(self, extra: list[list[float]] | npt.NDArray[np.float32]):
+        """Append an extra feature to the observation"""
+        self.extras = np.concatenate((self.extras, extra), axis=1)
 
     @property
     def extras_shape(self) -> tuple[int, ...]:
         """The shape of the observation extras"""
         return self.extras.shape
 
-    @property
-    def state_extras_shape(self) -> tuple[int, ...]:
-        """The shape of the state extras"""
-        return self.state_extras.shape
-
     def __hash__(self):
         if isinstance(self.data, np.ndarray):
             d = hash(self.data.tobytes())
         else:
             d = hash(self.data)
-        if isinstance(self.state, np.ndarray):
-            s = hash(self.state.tobytes())
-        else:
-            s = hash(self.state)
-        return hash((d, s, self.extras.tobytes()))
+        return hash((d, self.extras.tobytes()))
 
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -81,10 +61,5 @@ class Observation(Generic[D, S]):
             if not isinstance(other.data, np.ndarray):
                 return False
             if not np.array_equal(self.data, other.data):
-                return False
-        if isinstance(self.state, np.ndarray):
-            if not isinstance(other.state, np.ndarray):
-                return False
-            if not np.array_equal(self.state, other.state):
                 return False
         return np.array_equal(self.extras, other.extras) and np.array_equal(self.available_actions, other.available_actions)

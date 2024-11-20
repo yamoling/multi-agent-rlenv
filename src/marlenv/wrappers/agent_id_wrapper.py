@@ -19,12 +19,11 @@ class AgentId(RLEnvWrapper[A, D, S, R]):
         self._identity = np.identity(env.n_agents, dtype=np.float32)
 
     def step(self, actions):
-        obs, r, done, truncated, info = super().step(actions)
-        return self._add_one_hot(obs), r, done, truncated, info
+        step = super().step(actions)
+        step.obs.add_extra(self._identity)
+        return step
 
     def reset(self):
-        return self._add_one_hot(super().reset())
-
-    def _add_one_hot(self, observation: Observation):
-        observation.extras = np.concatenate([observation.extras, self._identity], axis=-1)
-        return observation
+        obs, state = super().reset()
+        obs.add_extra(self._identity)
+        return obs, state

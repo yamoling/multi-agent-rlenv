@@ -5,36 +5,37 @@ from marlenv import wrappers, DiscreteMockEnv
 
 
 def generate_episode(env: MARLEnv[Any], with_probs: bool = False) -> Episode:
-    obs = env.reset()
+    obs, state = env.reset()
     episode = EpisodeBuilder()
     while not episode.is_finished:
         action = env.action_space.sample()
         probs = None
         if with_probs:
             probs = np.random.random(action.shape)
-        next_obs, r, done, truncated, info = env.step(action)
-        episode.add(Transition(obs, action, r, done, info, next_obs, truncated, probs))
-        obs = next_obs
+        step = env.step(action)
+        episode.add(Transition.from_step(obs, state, action, step, probs))
+        obs = step.obs
+        state = step.state
     return episode.build()
 
 
 def test_episode_builder_is_done():
     env = DiscreteMockEnv(2)
-    obs = env.reset()
+    obs, state = env.reset()
     # Set the 'done' flag
     builder = EpisodeBuilder()
     assert not builder.is_finished
-    builder.add(Transition(obs, [0, 0], [0], False, {}, obs, False))
+    builder.add(Transition(obs, state, [0, 0], 0, False, {}, obs, state, False))
     assert not builder.is_finished
-    builder.add(Transition(obs, [0, 0], [0], True, {}, obs, False))
+    builder.add(Transition(obs, state, [0, 0], 0, True, {}, obs, state, False))
     assert builder.is_finished
 
     # Set the 'truncated' flag
     builder = EpisodeBuilder()
     assert not builder.is_finished
-    builder.add(Transition(obs, np.array([0, 0]), [0], False, {}, obs, False))
+    builder.add(Transition(obs, state, [0, 0], 0, False, {}, obs, state, False))
     assert not builder.is_finished
-    builder.add(Transition(obs, np.array([0, 0]), [0], False, {}, obs, True))
+    builder.add(Transition(obs, state, [0, 0], 0, False, {}, obs, state, True))
     assert builder.is_finished
 
 
@@ -46,15 +47,17 @@ def test_build_not_finished_episode_fails():
     except AssertionError:
         pass
     env = DiscreteMockEnv(2)
-    obs = env.reset()
+    obs, state = env.reset()
     builder.add(
         Transition(
             obs=obs,
+            state=state,
             action=np.array([0, 0]),
-            reward=[0],
+            reward=0,
             done=False,
             info={},
-            obs_=obs,
+            next_obs=obs,
+            next_state=state,
             truncated=False,
         )
     )
@@ -66,7 +69,7 @@ def test_build_not_finished_episode_fails():
 
 
 def test_returns():
-    obs = DiscreteMockEnv(2).reset()
+    obs, state = DiscreteMockEnv(2).reset()
     builder = EpisodeBuilder()
     n_steps = 20
     gamma = 0.95
@@ -75,7 +78,8 @@ def test_returns():
         done = i == n_steps - 1
         r = np.random.rand(5)
         rewards.append(r)
-        builder.add(Transition(obs, np.array([0, 0], dtype=np.int64), r, done, {}, obs, False))
+        t = Transition(obs, state, [0, 0], r, done, {}, obs, state, False)
+        builder.add(t)
     rewards = np.array(rewards, dtype=np.float32)
     episode = builder.build()
     returns = episode.compute_returns(discount=gamma)
@@ -149,14 +153,14 @@ def test_padded():
         padded = episode.padded(10)
         assert padded._observations.shape[0] == 11
         assert padded.obs.shape[0] == 10
-        assert padded.obs_.shape[0] == 10
+        assert padded.next_obs.shape[0] == 10
         assert padded.actions.shape[0] == 10
         assert padded.rewards.shape[0] == 10
         assert padded.dones.shape[0] == 10
         assert padded.extras.shape[0] == 10
-        assert padded.extras_.shape[0] == 10
+        assert padded.next_extras.shape[0] == 10
         assert padded.available_actions.shape[0] == 10
-        assert padded.available_actions_.shape[0] == 10
+        assert padded.next_available_actions.shape[0] == 10
         assert padded.mask.shape[0] == 10
 
 

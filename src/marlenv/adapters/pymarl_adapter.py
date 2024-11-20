@@ -16,12 +16,13 @@ class PymarlAdapter:
         # Required by PyMarl
         self.episode_limit = episode_limit
         self.current_observation = None
+        self.current_state = None
 
     def step(self, actions) -> tuple[float, bool, dict[str, Any]]:
         """Returns reward, terminated, info"""
-        obs, reward, done, truncated, info = self.env.step(actions)
-        self.current_observation = obs
-        return reward, done or truncated, info
+        step = self.env.step(actions)
+        self.current_observation = step.obs
+        return step.reward, step.is_terminal, step.info
 
     def get_obs(self):
         """Returns all agent observations in a list"""
@@ -41,7 +42,7 @@ class PymarlAdapter:
         return self.env.observation_shape[0]
 
     def get_state(self):
-        return self.env.get_state()
+        return self.env.get_state().data
 
     def get_state_size(self):
         """Returns the shape of the state"""
@@ -60,11 +61,10 @@ class PymarlAdapter:
         return self.env.n_actions
 
     def reset(self):
-        """Returns initial observations and states"""
-        self.current_observation = self.env.reset()
+        self.current_observation, self.current_state = self.env.reset()
 
     def render(self):
-        return self.env.render("human")
+        return self.env.render()
 
     def close(self):
         return

@@ -1,4 +1,4 @@
-from marlenv import Observation, Transition, DiscreteMockEnv, DiscreteMOMockEnv, Builder
+from marlenv import Observation, Transition, DiscreteMockEnv, DiscreteMOMockEnv, Builder, State
 import numpy as np
 
 
@@ -6,14 +6,12 @@ def test_obs_eq():
     obs1 = Observation(
         data=np.arange(20, dtype=np.float32),
         available_actions=np.ones(5, dtype=bool),
-        state=np.ones(10, dtype=np.float32),
         extras=np.arange(5, dtype=np.float32),
     )
 
     obs2 = Observation(
         data=np.arange(20, dtype=np.float32),
         available_actions=np.full((5,), True),
-        state=np.ones(10, dtype=np.float32),
         extras=np.arange(5, dtype=np.float32),
     )
 
@@ -24,14 +22,12 @@ def test_obs_not_eq():
     obs1 = Observation(
         data=np.arange(20, dtype=np.float32),
         available_actions=np.full((5,), True),
-        state=np.ones(10, dtype=np.float32),
         extras=np.arange(5, dtype=np.float32),
     )
 
     obs2 = Observation(
         data=np.arange(20, dtype=np.float32) + 1,
         available_actions=np.full((5,), True),
-        state=np.ones(10, dtype=np.float32),
         extras=np.arange(5, dtype=np.float32),
     )
 
@@ -42,14 +38,12 @@ def test_obs_eq_extras_none():
     obs1 = Observation(
         data=np.arange(20, dtype=np.float32),
         available_actions=np.full((5,), True),
-        state=np.ones(10, dtype=np.float32),
         extras=None,
     )
 
     obs2 = Observation(
         data=np.arange(20, dtype=np.float32),
         available_actions=np.full((5,), True),
-        state=np.ones(10, dtype=np.float32),
         extras=None,
     )
 
@@ -60,14 +54,12 @@ def test_obs_hash():
     obs1 = Observation(
         data=np.arange(20, dtype=np.float32),
         available_actions=np.full((5,), True),
-        state=np.ones(10, dtype=np.float32),
         extras=np.arange(5, dtype=np.float32),
     )
 
     obs2 = Observation(
         data=np.arange(20, dtype=np.float32),
         available_actions=np.full((5,), True),
-        state=np.ones(10, dtype=np.float32),
         extras=np.arange(5, dtype=np.float32),
     )
 
@@ -79,19 +71,19 @@ def test_transition_eq():
         obs=Observation(
             data=np.arange(20, dtype=np.float32),
             available_actions=np.full((5,), True),
-            state=np.ones(10, dtype=np.float32),
             extras=np.arange(5, dtype=np.float32),
         ),
+        state=State(np.ones(10, dtype=np.float32)),
         action=np.ones(5, dtype=np.int64),
-        reward=[1.0],
+        reward=1.0,
         done=False,
         info={},
-        obs_=Observation(
+        next_obs=Observation(
             data=np.arange(20, dtype=np.float32),
             available_actions=np.full((5,), True),
-            state=np.ones(10, dtype=np.float32),
             extras=np.arange(5, dtype=np.float32),
         ),
+        next_state=State(np.ones(10, dtype=np.float32)),
         truncated=False,
     )
 
@@ -99,19 +91,19 @@ def test_transition_eq():
         obs=Observation(
             data=np.arange(20, dtype=np.float32),
             available_actions=np.full((5,), True),
-            state=np.ones(10, dtype=np.float32),
             extras=np.arange(5, dtype=np.float32),
         ),
+        state=State(np.ones(10, dtype=np.float32)),
         action=np.ones(5, dtype=np.int64),
-        reward=[1.0],
+        reward=1.0,
         done=False,
         info={},
-        obs_=Observation(
+        next_obs=Observation(
             data=np.arange(20, dtype=np.float32),
             available_actions=np.full((5,), True),
-            state=np.ones(10, dtype=np.float32),
             extras=np.arange(5, dtype=np.float32),
         ),
+        next_state=State(np.ones(10, dtype=np.float32)),
         truncated=False,
     )
 
@@ -123,19 +115,19 @@ def test_transition_hash():
         obs=Observation(
             data=np.arange(20, dtype=np.float32),
             available_actions=np.full((5,), True),
-            state=np.ones(10, dtype=np.float32),
             extras=np.arange(5, dtype=np.float32),
         ),
+        state=State(np.ones(10, dtype=np.float32)),
         action=np.ones(5, dtype=np.int64),
-        reward=[1.0],
+        reward=1.0,
         done=False,
         info={},
-        obs_=Observation(
+        next_obs=Observation(
             data=np.arange(20, dtype=np.float32),
             available_actions=np.full((5,), True),
-            state=np.ones(10, dtype=np.float32),
             extras=np.arange(5, dtype=np.float32),
         ),
+        next_state=State(np.ones(10, dtype=np.float32)),
         truncated=False,
     )
 
@@ -143,19 +135,19 @@ def test_transition_hash():
         obs=Observation(
             data=np.arange(20, dtype=np.float32),
             available_actions=np.full((5,), True),
-            state=np.ones(10, dtype=np.float32),
             extras=np.arange(5, dtype=np.float32),
         ),
+        state=State(np.ones(10, dtype=np.float32)),
         action=np.ones(5, dtype=np.int64),
-        reward=[1.0],
+        reward=1.0,
         done=False,
         info={},
-        obs_=Observation(
+        next_obs=Observation(
             data=np.arange(20, dtype=np.float32),
             available_actions=np.full((5,), True),
-            state=np.ones(10, dtype=np.float32),
             extras=np.arange(5, dtype=np.float32),
         ),
+        next_state=State(np.ones(10, dtype=np.float32)),
         truncated=False,
     )
 
@@ -163,19 +155,19 @@ def test_transition_hash():
         obs=Observation(
             data=np.arange(20, dtype=np.float32),
             available_actions=np.full((5,), True),
-            state=np.ones(10, dtype=np.float32),
             extras=np.arange(5, dtype=np.float32),
         ),
+        state=State(np.ones(10, dtype=np.float32)),
         action=np.ones(5, dtype=np.int64),
-        reward=[1.0],
+        reward=1.0,
         done=False,
         info={},
-        obs_=Observation(
+        next_obs=Observation(
             data=np.arange(20, dtype=np.float32),
             available_actions=np.full((5,), True),
-            state=np.ones(10, dtype=np.float32),
             extras=np.arange(5, dtype=np.float32),
         ),
+        next_state=State(np.ones(10, dtype=np.float32) + 1),
         truncated=True,
     )
 
@@ -245,7 +237,7 @@ def test_multi_objective_env():
     assert env.n_actions == env.n_actions
 
     env.reset()
-    reward = env.step([0] * N_AGENTS)[1]
+    reward = env.step([0] * N_AGENTS).reward
     assert len(reward) == N_OBJECTVES
 
 
@@ -255,3 +247,25 @@ def test_is_multi_objective():
 
     env = DiscreteMOMockEnv(4)
     assert env.is_multi_objective
+
+
+def test_state_hash():
+    s1 = State(np.ones(10, dtype=np.float32))
+    s2 = State(np.ones(10, dtype=np.float32))
+    s3 = State(np.ones(10, dtype=np.float32) + 1)
+    s4 = State(np.ones(10, dtype=np.float32), np.ones(10, dtype=np.float32))
+
+    assert hash(s1) == hash(s2)
+    assert hash(s1) != hash(s3)
+    assert hash(s1) != hash(s4)
+
+
+def test_state_eq():
+    s1 = State(np.ones(10, dtype=np.float32))
+    s2 = State(np.ones(10, dtype=np.float32))
+    s3 = State(np.ones(10, dtype=np.float32) + 1)
+    s4 = State(np.ones(10, dtype=np.float32), np.ones(10, dtype=np.float32))
+
+    assert s1 == s2
+    assert s1 != s3
+    assert s1 != s4

@@ -1,23 +1,26 @@
 from abc import ABC, abstractmethod
-from typing import Generic, Optional, Sequence, overload, Any, Literal
+from typing import Generic, Optional, Sequence, overload, Literal
 from typing_extensions import TypeVar
+import cv2
 import numpy as np
 import numpy.typing as npt
 from dataclasses import dataclass
 from itertools import product
 
 
+from .step import Step
+from .state import State
 from .spaces import ActionSpace, DiscreteSpace, DiscreteActionSpace, ContinuousActionSpace
 from .observation import Observation
 
-A = TypeVar("A", bound=ActionSpace, default=ActionSpace)
-D = TypeVar("D", default=npt.NDArray[np.float32])
-S = TypeVar("S", default=npt.NDArray[np.float32])
-R = TypeVar("R", bound=float | npt.NDArray[np.float32], default=float)
+ActionSpaceType = TypeVar("ActionSpaceType", bound=ActionSpace, default=ActionSpace)
+ObsType = TypeVar("ObsType", default=npt.NDArray[np.float32])
+StateType = TypeVar("StateType", default=npt.NDArray[np.float32])
+RewardType = TypeVar("RewardType", bound=float | npt.NDArray[np.float32], default=float)
 
 
 @dataclass
-class MARLEnv(ABC, Generic[A, D, S, R]):
+class MARLEnv(ABC, Generic[ActionSpaceType, ObsType, StateType, RewardType]):
     """
     Multi-Agent Reinforcement Learning environment.
 
@@ -28,7 +31,7 @@ class MARLEnv(ABC, Generic[A, D, S, R]):
         - R: the reward data type (default is float)
     """
 
-    action_space: A
+    action_space: ActionSpaceType
     observation_shape: tuple[int, ...]
     """The shape of an observation for a single agent."""
     extra_shape: tuple[int, ...]
@@ -41,7 +44,7 @@ class MARLEnv(ABC, Generic[A, D, S, R]):
 
     def __init__(
         self,
-        action_space: A,
+        action_space: ActionSpaceType,
         observation_shape: tuple[int, ...],
         state_shape: tuple[int, ...],
         extra_shape: tuple[int, ...] = (0,),
@@ -57,6 +60,7 @@ class MARLEnv(ABC, Generic[A, D, S, R]):
         self.extra_shape = extra_shape
         self.reward_space = reward_space or DiscreteSpace(1, labels=["Reward"])
         """The reward space has shape (1, ) for single-objective environments."""
+        self.cv2_window_name = None
 
     @property
     def agent_state_size(self) -> int:
@@ -86,23 +90,24 @@ class MARLEnv(ABC, Generic[A, D, S, R]):
         raise NotImplementedError("Method not implemented")
 
     @abstractmethod
-    def get_observation(self) -> Observation[D, S]:
+    def get_observation(self) -> Observation[ObsType]:
         """Retrieve the current observation of the environment."""
 
     @abstractmethod
-    def get_state(self) -> S:
+    def get_state(self) -> State[StateType]:
         """Retrieve the current state of the environment."""
 
-    def set_state(self, state: S) -> None:
+    def set_state(self, state: State[StateType]) -> None:
         """Set the state of the environment."""
         raise NotImplementedError("Method not implemented")
 
     @abstractmethod
-    def step(self, actions: Sequence[int] | Sequence[float] | npt.NDArray) -> tuple[Observation[D, S], R, bool, bool, dict[str, Any]]:
+    def step(self, actions: Sequence[int] | Sequence[float] | npt.NDArray) -> Step[ObsType, StateType, RewardType]:
         """Perform a step in the environment.
 
-        Returns:
+        Returns a Step object that can be unpacked as a 6-tuple containing:
         - observations: The observation resulting from the action.
+        - state: The new state of the environment.
         - reward: The team reward.
         - done: Whether the episode is over
         - truncated: Whether the episode is truncated
@@ -110,27 +115,20 @@ class MARLEnv(ABC, Generic[A, D, S, R]):
         """
 
     @abstractmethod
-    def reset(self) -> Observation[D, S]:
+    def reset(self) -> tuple[Observation[ObsType], State[StateType]]:
         """Reset the environment."""
 
-    @overload
-    @abstractmethod
-    def render(self, mode: Literal["human"]) -> None:
-        """Render the environment in a window"""
+    def render(self):
+        """Render the environment in a window (or in console)"""
+        img = self.get_image()
+        if self.cv2_window_name is None:
+            self.cv2_window_name = self.name
+            cv2.namedWindow(self.cv2_window_name, cv2.WINDOW_AUTOSIZE)
+        cv2.imshow(self.cv2_window_name, img)
 
-    @overload
-    @abstractmethod
-    def render(self, mode: Literal["rgb_array"]) -> npt.NDArray[np.uint8]:
+    def get_image(self) -> npt.NDArray[np.uint8]:
         """Retrieve an image of the environment"""
-
-    @abstractmethod
-    def render(self, mode) -> None | npt.NDArray[np.uint8]: ...
-
-    @staticmethod
-    def assert_same_inouts(env1: "MARLEnv", env2: "MARLEnv") -> None:
-        """
-        Raise a `ValueError` if the inputs and output spaces of the environments are different.
-        """
+        raise NotImplementedError("No image available for this environment")
 
     def has_same_inouts(self, other) -> bool:
         """Alias for `have_same_inouts(self, other)`."""
@@ -148,21 +146,16 @@ class MARLEnv(ABC, Generic[A, D, S, R]):
             return False
         return True
 
-    @staticmethod
-    def have_same_inouts(env1: "MARLEnv", env2: "MARLEnv") -> bool:
-        """Check if two environments have the same input and output spaces."""
-        try:
-            MARLEnv.assert_same_inouts(env1, env2)
-            return True
-        except ValueError:
-            return False
+    def __del__(self):
+        if self.cv2_window_name is not None:
+            cv2.destroyWindow(self.cv2_window_name)
 
 
-class DiscreteMARLEnv(MARLEnv[DiscreteActionSpace, D, S, R]):
+class DiscreteMARLEnv(MARLEnv[DiscreteActionSpace, ObsType, StateType, RewardType]):
     def step(self, actions: Sequence[int] | npt.NDArray[np.int32]):
         return super().step(actions)
 
 
-class ContinuousMARLEnv(MARLEnv[ContinuousActionSpace, D, S, R]):
+class ContinuousMARLEnv(MARLEnv[ContinuousActionSpace, ObsType, StateType, RewardType]):
     def step(self, actions: Sequence[float] | npt.NDArray[np.float32]):
         return super().step(actions)

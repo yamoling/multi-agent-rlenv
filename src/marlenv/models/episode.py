@@ -1,11 +1,12 @@
 from dataclasses import dataclass
-from typing import Optional, Iterable
+from typing import Optional, Iterable, Self
 import numpy as np
 import numpy.typing as npt
 from functools import cached_property
 
-from .transition import Transition
-from .observation import Observation
+from .transition import Transition, RewardType
+from .observation import Observation, ObsType
+from .state import State, StateType
 
 
 @dataclass
@@ -18,6 +19,7 @@ class Episode:
     rewards: npt.NDArray[np.float32]
     _available_actions: npt.NDArray[np.bool_]
     _states: npt.NDArray[np.float32]
+    _states_extras: npt.NDArray[np.float32]
     actions_probs: npt.NDArray[np.float32] | None
     metrics: dict[str, float]
     episode_len: int
@@ -40,11 +42,13 @@ class Episode:
         rewards = np.concatenate([self.rewards, np.zeros(rewards_padding_shape, dtype=np.float32)])
         availables = np.concatenate([self._available_actions, np.full((padding_size, self.n_agents, self.n_actions), True)])
         states = np.concatenate([self._states, np.zeros((padding_size, *self._states.shape[1:]), dtype=np.float32)])
+        states_extras = np.concatenate([self._states_extras, np.zeros((padding_size, *self._states_extras.shape[1:]), dtype=np.float32)])
         return Episode(
             _observations=obs,
             actions=actions,
             rewards=rewards,
             _states=states,
+            _states_extras=states_extras,
             metrics=self.metrics,
             episode_len=self.episode_len,
             _available_actions=availables,
@@ -59,9 +63,19 @@ class Episode:
         return self._states[:-1]
 
     @cached_property
-    def states_(self):
+    def states_extras(self):
+        """The extra features of the states"""
+        return self._states_extras[:-1]
+
+    @cached_property
+    def next_states(self):
         """The next states"""
         return self._states[1:]
+
+    @cached_property
+    def next_states_extras(self):
+        """The next extra features of the states"""
+        return self._states_extras[1:]
 
     @cached_property
     def mask(self):
@@ -76,7 +90,7 @@ class Episode:
         return self._observations[:-1]
 
     @cached_property
-    def obs_(self):
+    def next_obs(self):
         """The next observations"""
         return self._observations[1:]
 
@@ -86,7 +100,7 @@ class Episode:
         return self._extras[:-1]
 
     @cached_property
-    def extras_(self):
+    def next_extras(self):
         """Get the next extra features"""
         return self._extras[1:]
 
@@ -106,7 +120,7 @@ class Episode:
         return self._available_actions[:-1]
 
     @cached_property
-    def available_actions_(self):
+    def next_available_actions(self):
         """The next available actions"""
         return self._available_actions[1:]
 
@@ -126,18 +140,18 @@ class Episode:
                     data=self._observations[i],
                     available_actions=self._available_actions[i],
                     extras=self._extras[i],
-                    state=self._states[i],
                 ),
+                state=State(data=self._states[i], extras=self._states_extras[i]),
                 action=self.actions[i],
                 reward=self.rewards[i],
                 done=bool(self.dones[i]),
                 info={},
-                obs_=Observation(
+                next_obs=Observation(
                     data=self._observations[i + 1],
                     available_actions=self._available_actions[i + 1],
                     extras=self._extras[i + 1],
-                    state=self._states[i + 1],
                 ),
+                next_state=State(data=self._states[i + 1], extras=self._states_extras[i + 1]),
                 truncated=not self.is_done and i == self.episode_len - 1,
             )
 
@@ -168,9 +182,10 @@ class EpisodeBuilder:
         self.observations = list[np.ndarray]()
         self.extras = list[np.ndarray]()
         self.actions = list[np.ndarray]()
-        self.rewards = list[np.ndarray]()
+        self.rewards = list[float | np.ndarray]()
         self.available_actions = list[np.ndarray]()
         self.states = list[np.ndarray]()
+        self.state_extras = list[np.ndarray]()
         self.action_probs = list[np.ndarray]()
         self.episode_len = 0
         self.metrics = {}
@@ -186,7 +201,7 @@ class EpisodeBuilder:
         """The current time step (i.e. the current episode length)"""
         return self.episode_len
 
-    def add(self, transition: Transition):
+    def add(self, transition: Transition[RewardType, np.ndarray, np.ndarray]):
         """Add a transition to the episode"""
         self.episode_len += 1
         self.observations.append(transition.obs.data)
@@ -194,9 +209,10 @@ class EpisodeBuilder:
         self.actions.append(transition.action)
         self.rewards.append(transition.reward)
         self.available_actions.append(transition.obs.available_actions)
-        self.states.append(transition.obs.state)
-        if transition.probs is not None:
-            self.action_probs.append(transition.probs)
+        self.states.append(transition.state.data)
+        self.state_extras.append(transition.state.extras)
+        if transition.action_probs is not None:
+            self.action_probs.append(transition.action_probs)
         if transition.is_terminal:
             # Only set the truncated flag if the episode is not done (both could happen with a time limit)
             self._truncated = transition.truncated
@@ -206,10 +222,11 @@ class EpisodeBuilder:
                 if isinstance(value, bool):
                     value = int(value)
                 self.metrics[key] = value
-            self.observations.append(transition.obs_.data)
-            self.extras.append(transition.obs_.extras)
-            self.available_actions.append(transition.obs_.available_actions)
-            self.states.append(transition.obs_.state)
+            self.observations.append(transition.next_obs.data)
+            self.extras.append(transition.next_obs.extras)
+            self.available_actions.append(transition.next_obs.available_actions)
+            self.states.append(transition.next_state.data)
+            self.state_extras.append(transition.next_state.extras)
 
     def build(self, extra_metrics: Optional[dict[str, float]] = None) -> Episode:
         """Build the Episode"""
@@ -229,6 +246,7 @@ class EpisodeBuilder:
             actions=np.array(self.actions),
             rewards=np.array(self.rewards, np.float32),
             _states=np.array(self.states),
+            _states_extras=np.array(self.state_extras),
             metrics=self.metrics,
             episode_len=self.episode_len,
             _available_actions=np.array(self.available_actions),

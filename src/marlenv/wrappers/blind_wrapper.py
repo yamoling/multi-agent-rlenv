@@ -22,7 +22,7 @@ class Blind(RLEnvWrapper[A, npt.NDArray, S, R]):
         self.p = float(p)
 
     def step(self, actions: npt.NDArray[np.int64,]):
-        obs, r, done, trunc, info = super().step(actions)
+        step = super().step(actions)
         if random.random() < self.p:
-            obs.data = np.zeros_like(obs.data)
-        return obs, r, done, trunc, info
+            step.obs.data = np.zeros_like(step.obs.data)
+        return step

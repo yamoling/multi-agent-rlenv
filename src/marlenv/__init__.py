@@ -9,7 +9,7 @@ It aims to
     - provide helpful wrappers to add intrinsic rewards, agent ids, record videos, ...
 """
 
-__version__ = "1.3.0"
+__version__ = "2.0.0rc1"
 
 from . import models
 from . import wrappers
@@ -20,6 +20,8 @@ from .models import spaces
 from .env_builder import make, Builder
 from .models import (
     MARLEnv,
+    State,
+    Step,
     DiscreteMARLEnv,
     ContinuousMARLEnv,
     Observation,
@@ -42,6 +44,8 @@ __all__ = [
     "make",
     "Builder",
     "MARLEnv",
+    "Step",
+    "State",
     "DiscreteMARLEnv",
     "ContinuousMARLEnv",
     "Observation",
