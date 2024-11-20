@@ -9,7 +9,7 @@ It aims to
     - provide helpful wrappers to add intrinsic rewards, agent ids, record videos, ...
 """
 
-__version__ = "2.0.0rc1"
+__version__ = "2.0.0rc2"
 
 from . import models
 from . import wrappers

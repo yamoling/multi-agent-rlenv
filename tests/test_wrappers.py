@@ -1,7 +1,7 @@
 import numpy as np
 from typing import Any
 from marlenv import Builder, DiscreteMOMockEnv, DiscreteMockEnv
-from marlenv.wrappers import Centralised, AvailableActionsMask
+from marlenv.wrappers import Centralised, AvailableActionsMask, TimeLimit, LastAction
 import marlenv
 
 
@@ -40,7 +40,7 @@ def test_penalty_wrapper():
     expected = np.array([0.9] * N_OBJECTIVES, dtype=np.float32)
     done = False
     while not done:
-        _, _, reward, done, *_ = env.step([0]).astuple()
+        _, _, reward, done, *_ = env.step([0])
         assert np.array_equal(reward, expected)
 
 
@@ -51,7 +51,7 @@ def test_time_limit_wrapper():
     done = False
     t = 0
     while not done:
-        obs, state, _, done, truncated, _ = env.step(np.array([0])).astuple()
+        obs, state, _, done, truncated, _ = env.step(np.array([0]))
         assert obs.extras.shape == (env.n_agents, 1)
         assert state.extras_shape == (1,)
         t += 1
@@ -68,7 +68,7 @@ def test_truncated_and_done():
     done = truncated = False
     while not episode.is_finished:
         action = env.action_space.sample()
-        next_obs, next_state, r, done, truncated, info = env.step(action).astuple()
+        next_obs, next_state, r, done, truncated, info = env.step(action)
         episode.add(marlenv.Transition(obs, state, action, r, done, info, next_obs, next_state, truncated))
         obs = next_obs
         state = next_state
@@ -92,7 +92,7 @@ def test_time_limit_wrapper_with_extra():
     stop = False
     t = 0
     while not stop:
-        obs, _, _, done, truncated, _ = env.step(np.array([0])).astuple()
+        obs, _, _, done, truncated, _ = env.step(np.array([0]))
         stop = done or truncated
         t += 1
     assert t == MAX_T
@@ -124,7 +124,7 @@ def test_time_limit_wrapper_with_truncation_penalty():
     stop = False
     t = 0
     while not stop:
-        obs, _, _, done, truncated, _ = env.step(np.array([0])).astuple()
+        obs, _, _, done, truncated, _ = env.step(np.array([0]))
         stop = done or truncated
         t += 1
     assert t == MAX_T
@@ -254,3 +254,41 @@ def test_builder_action_mask():
     mask[1, 1] = False
     new_env = marlenv.Builder(env).mask_actions(mask).build()
     assert env.extra_shape == new_env.extra_shape
+
+
+def test_time_limit_set_state():
+    env = TimeLimit(DiscreteMockEnv(end_game=50), 100)
+    env.reset()
+
+    states = []
+    for i in range(50):
+        states.append(env.get_state())
+        env.step(env.action_space.sample())
+        assert env._current_step == i + 1
+
+    for i, s in enumerate(states):
+        env.set_state(s)
+        assert env._current_step == i
+
+
+def test_last_action_set_state():
+    env = LastAction(DiscreteMockEnv())
+    env.reset()
+
+    states = []
+    one_hot_actions = [np.zeros((env.n_agents, env.n_actions), dtype=np.float32)]
+    for _ in range(50):
+        states.append(env.get_state())
+        action = env.action_space.sample()
+        env.step(action)
+        one_hots = np.zeros((env.n_agents, env.n_actions), dtype=np.float32)
+        index = np.arange(env.n_agents)
+        one_hots[index, action] = 1.0
+        one_hot_actions.append(one_hots)
+
+    for i, s in enumerate(states):
+        last_action = one_hot_actions[i]
+        env.set_state(s)
+
+        assert env.last_one_hot_actions is not None
+        assert np.array_equal(env.last_one_hot_actions, last_action)

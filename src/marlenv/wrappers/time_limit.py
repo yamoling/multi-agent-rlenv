@@ -5,7 +5,7 @@ import numpy as np
 
 from marlenv.models import Observation, State
 
-from .rlenv_wrapper import A, D, MARLEnv, RLEnvWrapper, S, R
+from .rlenv_wrapper import MARLEnv, RLEnvWrapper, S, R, A, D
 
 
 @dataclass
@@ -34,8 +34,10 @@ class TimeLimit(RLEnvWrapper[A, D, S, R]):
     ) -> None:
         assert len(env.extra_shape) == 1
         extras_shape = env.extra_shape
+        self.extra_index = 0
         if add_extra:
             dims = env.extra_shape[0]
+            self.extra_index = dims
             extras_shape = (dims + 1,)
         super().__init__(env, extra_shape=extras_shape)
         self.step_limit = step_limit
@@ -58,26 +60,36 @@ class TimeLimit(RLEnvWrapper[A, D, S, R]):
     def step(self, actions):
         self._current_step += 1
         step = super().step(actions)
-        step.obs
         if self.add_extra:
             self.add_time_extra(step.obs, step.state)
         # If we reach the time limit
         if self._current_step >= self.step_limit:
             # And the episode is not done
             if not step.done:
-                # then we set the truncation flag
-                step.truncated = True
-                step.reward -= self.truncation_penalty  # type: ignore
-                if self.add_extra:
-                    step.done = True
+                step = step.with_attrs(
+                    truncated=True,
+                    reward=step.reward - self.truncation_penalty,  # type: ignore
+                    done=self.add_extra,
+                )
         return step
 
     def add_time_extra(self, obs: Observation[D], state: State[S]):
         counter = self._current_step / self.step_limit
-        state.add_extra(counter)
         time_ratio = np.full(
             (self.n_agents, 1),
             counter,
             dtype=np.float32,
         )
         obs.add_extra(time_ratio)
+        state.add_extra(counter)
+
+    def get_state(self):
+        state = super().get_state()
+        if self.add_extra:
+            state.add_extra(self._current_step / self.step_limit)
+        return state
+
+    def set_state(self, state: State[S]):
+        if self.add_extra:
+            self._current_step = int(state.extras[self.extra_index] * self.step_limit)
+        super().set_state(state)

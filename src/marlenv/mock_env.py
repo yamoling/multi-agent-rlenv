@@ -46,6 +46,9 @@ class DiscreteMockEnv(DiscreteMARLEnv[np.ndarray, np.ndarray]):
     def get_state(self):
         return State(np.full((self.n_agents * self.agent_state_size,), self.t, dtype=np.float32))
 
+    def set_state(self, state: State[np.ndarray]):
+        self.t = int(state.data[0])
+
     def render(self, mode: str = "human"):
         return
 

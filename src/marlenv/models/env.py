@@ -48,6 +48,7 @@ class MARLEnv(ABC, Generic[ActionSpaceType, ObsType, StateType, RewardType]):
         observation_shape: tuple[int, ...],
         state_shape: tuple[int, ...],
         extra_shape: tuple[int, ...] = (0,),
+        state_extra_shape: tuple[int, ...] = (0,),
         reward_space: Optional[DiscreteSpace] = None,
     ):
         super().__init__()
@@ -58,6 +59,7 @@ class MARLEnv(ABC, Generic[ActionSpaceType, ObsType, StateType, RewardType]):
         self.observation_shape = observation_shape
         self.state_shape = state_shape
         self.extra_shape = extra_shape
+        self.state_extra_shape = state_extra_shape
         self.reward_space = reward_space or DiscreteSpace(1, labels=["Reward"])
         """The reward space has shape (1, ) for single-objective environments."""
         self.cv2_window_name = None

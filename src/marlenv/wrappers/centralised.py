@@ -2,7 +2,7 @@ from itertools import product
 from typing import TypeVar
 import numpy as np
 import numpy.typing as npt
-from marlenv.models import MARLEnv, DiscreteSpace, Observation, ActionSpace
+from marlenv.models import MARLEnv, DiscreteSpace, Observation, ActionSpace, Step
 from .rlenv_wrapper import RLEnvWrapper
 
 
@@ -39,8 +39,7 @@ class Centralised(RLEnvWrapper[A, np.ndarray, S, R]):
         action = list(actions)[0]
         individual_actions = self._individual_actions(action)
         step = self.wrapped.step(individual_actions)
-        step.obs = self._joint_observation(step.obs)
-        return step
+        return step.with_attrs(obs=self._joint_observation(step.obs))
 
     def _individual_actions(self, joint_action: int):
         individual_actions = []
