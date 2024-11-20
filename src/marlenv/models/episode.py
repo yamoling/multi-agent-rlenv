@@ -1,12 +1,12 @@
 from dataclasses import dataclass
-from typing import Optional, Iterable, Self
+from typing import Optional, Iterable
 import numpy as np
 import numpy.typing as npt
 from functools import cached_property
 
 from .transition import Transition, RewardType
-from .observation import Observation, ObsType
-from .state import State, StateType
+from .observation import Observation
+from .state import State
 
 
 @dataclass
@@ -233,7 +233,7 @@ class EpisodeBuilder:
         assert (
             self.is_finished
         ), "Cannot build an episode that is not finished. Set truncated=True when adding the last transition of the episode."
-        self.metrics["score"] = float(np.sum(self.rewards))
+        self.metrics["score"] = float(sum(self.rewards))
         self.metrics["episode_length"] = self.episode_len
         if extra_metrics is not None:
             self.metrics.update(extra_metrics)
