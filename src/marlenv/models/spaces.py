@@ -23,6 +23,14 @@ class Space(ABC):
     def sample(self, mask: Optional[npt.NDArray[np.bool_]] = None) -> Any:
         """Sample a value from the space."""
 
+    def __eq__(self, value: object) -> bool:
+        if not isinstance(value, Space):
+            return False
+        return self.shape == value.shape
+
+    def __ne__(self, value: object) -> bool:
+        return not self.__eq__(value)
+
 
 class DiscreteSpace(Space):
     size: int
@@ -38,6 +46,13 @@ class DiscreteSpace(Space):
         if mask is not None:
             space = space[mask]
         return int(np.random.choice(space))
+
+    def __eq__(self, value: object) -> bool:
+        if not isinstance(value, DiscreteSpace):
+            return False
+        if self.size != value.size:
+            return False
+        return super().__eq__(value)
 
 
 class MultiDiscreteSpace(Space):
@@ -59,6 +74,16 @@ class MultiDiscreteSpace(Space):
         if masks is None:
             return np.array([space.sample() for space in self.spaces], dtype=np.int32)
         return np.array([space.sample(mask) for mask, space in zip(masks, self.spaces)], dtype=np.int32)
+
+    def __eq__(self, value: object) -> bool:
+        if not isinstance(value, MultiDiscreteSpace):
+            return False
+        if len(self.spaces) != len(value.spaces):
+            return False
+        for s1, s2 in zip(self.spaces, value.spaces):
+            if s1.size != s2.size:
+                return False
+        return super().__eq__(value)
 
 
 class ContinuousSpace(Space):
@@ -88,6 +113,15 @@ class ContinuousSpace(Space):
     def sample(self, *_):
         return np.random.random(self.shape) * (self.high - self.low) + self.low
 
+    def __eq__(self, value: object) -> bool:
+        if not isinstance(value, ContinuousSpace):
+            return False
+        if not np.all(self.low == value.low):
+            return False
+        if not np.all(self.high == value.high):
+            return False
+        return super().__eq__(value)
+
 
 class ActionSpace(Space, Generic[S]):
     n_agents: int
@@ -113,6 +147,17 @@ class ActionSpace(Space, Generic[S]):
                 m = None
             res.append(self.individual_action_space.sample(m))
         return np.array(res, dtype=np.int32)
+
+    def __eq__(self, value: object) -> bool:
+        if not isinstance(value, ActionSpace):
+            return False
+        if self.n_agents != value.n_agents:
+            return False
+        if self.n_actions != value.n_actions:
+            return False
+        if self.individual_action_space != value.individual_action_space:
+            return False
+        return super().__eq__(value)
 
 
 class DiscreteActionSpace(ActionSpace[DiscreteSpace]):
