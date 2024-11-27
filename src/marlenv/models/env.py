@@ -127,6 +127,7 @@ class MARLEnv(ABC, Generic[ActionSpaceType, ObsType, StateType, RewardType]):
             self.cv2_window_name = self.name
             cv2.namedWindow(self.cv2_window_name, cv2.WINDOW_AUTOSIZE)
         cv2.imshow(self.cv2_window_name, img)
+        cv2.waitKey(1)
 
     def get_image(self) -> npt.NDArray[np.uint8]:
         """Retrieve an image of the environment"""
