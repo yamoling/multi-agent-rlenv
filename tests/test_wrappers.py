@@ -48,6 +48,7 @@ def test_time_limit_wrapper():
     MAX_T = 5
     env = Builder(DiscreteMockEnv(1)).time_limit(MAX_T).build()
     assert env.extra_shape == (1,)
+    assert env.state_extra_shape == (1,)
     done = False
     t = 0
     while not done:
