@@ -33,13 +33,16 @@ class TimeLimit(RLEnvWrapper[A, D, S, R]):
         truncation_penalty: Optional[float] = None,
     ) -> None:
         assert len(env.extra_shape) == 1
+        assert len(env.state_extra_shape) == 1
         extras_shape = env.extra_shape
+        state_extras_shape = env.state_extra_shape
         self.extra_index = 0
         if add_extra:
             dims = env.extra_shape[0]
             self.extra_index = dims
             extras_shape = (dims + 1,)
-        super().__init__(env, extra_shape=extras_shape)
+            state_extras_shape = (env.state_extra_shape[0] + 1,)
+        super().__init__(env, extra_shape=extras_shape, state_extra_shape=state_extras_shape)
         self.step_limit = step_limit
         self._current_step = 0
         self.add_extra = add_extra

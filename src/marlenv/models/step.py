@@ -27,6 +27,11 @@ class _Step(NamedTuple, Generic[ObsType, StateType, RewardType]):
 
     @property
     def is_terminal(self):
+        """
+        Whether the episode is done or truncated, i.e. the step was the last of an episode.
+
+        Typically used in a `while not step.is_terminal` loop.
+        """
         return self.truncated or self.done
 
     def with_attrs(
@@ -62,7 +67,7 @@ class Step(Generic[ObsType, StateType, RewardType], _Step[ObsType, StateType, Re
     - reward: The team reward.
     - done: Whether the episode is over
     - truncated: Whether the episode is truncated
-    - info: Extra information
+    - info: Extra information provided by the environment (such as stats).
     """
 
     def __new__(
