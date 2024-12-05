@@ -27,7 +27,6 @@ jobs:
           - x86_64
           - aarch64
         python-version: 
-          - '3.11'
           - '3.12'
           - '3.13'
     runs-on: ${{ matrix.os }}
@@ -42,7 +41,7 @@ jobs:
       - name: Install uv
         uses: yezz123/setup-uv@v4
         with:
-          uv-version: 0.4.11
+          uv-version: 0.5.6
       - name: Install dependencies and run pytest
         run: |
           uv sync
@@ -62,7 +61,7 @@ jobs:
     - name: Install UV
       uses: yezz123/setup-uv@v4
       with:
-          uv-version: 0.4.11
+          uv-version: 0.5.6
     - name: Build wheels
       run: |
         uv venv
