@@ -1,12 +1,12 @@
 from typing import Any
 import numpy as np
-from marlenv.models import EpisodeBuilder, Transition, Episode, MARLEnv
+from marlenv.models import Transition, Episode, MARLEnv
 from marlenv import wrappers, DiscreteMockEnv
 
 
 def generate_episode(env: MARLEnv[Any], with_probs: bool = False) -> Episode:
     obs, state = env.reset()
-    episode = EpisodeBuilder()
+    episode = Episode.new(obs, state)
     while not episode.is_finished:
         action = env.action_space.sample()
         probs = None
@@ -16,14 +16,14 @@ def generate_episode(env: MARLEnv[Any], with_probs: bool = False) -> Episode:
         episode.add(Transition.from_step(obs, state, action, step, probs))
         obs = step.obs
         state = step.state
-    return episode.build()
+    return episode
 
 
 def test_episode_builder_is_done():
     env = DiscreteMockEnv(2)
     obs, state = env.reset()
     # Set the 'done' flag
-    builder = EpisodeBuilder()
+    builder = Episode.new(obs, state)
     assert not builder.is_finished
     builder.add(Transition(obs, state, [0, 0], 0, False, {}, obs, state, False))
     assert not builder.is_finished
@@ -31,7 +31,7 @@ def test_episode_builder_is_done():
     assert builder.is_finished
 
     # Set the 'truncated' flag
-    builder = EpisodeBuilder()
+    builder = Episode.new(obs, state)
     assert not builder.is_finished
     builder.add(Transition(obs, state, [0, 0], 0, False, {}, obs, state, False))
     assert not builder.is_finished
@@ -39,49 +39,19 @@ def test_episode_builder_is_done():
     assert builder.is_finished
 
 
-def test_build_not_finished_episode_fails():
-    builder = EpisodeBuilder()
-    try:
-        builder.build()
-        assert False, "Should have raised an AssertionError"
-    except AssertionError:
-        pass
-    env = DiscreteMockEnv(2)
-    obs, state = env.reset()
-    builder.add(
-        Transition(
-            obs=obs,
-            state=state,
-            action=np.array([0, 0]),
-            reward=0,
-            done=False,
-            info={},
-            next_obs=obs,
-            next_state=state,
-            truncated=False,
-        )
-    )
-    try:
-        builder.build()
-        assert False, "Should have raised an AssertionError"
-    except AssertionError:
-        pass
-
-
 def test_returns():
     obs, state = DiscreteMockEnv(2).reset()
-    builder = EpisodeBuilder()
+    episode = Episode.new(obs, state)
     n_steps = 20
     gamma = 0.95
     rewards = []
     for i in range(n_steps):
         done = i == n_steps - 1
-        r = np.random.rand(5)
+        r = np.random.rand(5).astype(np.float32)
         rewards.append(r)
         t = Transition(obs, state, [0, 0], r, done, {}, obs, state, False)
-        builder.add(t)
+        episode.add(t)
     rewards = np.array(rewards, dtype=np.float32)
-    episode = builder.build()
     returns = episode.compute_returns(discount=gamma)
     for i, r in enumerate(returns):
         G_t = rewards[-1]
@@ -151,17 +121,17 @@ def test_padded():
         episode = generate_episode(env)
         assert len(episode) == i
         padded = episode.padded(10)
-        assert padded._observations.shape[0] == 11
-        assert padded.obs.shape[0] == 10
-        assert padded.next_obs.shape[0] == 10
-        assert padded.actions.shape[0] == 10
-        assert padded.rewards.shape[0] == 10
-        assert padded.dones.shape[0] == 10
-        assert padded.extras.shape[0] == 10
-        assert padded.next_extras.shape[0] == 10
-        assert padded.available_actions.shape[0] == 10
-        assert padded.next_available_actions.shape[0] == 10
-        assert padded.mask.shape[0] == 10
+        assert len(padded._observations) == 11
+        assert len(padded.obs) == 10
+        assert len(padded.next_obs) == 10
+        assert len(padded.actions) == 10
+        assert len(padded.rewards) == 10
+        assert len(padded.dones) == 10
+        assert len(padded.extras) == 10
+        assert len(padded.next_extras) == 10
+        assert len(padded.available_actions) == 10
+        assert len(padded.next_available_actions) == 10
+        assert len(padded.mask) == 10
 
 
 def test_retrieve_episode_transitions():

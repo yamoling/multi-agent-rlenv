@@ -1,5 +1,4 @@
-from typing import Any, Optional, Generic
-from typing_extensions import TypeVar
+from typing import Any, Optional
 import numpy as np
 import numpy.typing as npt
 
@@ -8,35 +7,30 @@ from .state import State
 from .step import Step
 
 
-ObsType = TypeVar("ObsType", default=npt.NDArray[np.float32])
-StateType = TypeVar("StateType", default=npt.NDArray[np.float32])
-RewardType = TypeVar("RewardType", bound=float | npt.NDArray[np.float32], default=float)
-
-
-class Transition(Generic[RewardType, StateType, ObsType]):
+class Transition[O, S, R: float | npt.NDArray[np.float32]]:
     """Transition model"""
 
-    obs: Observation[ObsType]
-    state: State[StateType]
+    obs: Observation[O]
+    state: State[S]
     action: np.ndarray
-    reward: RewardType
+    reward: R
     done: bool
     info: dict[str, Any]
-    next_obs: Observation[ObsType]
-    next_state: State[StateType]
+    next_obs: Observation[O]
+    next_state: State[S]
     truncated: bool
     action_probs: Optional[np.ndarray] = None
 
     def __init__(
         self,
-        obs: Observation[ObsType],
-        state: State[StateType],
+        obs: Observation[O],
+        state: State[S],
         action: npt.ArrayLike,
-        reward: RewardType,
+        reward: R,
         done: bool,
         info: dict[str, Any],
-        next_obs: Observation[ObsType],
-        next_state: State[StateType],
+        next_obs: Observation[O],
+        next_state: State[S],
         truncated: bool,
         action_probs: Optional[np.ndarray] = None,
     ):
@@ -55,13 +49,13 @@ class Transition(Generic[RewardType, StateType, ObsType]):
 
     @staticmethod
     def from_step(
-        prev_obs: Observation[ObsType],
-        prev_state: State[StateType],
+        prev_obs: Observation[O],
+        prev_state: State[S],
         actions: np.ndarray,
-        step: Step[ObsType, StateType, RewardType],
+        step: Step[O, S, R],
         probs: Optional[np.ndarray] = None,
     ):
-        return Transition(
+        return Transition[O, S, R](
             obs=prev_obs,
             state=prev_state,
             action=actions,
