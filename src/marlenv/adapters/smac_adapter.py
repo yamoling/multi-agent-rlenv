@@ -1,6 +1,6 @@
 import numpy as np
 import numpy.typing as npt
-from typing import Literal, overload
+from typing import overload
 from smac.env import StarCraft2Env
 
 from marlenv.models import MARLEnv, Observation, DiscreteActionSpace
@@ -169,19 +169,22 @@ class SMAC(MARLEnv[DiscreteActionSpace, npt.NDArray[np.float32], npt.NDArray[np.
         obs = Observation(np.array(obs), self.available_actions(), state)
         return obs
 
+    def get_observation(self):
+        return self._env.get_obs()
+
     def get_state(self):
         return self._env.get_state()
 
     def step(self, actions):
         reward, done, info = self._env.step(actions)
-        obs = Observation(np.array(self._env.get_obs()), self.available_actions(), self.get_state())
+        obs = Observation(self._env.get_obs(), self.available_actions(), self.get_state())
         return obs, np.array([reward], np.float32), done, False, info
 
     def available_actions(self) -> npt.NDArray[np.bool_]:
         return np.array(self._env.get_avail_actions()) == 1
 
-    def render(self, mode: Literal["human", "rgb_array"] = "human"):
-        return self._env.render(mode)
+    def get_image(self):
+        return self._env.render(mode="rgb_array")
 
     def seed(self, seed_value: int):
         self._env = StarCraft2Env(map_name=self._env.map_name, seed=seed_value)
