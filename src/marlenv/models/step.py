@@ -1,11 +1,7 @@
 from typing import Generic, Any, NamedTuple, Optional
-from typing_extensions import TypeVar
-import numpy.typing as npt
 from .observation import Observation, ObsType
 from .state import State, StateType
-
-
-RewardType = TypeVar("RewardType", bound=float | npt.NDArray, default=float)
+from .env import RewardType
 
 
 # It is not possible to override the __new__ of a NamedTuple. Therefore, we can not give a default value
