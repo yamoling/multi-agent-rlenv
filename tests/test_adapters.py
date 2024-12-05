@@ -120,7 +120,7 @@ def test_smac_render():
 
     env = SMAC("3m")
     env.reset()
-    env.render("human")
+    env.render()
 
 
 def test_pymarl():
