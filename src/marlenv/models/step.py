@@ -25,38 +25,6 @@ class _Step(NamedTuple, Generic[ObsType, StateType, RewardType]):
     info: dict[str, Any]
     """Additional information that the environment might provide."""
 
-    @property
-    def is_terminal(self):
-        """
-        Whether the episode is done or truncated, i.e. the step was the last of an episode.
-
-        Typically used in a `while not step.is_terminal` loop.
-        """
-        return self.truncated or self.done
-
-    def with_attrs(
-        self,
-        obs: Optional[Observation[ObsType]] = None,
-        state: Optional[State[StateType]] = None,
-        reward: Optional[RewardType] = None,
-        done: Optional[bool] = None,
-        truncated: Optional[bool] = None,
-        info: Optional[dict[str, Any]] = None,
-    ):
-        """
-        Return a new Step object with the given attributes replaced.
-
-        Note that the new object shares the same references as the original one for the attributes that are not replaced.
-        """
-        return _Step(
-            obs if obs is not None else self.obs,
-            state if state is not None else self.state,
-            reward if reward is not None else self.reward,
-            done if done is not None else self.done,
-            truncated if truncated is not None else self.truncated,
-            info if info is not None else self.info,
-        )
-
 
 class Step(Generic[ObsType, StateType, RewardType], _Step[ObsType, StateType, RewardType]):
     """
@@ -82,3 +50,35 @@ class Step(Generic[ObsType, StateType, RewardType], _Step[ObsType, StateType, Re
         if info is None:
             info = {}
         return super().__new__(cls, obs, state, reward, done, truncated, info)
+
+    @property
+    def is_terminal(self):
+        """
+        Whether the episode is done or truncated, i.e. the step was the last of an episode.
+
+        Typically used in a `while not step.is_terminal` loop.
+        """
+        return self.truncated or self.done
+
+    def with_attrs(
+        self,
+        obs: Optional[Observation[ObsType]] = None,
+        state: Optional[State[StateType]] = None,
+        reward: Optional[RewardType] = None,
+        done: Optional[bool] = None,
+        truncated: Optional[bool] = None,
+        info: Optional[dict[str, Any]] = None,
+    ):
+        """
+        Return a new Step object with the given attributes replaced.
+
+        Note that the new object shares the same references as the original one for the attributes that are not replaced.
+        """
+        return Step(
+            obs if obs is not None else self.obs,
+            state if state is not None else self.state,
+            reward if reward is not None else self.reward,
+            done if done is not None else self.done,
+            truncated if truncated is not None else self.truncated,
+            info if info is not None else self.info,
+        )
