@@ -1,10 +1,16 @@
 from typing import Any, Optional, Generic
+from typing_extensions import TypeVar
 import numpy as np
 import numpy.typing as npt
 
-from .observation import Observation, ObsType
-from .state import State, StateType
-from .step import Step, RewardType
+from .observation import Observation
+from .state import State
+from .step import Step
+
+
+ObsType = TypeVar("ObsType", default=npt.NDArray[np.float32])
+StateType = TypeVar("StateType", default=npt.NDArray[np.float32])
+RewardType = TypeVar("RewardType", bound=float | npt.NDArray[np.float32], default=float)
 
 
 class Transition(Generic[RewardType, StateType, ObsType]):

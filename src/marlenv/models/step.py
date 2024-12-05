@@ -2,10 +2,12 @@ from typing import Generic, Any, NamedTuple, Optional
 from typing_extensions import TypeVar
 import numpy.typing as npt
 import numpy as np
-from .observation import Observation, ObsType
-from .state import State, StateType
+from .observation import Observation
+from .state import State
 
 
+ObsType = TypeVar("ObsType", default=npt.NDArray[np.float32])
+StateType = TypeVar("StateType", default=npt.NDArray[np.float32])
 RewardType = TypeVar("RewardType", bound=float | npt.NDArray[np.float32], default=float)
 
 
