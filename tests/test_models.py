@@ -269,3 +269,17 @@ def test_state_eq():
     assert s1 == s2
     assert s1 != s3
     assert s1 != s4
+
+
+def test_unpack_step():
+    env = DiscreteMockEnv(4)
+    obs, state = env.reset()
+    action = np.array([0, 1, 2, 3])
+    step = env.step(action)
+    obs, state, reward, done, truncated, info = step
+    assert isinstance(obs, Observation)
+    assert isinstance(state, State)
+    assert isinstance(reward, (int, np.ndarray, float))
+    assert isinstance(done, bool)
+    assert isinstance(truncated, bool)
+    assert isinstance(info, dict)

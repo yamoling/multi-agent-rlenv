@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, Optional
+from typing import Any, Optional, Generic, TypeVar
 
 import numpy as np
 import numpy.typing as npt
@@ -9,31 +9,36 @@ from .state import State
 from .step import Step
 
 
+ObsType = TypeVar("ObsType")
+StateType = TypeVar("StateType")
+RewardType = TypeVar("RewardType", bound=float | npt.NDArray[np.float32])
+
+
 @dataclass
-class Transition[O, S, R: float | npt.NDArray[np.float32]]:
+class Transition(Generic[ObsType, StateType, RewardType]):
     """Transition model"""
 
-    obs: Observation[O]
-    state: State[S]
+    obs: Observation[ObsType]
+    state: State[StateType]
     action: np.ndarray
-    reward: R
+    reward: RewardType
     done: bool
     info: dict[str, Any]
-    next_obs: Observation[O]
-    next_state: State[S]
+    next_obs: Observation[ObsType]
+    next_state: State[StateType]
     truncated: bool
     action_probs: Optional[np.ndarray] = None
 
     def __init__(
         self,
-        obs: Observation[O],
-        state: State[S],
+        obs: Observation[ObsType],
+        state: State[StateType],
         action: npt.ArrayLike,
-        reward: R,
+        reward: RewardType,
         done: bool,
         info: dict[str, Any],
-        next_obs: Observation[O],
-        next_state: State[S],
+        next_obs: Observation[ObsType],
+        next_state: State[StateType],
         truncated: bool,
         action_probs: Optional[np.ndarray] = None,
     ):
@@ -52,13 +57,13 @@ class Transition[O, S, R: float | npt.NDArray[np.float32]]:
 
     @staticmethod
     def from_step(
-        prev_obs: Observation[O],
-        prev_state: State[S],
+        prev_obs: Observation[ObsType],
+        prev_state: State[StateType],
         actions: np.ndarray,
-        step: Step[O, S, R],
+        step: Step[ObsType, StateType, RewardType],
         probs: Optional[np.ndarray] = None,
     ):
-        return Transition[O, S, R](
+        return Transition[ObsType, StateType, RewardType](
             obs=prev_obs,
             state=prev_state,
             action=actions,

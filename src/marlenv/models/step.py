@@ -1,7 +1,8 @@
-from typing import Generic, Any, NamedTuple, Optional
-from typing_extensions import TypeVar
+from typing import Generic, Any, Optional
+from typing_extensions import TypeVar, deprecated
 import numpy.typing as npt
 import numpy as np
+from dataclasses import dataclass
 from .observation import Observation
 from .state import State
 
@@ -11,10 +12,8 @@ StateType = TypeVar("StateType", default=npt.NDArray[np.float32])
 RewardType = TypeVar("RewardType", bound=float | npt.NDArray[np.float32], default=float)
 
 
-# It is not possible to override the __new__ of a NamedTuple. Therefore, we can not give a default value
-# to the `info` attribute. We have to use a NamedTuple instead of a dataclass because we want to
-# be able to unpack the Step object in a tuple without losing type information.
-class _Step(NamedTuple, Generic[ObsType, StateType, RewardType]):
+@dataclass
+class Step(Generic[ObsType, StateType, RewardType]):
     obs: Observation[ObsType]
     """The new observation (1 per agent) of the environment resulting from the agent's action."""
     state: State[StateType]
@@ -28,21 +27,8 @@ class _Step(NamedTuple, Generic[ObsType, StateType, RewardType]):
     info: dict[str, Any]
     """Additional information that the environment might provide."""
 
-
-class Step(Generic[ObsType, StateType, RewardType], _Step[ObsType, StateType, RewardType]):
-    """
-    Named Tuple for a step in the environment.
-
-    - obs: The observation resulting from the action.
-    - state: The new state of the environment.
-    - reward: The team reward.
-    - done: Whether the episode is over
-    - truncated: Whether the episode is truncated
-    - info: Extra information provided by the environment (such as stats).
-    """
-
-    def __new__(
-        cls,
+    def __init__(
+        self,
         obs: Observation[ObsType],
         state: State[StateType],
         reward: RewardType,
@@ -52,7 +38,12 @@ class Step(Generic[ObsType, StateType, RewardType], _Step[ObsType, StateType, Re
     ):
         if info is None:
             info = {}
-        return super().__new__(cls, obs, state, reward, done, truncated, info)
+        self.obs = obs
+        self.state = state
+        self.reward = reward
+        self.done = done
+        self.truncated = truncated
+        self.info = info
 
     @property
     def is_terminal(self):
@@ -63,6 +54,15 @@ class Step(Generic[ObsType, StateType, RewardType], _Step[ObsType, StateType, Re
         """
         return self.truncated or self.done
 
+    def __iter__(self):
+        yield self.obs
+        yield self.state
+        yield self.reward
+        yield self.done
+        yield self.truncated
+        yield self.info
+
+    @deprecated("Step is no longer a `NamedTuple` and should be modified by setting the attributes directly.")
     def with_attrs(
         self,
         obs: Optional[Observation[ObsType]] = None,

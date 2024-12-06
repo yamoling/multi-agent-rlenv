@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Iterable, Optional
+from typing import Iterable, Optional, Generic, TypeVar
 import numpy as np
 import numpy.typing as npt
 from functools import cached_property
@@ -10,16 +10,21 @@ from .observation import Observation
 from .state import State
 
 
+ObsType = TypeVar("ObsType")
+StateType = TypeVar("StateType")
+RewardType = TypeVar("RewardType", bound=float | npt.NDArray[np.float32])
+
+
 @dataclass
-class Episode[O, S, R: float | npt.NDArray[np.float32]]:
+class Episode(Generic[ObsType, StateType, RewardType]):
     """Episode model made of observations, actions, rewards, ..."""
 
-    _observations: list[O]
+    _observations: list[ObsType]
     _extras: list[npt.NDArray[np.float32]]
     actions: list[npt.NDArray]
-    rewards: list[R]
+    rewards: list[RewardType]
     _available_actions: list[npt.NDArray[np.bool_]]
-    _states: list[S]
+    _states: list[StateType]
     _states_extras: list[npt.NDArray[np.float32]]
     actions_probs: list[npt.NDArray[np.float32]]
     metrics: dict[str, float]
@@ -29,7 +34,7 @@ class Episode[O, S, R: float | npt.NDArray[np.float32]]:
     """Whether the episode did reach a terminal state (different from truncated)"""
 
     @staticmethod
-    def new(obs: Observation[O], state: State[S]):
+    def new(obs: Observation[ObsType], state: State[StateType]):
         return Episode(
             _observations=[obs.data],
             _extras=[obs.extras],
@@ -195,7 +200,7 @@ class Episode[O, S, R: float | npt.NDArray[np.float32]]:
             returns[t] = self.rewards[t] + discount * returns[t + 1]
         return returns
 
-    def add(self, transition: Transition[O, S, R]):
+    def add(self, transition: Transition[ObsType, StateType, RewardType]):
         """Add a transition to the episode"""
         self.episode_len += 1
         self._observations.append(transition.next_obs.data)
@@ -231,7 +236,7 @@ class Episode[O, S, R: float | npt.NDArray[np.float32]]:
 
 
 @deprecated("Use `Episode.new` instead")
-class EpisodeBuilder[O, S, R: float | npt.NDArray[np.float32]](Episode[O, S, R]):
+class EpisodeBuilder(Episode[ObsType, StateType, RewardType]):
     def __init__(self):
         super().__init__(
             _observations=[],
@@ -247,7 +252,7 @@ class EpisodeBuilder[O, S, R: float | npt.NDArray[np.float32]](Episode[O, S, R])
             is_done=False,
         )
 
-    def add(self, transition: Transition[O, S, R]):
+    def add(self, transition: Transition[ObsType, StateType, RewardType]):
         """Add a transition to the episode"""
         if len(self._observations) == 0:
             self._observations.append(transition.obs.data)

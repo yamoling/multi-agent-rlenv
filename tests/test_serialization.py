@@ -2,7 +2,6 @@ import pickle
 import marlenv
 import numpy as np
 import orjson
-from dataclasses import asdict
 
 from marlenv import DiscreteMockEnv
 
@@ -52,13 +51,21 @@ def test_wrappers_serializable():
 def test_serialize_observation():
     env = DiscreteMockEnv(4)
     obs = env.get_observation()
-    _ = orjson.dumps(asdict(obs), option=orjson.OPT_SERIALIZE_NUMPY)
+    _ = orjson.dumps(obs, option=orjson.OPT_SERIALIZE_NUMPY)
 
 
 def test_serialize_state():
     env = DiscreteMockEnv(4)
     state = env.get_state()
-    _ = orjson.dumps(asdict(state), option=orjson.OPT_SERIALIZE_NUMPY)
+    _ = orjson.dumps(state, option=orjson.OPT_SERIALIZE_NUMPY)
+
+
+def test_serialize_step():
+    env = DiscreteMockEnv(4)
+    obs, state = env.reset()
+    action = np.array([0, 1, 2, 3])
+    step = env.step(action)
+    _ = orjson.dumps(step, option=orjson.OPT_SERIALIZE_NUMPY)
 
 
 def test_serialize_transition():
