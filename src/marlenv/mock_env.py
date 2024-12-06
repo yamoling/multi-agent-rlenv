@@ -1,7 +1,9 @@
 import numpy as np
+from dataclasses import dataclass
 from marlenv import MARLEnv, Observation, DiscreteActionSpace, DiscreteSpace, DiscreteMARLEnv, Step, State
 
 
+@dataclass
 class DiscreteMockEnv(DiscreteMARLEnv[np.ndarray, np.ndarray]):
     def __init__(
         self,

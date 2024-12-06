@@ -3,6 +3,7 @@ import numpy.typing as npt
 from typing import TypeVar
 from marlenv.models import ActionSpace, MARLEnv
 from .rlenv_wrapper import RLEnvWrapper
+from dataclasses import dataclass
 
 A = TypeVar("A", bound=ActionSpace)
 D = TypeVar("D")
@@ -10,6 +11,7 @@ S = TypeVar("S")
 R = TypeVar("R", bound=float | npt.NDArray[np.float32])
 
 
+@dataclass
 class AvailableActions(RLEnvWrapper[A, D, S, R]):
     """Adds the available actions (one-hot) as an extra feature to the observation."""
 

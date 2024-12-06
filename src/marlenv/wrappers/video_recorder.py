@@ -42,15 +42,15 @@ class VideoRecorder(RLEnvWrapper[A, D, S, R]):
     def step(self, actions):
         if self._recorder is None:
             raise RuntimeError("VideoRecorder not initialized")
-        obs, r, done, truncated, info = super().step(actions)
-        self._recorder.write(self.render("rgb_array"))
-        if done:
+        step = super().step(actions)
+        self._recorder.write(self.get_image())
+        if step.is_terminal:
             self._recorder.release()
-        return obs, r, done, truncated, info
+        return step
 
     def reset(self):
         res = super().reset()
-        image = self.render("rgb_array")
+        image = self.get_image()
         height, width, _ = image.shape
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         video_name = os.path.join(self.video_folder, f"{self._video_count}-{timestamp}.{self.video_extension}")

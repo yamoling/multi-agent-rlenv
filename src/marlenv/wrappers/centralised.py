@@ -4,14 +4,17 @@ import numpy as np
 import numpy.typing as npt
 from marlenv.models import MARLEnv, DiscreteSpace, Observation, ActionSpace, Step
 from .rlenv_wrapper import RLEnvWrapper
-
+from dataclasses import dataclass
 
 A = TypeVar("A", bound=ActionSpace)
 S = TypeVar("S")
 R = TypeVar("R", bound=float | npt.NDArray[np.float32])
 
 
+@dataclass
 class Centralised(RLEnvWrapper[A, np.ndarray, S, R]):
+    joint_action_space: ActionSpace
+
     def __init__(self, env: MARLEnv[A, np.ndarray, S, R]):
         if not isinstance(env.action_space.individual_action_space, DiscreteSpace):
             raise NotImplementedError(f"Action space {env.action_space} not supported")

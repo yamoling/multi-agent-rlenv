@@ -21,11 +21,11 @@ class TimePenalty(RLEnvWrapper[A, D, S, R]):
         super().__init__(env)
 
         if env.is_multi_objective:
-            if isinstance(penalty, float):
-                penalty = [penalty] * env.reward_space.size
+            if isinstance(penalty, (float, int)):
+                penalty = [float(penalty)] * env.reward_space.size
             self.penalty = np.array(penalty, dtype=np.float32)
         else:
-            assert isinstance(penalty, float)
+            assert isinstance(penalty, (float, int))
             self.penalty = penalty
 
     def step(self, action: npt.NDArray[np.int64]):

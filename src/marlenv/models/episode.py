@@ -216,6 +216,14 @@ class Episode[O, S, R: float | npt.NDArray[np.float32]]:
                 if isinstance(value, bool):
                     value = int(value)
                 self.metrics[key] = value
+            self.metrics["episode_len"] = self.episode_len
+
+            if isinstance(self.rewards[0], float):
+                self.metrics["score"] = float(sum(self.rewards))
+            elif isinstance(self.rewards[0], np.ndarray):
+                scores = np.sum(self.rewards, axis=0)  # type: ignore
+                for i, s in enumerate(scores):
+                    self.metrics[f"score-{i}"] = float(s)
 
     def add_metrics(self, metrics: dict[str, float]):
         """Add metrics to the episode"""

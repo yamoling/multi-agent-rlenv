@@ -7,6 +7,10 @@ It aims to
     - work with gymnasium, pettingzoo and SMAC out of the box
     - work with multi-objective environments
     - provide helpful wrappers to add intrinsic rewards, agent ids, record videos, ...
+
+
+A design choice is taht almost every class is a dataclass. This makes it easy to
+serialize and deserialize classes, for instance to json with the `orjson` library.
 """
 
 __version__ = "2.0.5"

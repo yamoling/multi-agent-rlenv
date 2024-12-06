@@ -1,5 +1,6 @@
 import numpy as np
-from marlenv.models import MARLEnv, Observation, ActionSpace
+from marlenv.models import MARLEnv, ActionSpace
+from dataclasses import dataclass
 from .rlenv_wrapper import RLEnvWrapper
 
 from typing import TypeVar
@@ -10,6 +11,7 @@ S = TypeVar("S")
 R = TypeVar("R", bound=float | np.ndarray)
 
 
+@dataclass
 class AgentId(RLEnvWrapper[A, D, S, R]):
     """RLEnv wrapper that adds a one-hot encoding of the agent id."""
 

@@ -1,4 +1,6 @@
+from dataclasses import dataclass
 from typing import Any, Optional
+
 import numpy as np
 import numpy.typing as npt
 
@@ -7,6 +9,7 @@ from .state import State
 from .step import Step
 
 
+@dataclass
 class Transition[O, S, R: float | npt.NDArray[np.float32]]:
     """Transition model"""
 

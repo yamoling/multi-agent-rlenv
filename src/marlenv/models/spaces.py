@@ -1,12 +1,15 @@
-from typing import Any, Optional, TypeVar, Generic
-from abc import abstractmethod, ABC
+import math
+from abc import ABC, abstractmethod
+from dataclasses import dataclass
+from typing import Any, Generic, Optional, TypeVar
+
 import numpy as np
 import numpy.typing as npt
-import math
 
 S = TypeVar("S", bound="Space")
 
 
+@dataclass
 class Space(ABC):
     shape: tuple[int, ...]
     n_dims: int
@@ -32,6 +35,7 @@ class Space(ABC):
         return not self.__eq__(value)
 
 
+@dataclass
 class DiscreteSpace(Space):
     size: int
     """Number of categories"""
@@ -55,6 +59,7 @@ class DiscreteSpace(Space):
         return super().__eq__(value)
 
 
+@dataclass
 class MultiDiscreteSpace(Space):
     n_dims: int
     spaces: tuple[DiscreteSpace, ...]
@@ -86,6 +91,7 @@ class MultiDiscreteSpace(Space):
         return super().__eq__(value)
 
 
+@dataclass
 class ContinuousSpace(Space):
     """A continuous space (box) in R^n."""
 
@@ -123,6 +129,7 @@ class ContinuousSpace(Space):
         return super().__eq__(value)
 
 
+@dataclass
 class ActionSpace(Space, Generic[S]):
     n_agents: int
     """Number of agents."""
@@ -160,16 +167,19 @@ class ActionSpace(Space, Generic[S]):
         return super().__eq__(value)
 
 
+@dataclass
 class DiscreteActionSpace(ActionSpace[DiscreteSpace]):
     def __init__(self, n_agents: int, n_actions: int, action_names: Optional[list[str]] = None):
         individual_action_space = DiscreteSpace(n_actions, action_names)
         super().__init__(n_agents, individual_action_space, action_names)
 
 
+@dataclass
 class MultiDiscreteActionSpace(ActionSpace[MultiDiscreteSpace]):
     pass
 
 
+@dataclass
 class ContinuousActionSpace(ActionSpace[ContinuousSpace]):
     def __init__(self, n_agents: int, low: np.ndarray | list, high: np.ndarray | list, action_names: list | None = None):
         space = ContinuousSpace(low, high, action_names)

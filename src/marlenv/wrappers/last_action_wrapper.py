@@ -1,8 +1,12 @@
+from dataclasses import dataclass
+from typing import TypeVar
+
 import numpy as np
 import numpy.typing as npt
+
 from marlenv.models import ActionSpace, State
-from .rlenv_wrapper import RLEnvWrapper, MARLEnv
-from typing import TypeVar
+
+from .rlenv_wrapper import MARLEnv, RLEnvWrapper
 
 A = TypeVar("A", bound=ActionSpace)
 D = TypeVar("D")
@@ -10,6 +14,7 @@ S = TypeVar("S")
 R = TypeVar("R", bound=float | np.ndarray)
 
 
+@dataclass
 class LastAction(RLEnvWrapper[A, D, S, R]):
     """Env wrapper that adds the last action taken by the agents to the extra features."""
 

@@ -2,14 +2,18 @@ import numpy as np
 import numpy.typing as npt
 from typing import TypeVar
 from .rlenv_wrapper import MARLEnv, RLEnvWrapper, A
+from dataclasses import dataclass
 
 D = TypeVar("D")
 S = TypeVar("S")
 R = TypeVar("R", bound=float | npt.NDArray[np.float32])
 
 
+@dataclass
 class AvailableActionsMask(RLEnvWrapper[A, D, S, R]):
     """Permanently masks a subset of the available actions."""
+
+    action_mask: npt.NDArray[np.bool_]
 
     def __init__(self, env: MARLEnv[A, D, S, R], action_mask: npt.NDArray[np.bool_]):
         super().__init__(env)
