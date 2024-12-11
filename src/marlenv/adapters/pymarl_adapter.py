@@ -39,14 +39,18 @@ class PymarlAdapter:
 
     def get_obs_size(self):
         """Returns the shape of the observation"""
-        return self.env.observation_shape[0]
+        if len(self.env.observation_shape) == 1:
+            return self.env.observation_shape[0]
+        return self.env.observation_shape
 
     def get_state(self):
         return self.env.get_state().data
 
     def get_state_size(self):
         """Returns the shape of the state"""
-        return self.env.state_shape[0]
+        if len(self.env.state_shape) == 1:
+            return self.env.state_shape[0]
+        return self.env.state_shape
 
     def get_avail_actions(self):
         return self.env.available_actions()
