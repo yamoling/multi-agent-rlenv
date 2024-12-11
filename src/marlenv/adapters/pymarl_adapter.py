@@ -17,6 +17,8 @@ class PymarlAdapter:
         self.episode_limit = episode_limit
         self.current_observation = None
         self.current_state = None
+        self.n_agents = self.env.n_agents
+        self.n_actions = self.env.n_actions
 
     def step(self, actions) -> tuple[float, bool, dict[str, Any]]:
         """Returns reward, terminated, info"""

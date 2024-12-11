@@ -4,7 +4,7 @@ from marlenv import MARLEnv, Observation, DiscreteActionSpace, DiscreteSpace, Di
 
 
 @dataclass
-class DiscreteMockEnv(DiscreteMARLEnv[np.ndarray, np.ndarray]):
+class DiscreteMockEnv(DiscreteMARLEnv[np.ndarray, np.ndarray, float]):
     def __init__(
         self,
         n_agents: int = 4,

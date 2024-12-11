@@ -31,7 +31,7 @@ class Centralised(RLEnvWrapper[A, np.ndarray, S, R]):
         obs, state = super().reset()
         return self._joint_observation(obs), state
 
-    def _make_joint_action_space(self, env: MARLEnv[A, npt.NDArray[np.float32], S]):
+    def _make_joint_action_space(self, env: MARLEnv[A, npt.NDArray[np.float32], S, R]):
         agent_actions = list[list[str]]()
         for agent in range(env.n_agents):
             agent_actions.append([f"{agent}-{action}" for action in env.action_space.action_names])
@@ -42,7 +42,8 @@ class Centralised(RLEnvWrapper[A, np.ndarray, S, R]):
         action = list(actions)[0]
         individual_actions = self._individual_actions(action)
         step = self.wrapped.step(individual_actions)
-        return step.with_attrs(obs=self._joint_observation(step.obs))
+        step.obs = self._joint_observation(step.obs)
+        return step
 
     def _individual_actions(self, joint_action: int):
         individual_actions = []
