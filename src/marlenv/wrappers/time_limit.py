@@ -69,11 +69,9 @@ class TimeLimit(RLEnvWrapper[A, D, S, R]):
         if self._current_step >= self.step_limit:
             # And the episode is not done
             if not step.done:
-                step = step.with_attrs(
-                    truncated=True,
-                    reward=step.reward - self.truncation_penalty,  # type: ignore
-                    done=self.add_extra,
-                )
+                step.truncated = True
+                step.reward = step.reward - self.truncation_penalty  # type: ignore
+                step.done = self.add_extra
         return step
 
     def add_time_extra(self, obs: Observation[D], state: State[S]):

@@ -34,7 +34,9 @@ class Episode(Generic[ObsType, StateType, RewardType]):
     """Whether the episode did reach a terminal state (different from truncated)"""
 
     @staticmethod
-    def new(obs: Observation[ObsType], state: State[StateType]):
+    def new(obs: Observation[ObsType], state: State[StateType], metrics: Optional[dict[str, float]] = None) -> "Episode":
+        if metrics is None:
+            metrics = {}
         return Episode(
             _observations=[obs.data],
             _extras=[obs.extras],
@@ -44,7 +46,7 @@ class Episode(Generic[ObsType, StateType, RewardType]):
             actions=[],
             rewards=[],
             actions_probs=[],
-            metrics={},
+            metrics=metrics,
             episode_len=0,
             is_done=False,
             is_truncated=False,
