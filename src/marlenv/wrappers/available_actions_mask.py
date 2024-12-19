@@ -1,21 +1,21 @@
 import numpy as np
 import numpy.typing as npt
-from typing import TypeVar
-from .rlenv_wrapper import MARLEnv, RLEnvWrapper, A
+from typing_extensions import TypeVar
+from .rlenv_wrapper import MARLEnv, RLEnvWrapper
+from marlenv.models import ActionSpace
 from dataclasses import dataclass
 
-D = TypeVar("D")
-S = TypeVar("S")
-R = TypeVar("R", bound=float | npt.NDArray[np.float32])
+A = TypeVar("A", default=npt.NDArray)
+AS = TypeVar("AS", bound=ActionSpace, default=ActionSpace)
 
 
 @dataclass
-class AvailableActionsMask(RLEnvWrapper[A, D, S, R]):
+class AvailableActionsMask(RLEnvWrapper[A, AS]):
     """Permanently masks a subset of the available actions."""
 
     action_mask: npt.NDArray[np.bool_]
 
-    def __init__(self, env: MARLEnv[A, D, S, R], action_mask: npt.NDArray[np.bool_]):
+    def __init__(self, env: MARLEnv[A, AS], action_mask: npt.NDArray[np.bool_]):
         super().__init__(env)
         assert action_mask.shape == (env.n_agents, env.n_actions), "Action mask must have shape (n_agents, n_actions)."
         n_available_action_per_agent = action_mask.sum(axis=-1)

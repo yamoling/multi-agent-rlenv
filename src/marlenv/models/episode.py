@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Iterable, Optional, Generic, TypeVar
+from typing import Iterable, Optional
 import numpy as np
 import numpy.typing as npt
 from functools import cached_property
@@ -10,21 +10,16 @@ from .observation import Observation
 from .state import State
 
 
-ObsType = TypeVar("ObsType")
-StateType = TypeVar("StateType")
-RewardType = TypeVar("RewardType", bound=float | npt.NDArray[np.float32])
-
-
 @dataclass
-class Episode(Generic[ObsType, StateType, RewardType]):
+class Episode[A]:
     """Episode model made of observations, actions, rewards, ..."""
 
-    _observations: list[ObsType]
+    _observations: list[npt.NDArray[np.float32]]
     _extras: list[npt.NDArray[np.float32]]
     actions: list[npt.NDArray]
-    rewards: list[RewardType]
+    rewards: list[npt.NDArray[np.float32]]
     _available_actions: list[npt.NDArray[np.bool_]]
-    _states: list[StateType]
+    _states: list[npt.NDArray[np.float32]]
     _states_extras: list[npt.NDArray[np.float32]]
     actions_probs: list[npt.NDArray[np.float32]]
     metrics: dict[str, float]
@@ -34,7 +29,7 @@ class Episode(Generic[ObsType, StateType, RewardType]):
     """Whether the episode did reach a terminal state (different from truncated)"""
 
     @staticmethod
-    def new(obs: Observation[ObsType], state: State[StateType], metrics: Optional[dict[str, float]] = None) -> "Episode":
+    def new(obs: Observation, state: State, metrics: Optional[dict[str, float]] = None) -> "Episode":
         if metrics is None:
             metrics = {}
         return Episode(
@@ -202,7 +197,7 @@ class Episode(Generic[ObsType, StateType, RewardType]):
             returns[t] = self.rewards[t] + discount * returns[t + 1]
         return returns
 
-    def add(self, transition: Transition[ObsType, StateType, RewardType]):
+    def add(self, transition: Transition[A]):
         """Add a transition to the episode"""
         self.episode_len += 1
         self._observations.append(transition.next_obs.data)
@@ -210,7 +205,12 @@ class Episode(Generic[ObsType, StateType, RewardType]):
         self._available_actions.append(transition.next_obs.available_actions)
         self._states.append(transition.next_state.data)
         self._states_extras.append(transition.next_state.extras)
-        self.actions.append(transition.action)
+        match transition.action:
+            case np.ndarray() as action:
+                self.actions.append(action)
+            case other:
+                action = np.array(other)
+                self.actions.append(action)
         self.rewards.append(transition.reward)
         if transition.action_probs is not None:
             self.actions_probs.append(transition.action_probs)
@@ -225,46 +225,11 @@ class Episode(Generic[ObsType, StateType, RewardType]):
                 self.metrics[key] = value
             self.metrics["episode_len"] = self.episode_len
 
-            if isinstance(self.rewards[0], float):
-                self.metrics["score"] = float(sum(self.rewards))
-            elif isinstance(self.rewards[0], np.ndarray):
-                scores = np.sum(self.rewards, axis=0)  # type: ignore
-                for i, s in enumerate(scores):
-                    self.metrics[f"score-{i}"] = float(s)
+            rewards = np.array(self.rewards)
+            scores = np.sum(rewards, axis=0)
+            for i, s in enumerate(scores):
+                self.metrics[f"score-{i}"] = float(s)
 
     def add_metrics(self, metrics: dict[str, float]):
         """Add metrics to the episode"""
         self.metrics.update(metrics)
-
-
-@deprecated("Use `Episode.new` instead")
-class EpisodeBuilder(Episode[ObsType, StateType, RewardType]):
-    def __init__(self):
-        super().__init__(
-            _observations=[],
-            _extras=[],
-            actions=[],
-            rewards=[],
-            _available_actions=[],
-            _states=[],
-            _states_extras=[],
-            actions_probs=[],
-            metrics={},
-            episode_len=0,
-            is_done=False,
-        )
-
-    def add(self, transition: Transition[ObsType, StateType, RewardType]):
-        """Add a transition to the episode"""
-        if len(self._observations) == 0:
-            self._observations.append(transition.obs.data)
-            self._extras.append(transition.obs.extras)
-            self._available_actions.append(transition.obs.available_actions)
-            self._states.append(transition.state.data)
-            self._states_extras.append(transition.state.extras)
-        super().add(transition)
-
-    def build(self, extra_metrics: Optional[dict[str, float]] = None):
-        if extra_metrics is not None:
-            self.add_metrics(extra_metrics)
-        return self

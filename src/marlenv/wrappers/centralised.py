@@ -1,26 +1,26 @@
 from itertools import product
-from typing import TypeVar
+from typing import Sequence
+from typing_extensions import TypeVar
 import numpy as np
 import numpy.typing as npt
-from marlenv.models import MARLEnv, DiscreteSpace, Observation, ActionSpace, Step
+from marlenv.models import MARLEnv, DiscreteSpace, Observation, ActionSpace
 from .rlenv_wrapper import RLEnvWrapper
 from dataclasses import dataclass
 
-A = TypeVar("A", bound=ActionSpace)
-S = TypeVar("S")
-R = TypeVar("R", bound=float | npt.NDArray[np.float32])
+A = TypeVar("A", default=npt.NDArray)
+AS = TypeVar("AS", bound=ActionSpace, default=ActionSpace)
 
 
 @dataclass
-class Centralised(RLEnvWrapper[A, np.ndarray, S, R]):
+class Centralised(RLEnvWrapper[npt.NDArray | Sequence, AS]):
     joint_action_space: ActionSpace
 
-    def __init__(self, env: MARLEnv[A, np.ndarray, S, R]):
+    def __init__(self, env: MARLEnv[A, AS]):
         if not isinstance(env.action_space.individual_action_space, DiscreteSpace):
             raise NotImplementedError(f"Action space {env.action_space} not supported")
         joint_observation_shape = (env.observation_shape[0] * env.n_agents, *env.observation_shape[1:])
         super().__init__(
-            env,
+            env,  # type: ignore
             joint_observation_shape,
             env.state_shape,
             env.extra_shape,
@@ -31,15 +31,15 @@ class Centralised(RLEnvWrapper[A, np.ndarray, S, R]):
         obs, state = super().reset()
         return self._joint_observation(obs), state
 
-    def _make_joint_action_space(self, env: MARLEnv[A, npt.NDArray[np.float32], S, R]):
+    def _make_joint_action_space(self, env: MARLEnv[A, AS]):
         agent_actions = list[list[str]]()
         for agent in range(env.n_agents):
             agent_actions.append([f"{agent}-{action}" for action in env.action_space.action_names])
         action_names = [str(a) for a in product(*agent_actions)]
         return ActionSpace(1, DiscreteSpace(env.n_actions**env.n_agents, action_names))
 
-    def step(self, actions):
-        action = list(actions)[0]
+    def step(self, actions: npt.NDArray | Sequence):
+        action = actions[0]
         individual_actions = self._individual_actions(action)
         step = self.wrapped.step(individual_actions)
         step.obs = self._joint_observation(step.obs)
@@ -62,7 +62,7 @@ class Centralised(RLEnvWrapper[A, np.ndarray, S, R]):
         available_actions = np.array(joint_available, dtype=bool)
         return available_actions.reshape((self.n_agents, self.n_actions))
 
-    def _joint_observation(self, obs: Observation[npt.NDArray[np.float32]]):
+    def _joint_observation(self, obs: Observation):
         obs.data = np.concatenate(obs.data, axis=0)
         obs.extras = np.concatenate(obs.extras, axis=0)
         # Unsqueze the first dimension since there is one agent

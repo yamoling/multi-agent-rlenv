@@ -1,3 +1,4 @@
+from typing import Sequence
 from gymnasium import Env, spaces
 import numpy as np
 import numpy.typing as npt
@@ -8,10 +9,12 @@ from marlenv.models import (
     ActionSpace,
     DiscreteSpace,
     ContinuousSpace,
+    Step,
+    State,
 )
 
 
-class Gym(MARLEnv[ActionSpace, npt.NDArray[np.float32], npt.NDArray[np.float32], float]):
+class Gym(MARLEnv[Sequence | npt.NDArray, ActionSpace]):
     """Wraps a gym envronment in an RLEnv"""
 
     def __init__(self, env: Env):
@@ -48,23 +51,29 @@ class Gym(MARLEnv[ActionSpace, npt.NDArray[np.float32], npt.NDArray[np.float32],
         self.last_obs = Observation(
             np.array([obs], dtype=np.float32),
             self.available_actions(),
+        )
+        Step(
+            obs,
             self.get_state(),
+            np.array([reward]),
+            done,
+            truncated,
+            info,
         )
         return self.last_obs, reward, done, truncated, info
 
     def get_state(self):
-        return np.zeros(1, dtype=np.float32)
+        return State(np.zeros(1, dtype=np.float32))
 
     def reset(self):
         obs_data, _info = self.env.reset()
         self.last_obs = Observation(
             np.array([obs_data], dtype=np.float32),
             self.available_actions(),
-            self.get_state(),
         )
-        return self.last_obs
+        return self.last_obs, self.get_state()
 
-    def render(self, mode: str = "human"):
+    def render(self):
         return self.env.render()
 
     def seed(self, seed_value: int):

@@ -1,20 +1,17 @@
 from dataclasses import dataclass
-from typing import Generic, Optional, Sequence
+from typing import Optional, Sequence
 
 import numpy as np
 import numpy.typing as npt
-from typing_extensions import TypeVar
-
-ObsType = TypeVar("ObsType", default=npt.NDArray[np.float32])
 
 
 @dataclass
-class Observation(Generic[ObsType]):
+class Observation:
     """
     Container class for policy input arguments.
     """
 
-    data: ObsType
+    data: npt.NDArray[np.float32]
     """The actual environment observation. The shape is [n_agents, *obs_shape]"""
     extras: npt.NDArray[np.float32]
     """The extra information to provide to the dqn alongisde the features (agent ID, last action, ...)"""
@@ -24,7 +21,7 @@ class Observation(Generic[ObsType]):
 
     def __init__(
         self,
-        data: ObsType,
+        data: npt.NDArray[np.float32],
         available_actions: Sequence[bool] | npt.NDArray[np.bool],
         extras: Optional[npt.NDArray[np.float32]] = None,
     ):

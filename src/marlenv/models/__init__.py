@@ -2,9 +2,9 @@ from .spaces import ActionSpace, DiscreteSpace, ContinuousSpace, MultiDiscreteSp
 from .observation import Observation
 from .step import Step
 from .state import State
-from .env import MARLEnv, DiscreteMARLEnv, ContinuousMARLEnv
+from .env import MARLEnv
 from .transition import Transition
-from .episode import Episode, EpisodeBuilder
+from .episode import Episode
 
 
 __all__ = [
@@ -15,11 +15,8 @@ __all__ = [
     "ContinuousSpace",
     "Observation",
     "MARLEnv",
-    "DiscreteMARLEnv",
-    "ContinuousMARLEnv",
     "Transition",
     "Episode",
-    "EpisodeBuilder",
     "MultiDiscreteSpace",
     "DiscreteActionSpace",
     "ContinuousActionSpace",

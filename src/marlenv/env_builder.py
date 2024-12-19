@@ -8,10 +8,8 @@ from . import wrappers
 from .models import ActionSpace, MARLEnv
 from .adapters import PettingZoo
 
-A = TypeVar("A", bound=ActionSpace, covariant=True)
-D = TypeVar("D")
-S = TypeVar("S")
-R = TypeVar("R", bound=float | npt.NDArray[np.float32])
+A = TypeVar("A")
+AS = TypeVar("AS", bound=ActionSpace)
 
 try:
     from pettingzoo import ParallelEnv
@@ -56,7 +54,7 @@ except ImportError:
 
 
 @overload
-def make(env: MARLEnv[A, D, S, R]) -> MARLEnv[A, D, S, R]:
+def make(env: MARLEnv[A, AS]) -> MARLEnv[A, AS]:
     """Why would you do this ?"""
 
 
@@ -65,14 +63,15 @@ def make(env, **kwargs):
     match env:
         case MARLEnv():
             return env
-        case str():
+        case str(env_id):
             try:
                 import gymnasium
             except ImportError:
                 raise ImportError("Gymnasium is not installed !")
             from marlenv.adapters import Gym
 
-            return Gym(gymnasium.make(env, render_mode="rgb_array", **kwargs))
+            gym_env = gymnasium.make(env_id, render_mode="rgb_array", **kwargs)
+            return Gym(gym_env)
 
     try:
         from marlenv.adapters import PettingZoo
@@ -95,12 +94,12 @@ def make(env, **kwargs):
 
 
 @dataclass
-class Builder(Generic[A, D, S, R]):
+class Builder(Generic[A, AS]):
     """Builder for environments"""
 
-    _env: MARLEnv[A, D, S, R]
+    _env: MARLEnv[A, AS]
 
-    def __init__(self, env: MARLEnv[A, D, S, R]):
+    def __init__(self, env: MARLEnv[A, AS]):
         self._env = env
 
     def time_limit(self, n_steps: int, add_extra: bool = True, truncation_penalty: Optional[float] = None):
@@ -175,6 +174,6 @@ class Builder(Generic[A, D, S, R]):
         self._env = wrappers.TimePenalty(self._env, penalty)
         return self
 
-    def build(self) -> MARLEnv[A, D, S, R]:
+    def build(self) -> MARLEnv[A, AS]:
         """Build and return the environment"""
         return self._env

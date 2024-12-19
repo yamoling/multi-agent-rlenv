@@ -1,10 +1,12 @@
+from typing import Sequence
 import numpy as np
+import numpy.typing as npt
 from dataclasses import dataclass
-from marlenv import MARLEnv, Observation, DiscreteActionSpace, DiscreteSpace, DiscreteMARLEnv, Step, State
+from marlenv import MARLEnv, Observation, DiscreteActionSpace, DiscreteSpace, Step, State
 
 
 @dataclass
-class DiscreteMockEnv(DiscreteMARLEnv[np.ndarray, np.ndarray, float]):
+class DiscreteMockEnv(MARLEnv[Sequence[int] | npt.NDArray, DiscreteActionSpace]):
     def __init__(
         self,
         n_agents: int = 4,
@@ -60,12 +62,12 @@ class DiscreteMockEnv(DiscreteMARLEnv[np.ndarray, np.ndarray, float]):
         return Step(
             self.get_observation(),
             self.get_state(),
-            self.reward_step,
+            np.array([self.reward_step]),
             self.t >= self.end_game,
         )
 
 
-class DiscreteMOMockEnv(MARLEnv[DiscreteActionSpace, np.ndarray, np.ndarray, np.ndarray]):
+class DiscreteMOMockEnv(MARLEnv[Sequence[int] | npt.NDArray, DiscreteActionSpace]):
     """Multi-Objective Mock Environment"""
 
     def __init__(

@@ -1,12 +1,12 @@
 import numpy as np
 import numpy.typing as npt
-from typing import overload
+from typing import Sequence, overload
 from smac.env import StarCraft2Env
 
-from marlenv.models import MARLEnv, Observation, DiscreteActionSpace
+from marlenv.models import MARLEnv, Observation, DiscreteActionSpace, Step, State
 
 
-class SMAC(MARLEnv[DiscreteActionSpace, npt.NDArray[np.float32], npt.NDArray[np.float32], float]):
+class SMAC(MARLEnv[Sequence[int] | npt.NDArray, DiscreteActionSpace]):
     """Wrapper for the SMAC environment to work with this framework"""
 
     @overload
@@ -173,12 +173,24 @@ class SMAC(MARLEnv[DiscreteActionSpace, npt.NDArray[np.float32], npt.NDArray[np.
         return self._env.get_obs()
 
     def get_state(self):
-        return self._env.get_state()
+        return State(self._env.get_state())
 
     def step(self, actions):
         reward, done, info = self._env.step(actions)
-        obs = Observation(self._env.get_obs(), self.available_actions(), self.get_state())
-        return obs, np.array([reward], np.float32), done, False, info
+        obs = Observation(
+            self._env.get_obs(),  # type: ignore
+            self.available_actions(),
+        )
+        state = self.get_state()
+        step = Step(
+            obs,
+            state,
+            reward,
+            done,
+            False,
+            info,
+        )
+        return step
 
     def available_actions(self) -> npt.NDArray[np.bool_]:
         return np.array(self._env.get_avail_actions()) == 1

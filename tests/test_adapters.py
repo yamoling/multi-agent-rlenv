@@ -24,7 +24,7 @@ import marlenv
 import numpy as np
 
 from marlenv import Observation, DiscreteMockEnv, MARLEnv, DiscreteActionSpace
-from marlenv.adapters import PymarlAdapter
+from marlenv.adapters import PymarlAdapter, SMAC
 import pytest
 
 
@@ -58,13 +58,13 @@ def test_pettingzoo_adapter_discrete_action():
     env = marlenv.adapters.PettingZoo(pursuit_v4.parallel_env())
     env.reset()
     action = env.action_space.sample()
-    obs, r, done, truncated, info = env.step(action)
-    assert isinstance(obs, Observation)
-    assert isinstance(r, np.ndarray)
-    assert r.shape == (1,)
-    assert isinstance(done, bool)
-    assert isinstance(truncated, bool)
-    assert isinstance(info, dict)
+    step = env.step(action)
+    assert isinstance(step.obs, Observation)
+    assert isinstance(step.reward, np.ndarray)
+    assert step.reward.shape == (1,)
+    assert isinstance(step.done, bool)
+    assert isinstance(step.truncated, bool)
+    assert isinstance(step.info, dict)
     assert env.n_agents == 8
     assert env.n_actions == 5
     assert isinstance(env.action_space, marlenv.DiscreteActionSpace)
@@ -78,31 +78,31 @@ def test_pettingzoo_adapter_continuous_action():
     env = marlenv.adapters.PettingZoo(waterworld_v4.parallel_env())
     env.reset()
     action = env.action_space.sample()
-    obs, r, done, truncated, info = env.step(action)
-    assert isinstance(obs, Observation)
-    assert isinstance(r, np.ndarray)
-    assert r.shape == (1,)
-    assert isinstance(done, bool)
-    assert isinstance(truncated, bool)
-    assert isinstance(info, dict)
+    step = env.step(action)
+    assert isinstance(step.obs, Observation)
+    assert isinstance(step.reward, np.ndarray)
+    assert step.reward.shape == (1,)
+    assert isinstance(step.done, bool)
+    assert isinstance(step.truncated, bool)
+    assert isinstance(step.info, dict)
     assert env.n_actions == 2
     assert env.n_agents == 2
     assert isinstance(env.action_space, marlenv.ContinuousActionSpace)
 
 
-def _check_env_3m(env: MARLEnv):
+def _check_env_3m(env: SMAC):
     obs = env.reset()
     assert isinstance(obs, Observation)
     assert env.n_agents == 3
     assert isinstance(env.action_space, DiscreteActionSpace)
 
-    obs, r, done, truncated, info = env.step(env.action_space.sample(env.available_actions()))
-    assert isinstance(obs, Observation)
-    assert isinstance(r, np.ndarray)
-    assert r.shape == (1,)
-    assert isinstance(done, bool)
-    assert isinstance(truncated, bool)
-    assert isinstance(info, dict)
+    step = env.step(env.action_space.sample(env.available_actions()))
+    assert isinstance(step.obs, Observation)
+    assert isinstance(step.reward, np.ndarray)
+    assert step.reward.shape == (1,)
+    assert isinstance(step.done, bool)
+    assert isinstance(step.truncated, bool)
+    assert isinstance(step.info, dict)
 
 
 @pytest.mark.skipif(skip_smac, reason="SMAC is not installed")

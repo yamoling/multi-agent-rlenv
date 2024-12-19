@@ -5,19 +5,17 @@ from marlenv.models import ActionSpace
 from .rlenv_wrapper import RLEnvWrapper, MARLEnv
 # from ..models.rl_env import MOMARLEnv
 
-from typing import TypeVar
+from typing_extensions import TypeVar
 
-A = TypeVar("A", bound=ActionSpace)
-D = TypeVar("D")
-S = TypeVar("S")
-R = TypeVar("R", bound=float | np.ndarray)
+A = TypeVar("A", default=npt.NDArray)
+AS = TypeVar("AS", bound=ActionSpace, default=ActionSpace)
 
 
 @dataclass
-class TimePenalty(RLEnvWrapper[A, D, S, R]):
+class TimePenalty(RLEnvWrapper[A, AS]):
     penalty: float | np.ndarray
 
-    def __init__(self, env: MARLEnv[A, D, S, R], penalty: float | list[float]):
+    def __init__(self, env: MARLEnv[A, AS], penalty: float | list[float]):
         super().__init__(env)
 
         if env.is_multi_objective:
@@ -28,6 +26,7 @@ class TimePenalty(RLEnvWrapper[A, D, S, R]):
             assert isinstance(penalty, (float, int))
             self.penalty = penalty
 
-    def step(self, action: npt.NDArray[np.int64]):
+    def step(self, action: A):
         step = self.wrapped.step(action)
-        return step.with_attrs(reward=step.reward - self.penalty)  # type: ignore
+        step.reward = step.reward - self.penalty
+        return step

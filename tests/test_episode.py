@@ -4,7 +4,7 @@ from marlenv.models import Transition, Episode, MARLEnv
 from marlenv import wrappers, DiscreteMockEnv
 
 
-def generate_episode(env: MARLEnv[Any], with_probs: bool = False) -> Episode:
+def generate_episode(env: MARLEnv[Any, Any], with_probs: bool = False) -> Episode:
     obs, state = env.reset()
     episode = Episode.new(obs, state)
     while not episode.is_finished:
@@ -25,9 +25,9 @@ def test_episode_builder_is_done():
     # Set the 'done' flag
     builder = Episode.new(obs, state)
     assert not builder.is_finished
-    builder.add(Transition(obs, state, [0, 0], 0, False, {}, obs, state, False))
+    builder.add(Transition(obs, state, [0, 0], [0], False, {}, obs, state, False))
     assert not builder.is_finished
-    builder.add(Transition(obs, state, [0, 0], 0, True, {}, obs, state, False))
+    builder.add(Transition(obs, state, [0, 0], [0], True, {}, obs, state, False))
     assert builder.is_finished
 
     # Set the 'truncated' flag

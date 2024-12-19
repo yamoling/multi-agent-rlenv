@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Sequence
 import numpy as np
 import numpy.typing as npt
 from marlenv.models import MARLEnv, DiscreteActionSpace
@@ -11,7 +11,8 @@ class PymarlAdapter:
     with the pymarl-qplex code base.
     """
 
-    def __init__(self, env: MARLEnv[DiscreteActionSpace, npt.NDArray[np.float32], npt.NDArray[np.float32], float], episode_limit: int):
+    def __init__(self, env: MARLEnv[Sequence | npt.NDArray, DiscreteActionSpace], episode_limit: int):
+        assert env.reward_space.size == 1, "Only single objective environments are supported."
         self.env = TimeLimit(env, episode_limit, add_extra=False)
         # Required by PyMarl
         self.episode_limit = episode_limit
@@ -24,7 +25,7 @@ class PymarlAdapter:
         """Returns reward, terminated, info"""
         step = self.env.step(actions)
         self.current_observation = step.obs
-        return step.reward, step.is_terminal, step.info
+        return float(step.reward[0]), step.is_terminal, step.info
 
     def get_obs(self):
         """Returns all agent observations in a list"""

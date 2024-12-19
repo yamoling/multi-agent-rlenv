@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Generic, Optional, Sequence
+from typing import Generic, Optional
 from typing_extensions import TypeVar
 import cv2
 import numpy as np
@@ -10,25 +10,21 @@ from itertools import product
 
 from .step import Step
 from .state import State
-from .spaces import ActionSpace, DiscreteSpace, DiscreteActionSpace, ContinuousActionSpace
+from .spaces import ActionSpace, DiscreteSpace
 from .observation import Observation
 
+ActionType = TypeVar("ActionType", default=npt.NDArray)
 ActionSpaceType = TypeVar("ActionSpaceType", bound=ActionSpace, default=ActionSpace)
-ObsType = TypeVar("ObsType", default=npt.NDArray[np.float32])
-StateType = TypeVar("StateType", default=npt.NDArray[np.float32])
-RewardType = TypeVar("RewardType", bound=float | npt.NDArray[np.float32], default=float)
 
 
 @dataclass
-class MARLEnv(ABC, Generic[ActionSpaceType, ObsType, StateType, RewardType]):
+class MARLEnv(ABC, Generic[ActionType, ActionSpaceType]):
     """
     Multi-Agent Reinforcement Learning environment.
 
     This type is generic on
-        - A: the action space
-        - D: the observation data type
-        - S: the state data type
-        - R: the reward data type (default is float)
+        - the action type
+        - the action space
     """
 
     action_space: ActionSpaceType
@@ -92,19 +88,19 @@ class MARLEnv(ABC, Generic[ActionSpaceType, ObsType, StateType, RewardType]):
         raise NotImplementedError("Method not implemented")
 
     @abstractmethod
-    def get_observation(self) -> Observation[ObsType]:
+    def get_observation(self) -> Observation:
         """Retrieve the current observation of the environment."""
 
     @abstractmethod
-    def get_state(self) -> State[StateType]:
+    def get_state(self) -> State:
         """Retrieve the current state of the environment."""
 
-    def set_state(self, state: State[StateType]) -> None:
+    def set_state(self, state: State) -> None:
         """Set the state of the environment."""
         raise NotImplementedError("Method not implemented")
 
     @abstractmethod
-    def step(self, actions: Sequence[int] | Sequence[float] | npt.NDArray) -> Step[ObsType, StateType, RewardType]:
+    def step(self, actions: ActionType) -> Step:
         """Perform a step in the environment.
 
         Returns a Step object that can be unpacked as a 6-tuple containing:
@@ -117,7 +113,7 @@ class MARLEnv(ABC, Generic[ActionSpaceType, ObsType, StateType, RewardType]):
         """
 
     @abstractmethod
-    def reset(self) -> tuple[Observation[ObsType], State[StateType]]:
+    def reset(self) -> tuple[Observation, State]:
         """Reset the environment."""
 
     def render(self):
@@ -152,13 +148,3 @@ class MARLEnv(ABC, Generic[ActionSpaceType, ObsType, StateType, RewardType]):
     def __del__(self):
         if self.cv2_window_name is not None:
             cv2.destroyWindow(self.cv2_window_name)
-
-
-class DiscreteMARLEnv(MARLEnv[DiscreteActionSpace, ObsType, StateType, RewardType]):
-    def step(self, actions: Sequence[int] | npt.NDArray[np.int32]):
-        return super().step(actions)
-
-
-class ContinuousMARLEnv(MARLEnv[ContinuousActionSpace, ObsType, StateType, RewardType]):
-    def step(self, actions: Sequence[float] | npt.NDArray[np.float32]):
-        return super().step(actions)

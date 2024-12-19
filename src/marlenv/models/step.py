@@ -1,4 +1,4 @@
-from typing import Generic, Any, Optional
+from typing import Any, Optional, Sequence
 from typing_extensions import TypeVar, deprecated
 import numpy.typing as npt
 import numpy as np
@@ -7,18 +7,13 @@ from .observation import Observation
 from .state import State
 
 
-ObsType = TypeVar("ObsType", default=npt.NDArray[np.float32])
-StateType = TypeVar("StateType", default=npt.NDArray[np.float32])
-RewardType = TypeVar("RewardType", bound=float | npt.NDArray[np.float32], default=float)
-
-
 @dataclass
-class Step(Generic[ObsType, StateType, RewardType]):
-    obs: Observation[ObsType]
+class Step:
+    obs: Observation
     """The new observation (1 per agent) of the environment resulting from the agent's action."""
-    state: State[StateType]
+    state: State
     """The new state of the environment."""
-    reward: RewardType
+    reward: npt.NDArray[np.float32]
     """The reward obtained after the agents' joint action."""
     done: bool
     """Whether the episode is done."""
@@ -29,9 +24,9 @@ class Step(Generic[ObsType, StateType, RewardType]):
 
     def __init__(
         self,
-        obs: Observation[ObsType],
-        state: State[StateType],
-        reward: RewardType,
+        obs: Observation,
+        state: State,
+        reward: npt.NDArray[np.float32] | float | Sequence[float],
         done: bool,
         truncated: bool = False,
         info: Optional[dict[str, Any]] = None,
@@ -40,7 +35,14 @@ class Step(Generic[ObsType, StateType, RewardType]):
             info = {}
         self.obs = obs
         self.state = state
-        self.reward = reward
+        match reward:
+            case int() | float():
+                self.reward = np.array([reward], dtype=np.float32)
+            case np.ndarray():
+                self.reward = reward
+            case other:
+                # We assume this is a sequence of some sort
+                self.reward = np.array(other, dtype=np.float32)
         self.done = done
         self.truncated = truncated
         self.info = info
@@ -65,9 +67,9 @@ class Step(Generic[ObsType, StateType, RewardType]):
     @deprecated("Step is no longer a `NamedTuple` and should be modified by setting the attributes directly.")
     def with_attrs(
         self,
-        obs: Optional[Observation[ObsType]] = None,
-        state: Optional[State[StateType]] = None,
-        reward: Optional[RewardType] = None,
+        obs: Optional[Observation] = None,
+        state: Optional[State] = None,
+        reward: Optional[npt.NDArray[np.float32]] = None,
         done: Optional[bool] = None,
         truncated: Optional[bool] = None,
         info: Optional[dict[str, Any]] = None,

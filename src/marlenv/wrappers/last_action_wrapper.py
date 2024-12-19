@@ -1,24 +1,22 @@
 from dataclasses import dataclass
-from typing import TypeVar
+from typing import Sequence
+from typing_extensions import TypeVar
 
 import numpy as np
-import numpy.typing as npt
 
-from marlenv.models import ActionSpace, State
+from marlenv.models import State, ActionSpace, ContinuousActionSpace, DiscreteActionSpace
 
 from .rlenv_wrapper import MARLEnv, RLEnvWrapper
 
-A = TypeVar("A", bound=ActionSpace)
-D = TypeVar("D")
-S = TypeVar("S")
-R = TypeVar("R", bound=float | np.ndarray)
+A = TypeVar("A", default=Sequence[int])
+AS = TypeVar("AS", bound=ActionSpace, default=ActionSpace)
 
 
 @dataclass
-class LastAction(RLEnvWrapper[A, D, S, R]):
+class LastAction(RLEnvWrapper[A, AS]):
     """Env wrapper that adds the last action taken by the agents to the extra features."""
 
-    def __init__(self, env: MARLEnv[A, D, S, R]):
+    def __init__(self, env: MARLEnv[A, AS]):
         assert len(env.extra_shape) == 1, "Adding last action is only possible with 1D extras"
         super().__init__(
             env,
@@ -35,9 +33,15 @@ class LastAction(RLEnvWrapper[A, D, S, R]):
         state.add_extra(self.last_one_hot_actions.flatten())
         return obs, state
 
-    def step(self, actions: npt.NDArray[np.int32]):
+    def step(self, actions: A):
         step = super().step(actions)
-        self.last_one_hot_actions = self.compute_one_hot_actions(actions)
+        match self.wrapped.action_space:
+            case ContinuousActionSpace():
+                self.last_actions = actions
+            case DiscreteActionSpace():
+                self.last_one_hot_actions = self.compute_one_hot_actions(actions)
+            case other:
+                raise NotImplementedError(f"Action space {other} not supported")
         step.obs.add_extra(self.last_one_hot_actions)
         step.state.add_extra(self.last_one_hot_actions.flatten())
         return step
@@ -47,12 +51,12 @@ class LastAction(RLEnvWrapper[A, D, S, R]):
         state.add_extra(self.last_one_hot_actions.flatten())
         return state
 
-    def set_state(self, state: State[S]):
+    def set_state(self, state: State):
         flattened_one_hots = state.extras[self.state_extra_index : self.state_extra_index + self.n_agents * self.n_actions]
         self.last_one_hot_actions = flattened_one_hots.reshape(self.n_agents, self.n_actions)
         return super().set_state(state)
 
-    def compute_one_hot_actions(self, actions: npt.NDArray[np.int32]):
+    def compute_one_hot_actions(self, actions: A):
         one_hot_actions = np.zeros((self.n_agents, self.n_actions), dtype=np.float32)
         index = np.arange(self.n_agents)
         one_hot_actions[index, actions] = 1.0

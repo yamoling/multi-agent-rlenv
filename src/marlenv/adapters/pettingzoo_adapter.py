@@ -1,17 +1,18 @@
+from typing import Sequence
 from pettingzoo import ParallelEnv
 from gymnasium import spaces  # pettingzoo uses gymnasium spaces
-from marlenv.models import MARLEnv, Observation, ActionSpace, DiscreteActionSpace, ContinuousActionSpace
+from marlenv.models import MARLEnv, Observation, ActionSpace, DiscreteActionSpace, ContinuousActionSpace, Step, State
 import numpy as np
 import numpy.typing as npt
 
 
-class PettingZoo(MARLEnv[ActionSpace, npt.NDArray[np.float32], npt.NDArray[np.float32], float]):
+class PettingZoo(MARLEnv[npt.NDArray, ActionSpace]):
     def __init__(self, env: ParallelEnv):
         aspace = env.action_space(env.possible_agents[0])
-
+        n_agents = len(env.possible_agents)
         match aspace:
             case spaces.Discrete() as s:
-                space = DiscreteActionSpace(env.num_agents, int(s.n))
+                space = DiscreteActionSpace(n_agents, int(s.n))
 
             case spaces.Box() as s:
                 low = s.low.astype(np.float32)
@@ -20,7 +21,7 @@ class PettingZoo(MARLEnv[ActionSpace, npt.NDArray[np.float32], npt.NDArray[np.fl
                     low = np.full(s.shape, s.low, dtype=np.float32)
                 if not isinstance(high, np.ndarray):
                     high = np.full(s.shape, s.high, dtype=np.float32)
-                space = ContinuousActionSpace(env.num_agents, low, high=high)
+                space = ContinuousActionSpace(n_agents, low, high=high)
             case other:
                 raise NotImplementedError(f"Action space {other} not supported")
 
@@ -28,6 +29,7 @@ class PettingZoo(MARLEnv[ActionSpace, npt.NDArray[np.float32], npt.NDArray[np.fl
         if obs_space.shape is None:
             raise NotImplementedError("Only discrete observation spaces are supported")
         self._env = env
+        env.reset()
         super().__init__(space, obs_space.shape, self.get_state().shape)
         self.agents = env.possible_agents
         self.last_observation = None
@@ -38,13 +40,14 @@ class PettingZoo(MARLEnv[ActionSpace, npt.NDArray[np.float32], npt.NDArray[np.fl
         except NotImplementedError:
             return np.array([0])
 
-    def step(self, actions: npt.NDArray[np.int64]):
+    def step(self, actions: npt.NDArray | Sequence):
         action_dict = dict(zip(self.agents, actions))
         obs, reward, term, trunc, info = self._env.step(action_dict)
         obs_data = np.array([v for v in obs.values()])
         reward = np.sum([r for r in reward.values()], keepdims=True)
-        self.last_observation = Observation(obs_data, self.available_actions(), self.get_state())
-        return self.last_observation, reward, any(term.values()), any(trunc.values()), info
+        self.last_observation = Observation(obs_data, self.available_actions())
+        state = State(self.get_state())
+        return Step(self.last_observation, state, reward, any(term.values()), any(trunc.values()), info)
 
     def reset(self):
         obs = self._env.reset()[0]

@@ -3,19 +3,17 @@ from marlenv.models import MARLEnv, ActionSpace
 from dataclasses import dataclass
 from .rlenv_wrapper import RLEnvWrapper
 
-from typing import TypeVar
+from typing_extensions import TypeVar
 
-A = TypeVar("A", bound=ActionSpace)
-D = TypeVar("D")
-S = TypeVar("S")
-R = TypeVar("R", bound=float | np.ndarray)
+A = TypeVar("A", default=np.ndarray)
+AS = TypeVar("AS", bound=ActionSpace, default=ActionSpace)
 
 
 @dataclass
-class AgentId(RLEnvWrapper[A, D, S, R]):
+class AgentId(RLEnvWrapper[A, AS]):
     """RLEnv wrapper that adds a one-hot encoding of the agent id."""
 
-    def __init__(self, env: MARLEnv[A, D, S, R]):
+    def __init__(self, env: MARLEnv[A, AS]):
         assert len(env.extra_shape) == 1, "AgentIdWrapper only works with single dimension extras"
         super().__init__(env, extra_shape=(env.n_agents + env.extra_shape[0],))
         self._identity = np.identity(env.n_agents, dtype=np.float32)

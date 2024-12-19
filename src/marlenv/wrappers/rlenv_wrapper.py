@@ -1,33 +1,31 @@
-from typing import TypeVar, Optional
+from typing import Optional
+from typing_extensions import TypeVar
 from dataclasses import dataclass
 from abc import ABC
-import numpy as np
 import numpy.typing as npt
 from marlenv.models import MARLEnv, ActionSpace, DiscreteSpace, State
 
 
-A = TypeVar("A", bound=ActionSpace)
-D = TypeVar("D")
-S = TypeVar("S")
-R = TypeVar("R", bound=float | npt.NDArray[np.float32])
+A = TypeVar("A", default=npt.NDArray)
+AS = TypeVar("AS", bound=ActionSpace, default=ActionSpace)
 
 
 @dataclass
-class RLEnvWrapper(MARLEnv[A, D, S, R], ABC):
+class RLEnvWrapper(MARLEnv[A, AS], ABC):
     """Parent class for all RLEnv wrappers"""
 
-    wrapped: MARLEnv[A, D, S, R]
+    wrapped: MARLEnv[A, AS]
     full_name: str
     """The full name of the wrapped environment, excluding the name of the nested wrappers."""
 
     def __init__(
         self,
-        env: MARLEnv[A, D, S, R],
+        env: MARLEnv[A, AS],
         observation_shape: Optional[tuple[int, ...]] = None,
         state_shape: Optional[tuple[int, ...]] = None,
         extra_shape: Optional[tuple[int, ...]] = None,
         state_extra_shape: Optional[tuple[int, ...]] = None,
-        action_space: Optional[A] = None,
+        action_space: Optional[AS] = None,
         reward_space: Optional[DiscreteSpace] = None,
     ):
         super().__init__(
@@ -55,7 +53,7 @@ class RLEnvWrapper(MARLEnv[A, D, S, R], ABC):
     def agent_state_size(self):
         return self.wrapped.agent_state_size
 
-    def step(self, actions):
+    def step(self, actions: A):
         return self.wrapped.step(actions)
 
     def reset(self):
@@ -64,7 +62,7 @@ class RLEnvWrapper(MARLEnv[A, D, S, R], ABC):
     def get_state(self):
         return self.wrapped.get_state()
 
-    def set_state(self, state: State[S]):
+    def set_state(self, state: State):
         return self.wrapped.set_state(state)
 
     def available_actions(self):
