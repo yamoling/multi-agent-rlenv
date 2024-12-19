@@ -1,58 +1,61 @@
+from dataclasses import dataclass
 from itertools import product
 from typing import Sequence
-from typing_extensions import TypeVar
+
 import numpy as np
 import numpy.typing as npt
-from marlenv.models import MARLEnv, DiscreteSpace, Observation, ActionSpace
-from .rlenv_wrapper import RLEnvWrapper
-from dataclasses import dataclass
+from typing_extensions import TypeVar
 
-A = TypeVar("A", default=npt.NDArray)
-AS = TypeVar("AS", bound=ActionSpace, default=ActionSpace)
+from marlenv.models import ActionSpace, DiscreteActionSpace, DiscreteSpace, MARLEnv, Observation
+
+from .rlenv_wrapper import RLEnvWrapper
+
+A = TypeVar("A", bound=npt.NDArray | Sequence[int] | Sequence[Sequence[float]])
 
 
 @dataclass
-class Centralised(RLEnvWrapper[npt.NDArray | Sequence, AS]):
+class Centralised(RLEnvWrapper[A, DiscreteActionSpace]):
     joint_action_space: ActionSpace
 
-    def __init__(self, env: MARLEnv[A, AS]):
+    def __init__(self, env: MARLEnv[A, DiscreteActionSpace]):
         if not isinstance(env.action_space.individual_action_space, DiscreteSpace):
             raise NotImplementedError(f"Action space {env.action_space} not supported")
         joint_observation_shape = (env.observation_shape[0] * env.n_agents, *env.observation_shape[1:])
         super().__init__(
-            env,  # type: ignore
+            env,
             joint_observation_shape,
             env.state_shape,
             env.extra_shape,
-            action_space=self._make_joint_action_space(env),  # type: ignore
+            action_space=self._make_joint_action_space(env),
         )
 
     def reset(self):
         obs, state = super().reset()
         return self._joint_observation(obs), state
 
-    def _make_joint_action_space(self, env: MARLEnv[A, AS]):
+    def _make_joint_action_space(self, env: MARLEnv[A, DiscreteActionSpace]):
         agent_actions = list[list[str]]()
         for agent in range(env.n_agents):
             agent_actions.append([f"{agent}-{action}" for action in env.action_space.action_names])
         action_names = [str(a) for a in product(*agent_actions)]
-        return ActionSpace(1, DiscreteSpace(env.n_actions**env.n_agents, action_names))
+        return DiscreteActionSpace(1, env.n_actions**env.n_agents, action_names)
 
     def step(self, actions: npt.NDArray | Sequence):
         action = actions[0]
         individual_actions = self._individual_actions(action)
-        step = self.wrapped.step(individual_actions)
+        individual_actions = np.array(individual_actions)
+        step = self.wrapped.step(individual_actions)  # type: ignore
         step.obs = self._joint_observation(step.obs)
         return step
 
     def _individual_actions(self, joint_action: int):
-        individual_actions = []
+        individual_actions = list[int]()
         for _ in range(self.wrapped.n_agents):
             action = joint_action % self.wrapped.n_actions
             joint_action = joint_action // self.wrapped.n_actions
             individual_actions.append(action)
         individual_actions.reverse()
-        return np.array(individual_actions)
+        return individual_actions
 
     def available_actions(self):
         individual_available = self.wrapped.available_actions()

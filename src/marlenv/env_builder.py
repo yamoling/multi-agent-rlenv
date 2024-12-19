@@ -119,9 +119,9 @@ class Builder(Generic[A, AS]):
     def pad(self, to_pad: Literal["obs", "extra"], n: int):
         match to_pad:
             case "obs":
-                self._env = wrappers.PadObservations(self._env, n)  # type: ignore
+                self._env = wrappers.PadObservations(self._env, n)
             case "extra":
-                self._env = wrappers.PadExtras(self._env, n)  # type: ignore
+                self._env = wrappers.PadExtras(self._env, n)
             case other:
                 raise ValueError(f"Unknown padding type: {other}")
         return self
@@ -133,15 +133,18 @@ class Builder(Generic[A, AS]):
 
     def last_action(self):
         """Adds the last action to the observations"""
-        self._env = wrappers.LastAction(self._env)
+        self._env = wrappers.LastAction(self._env)  # type: ignore
         return self
 
     def mask_actions(self, mask: npt.NDArray[np.bool]):
-        self._env = wrappers.AvailableActionsMask(self._env, mask)  # type: ignore
+        self._env = wrappers.AvailableActionsMask(self._env, mask)
         return self
 
     def centralised(self):
         """Centralises the observations and actions"""
+        from marlenv.models import DiscreteActionSpace
+
+        assert isinstance(self._env.action_space, DiscreteActionSpace)
         self._env = wrappers.Centralised(self._env)  # type: ignore
         return self
 

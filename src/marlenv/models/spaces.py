@@ -153,7 +153,7 @@ class ActionSpace(Space, Generic[S]):
             else:
                 m = None
             res.append(self.individual_action_space.sample(m))
-        return np.array(res, dtype=np.int32)
+        return np.array(res)
 
     def __eq__(self, value: object) -> bool:
         if not isinstance(value, ActionSpace):

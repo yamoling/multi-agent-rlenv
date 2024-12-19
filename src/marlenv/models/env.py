@@ -70,6 +70,10 @@ class MARLEnv(ABC, Generic[ActionType, ActionSpaceType]):
         """Whether the environment is multi-objective."""
         return self.reward_space.size > 1
 
+    def sample_action(self):
+        """Sample an available action from the action space."""
+        return self.action_space.sample(self.available_actions())
+
     def available_actions(self) -> npt.NDArray[np.bool]:
         """
         Get the currently available actions for each agent.

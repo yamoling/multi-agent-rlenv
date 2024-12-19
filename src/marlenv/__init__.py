@@ -13,7 +13,7 @@ A design choice is taht almost every class is a dataclass. This makes it easy to
 serialize and deserialize classes, for instance to json with the `orjson` library.
 """
 
-__version__ = "3.0.0rc1"
+__version__ = "3.0.0"
 
 from . import models
 from . import wrappers
@@ -47,11 +47,8 @@ __all__ = [
     "MARLEnv",
     "Step",
     "State",
-    "DiscreteMARLEnv",
-    "ContinuousMARLEnv",
     "Observation",
     "Episode",
-    "EpisodeBuilder",
     "Transition",
     "ActionSpace",
     "DiscreteSpace",

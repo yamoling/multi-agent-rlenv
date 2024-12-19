@@ -1,15 +1,18 @@
 from dataclasses import dataclass
-from typing import Sequence
 from typing_extensions import TypeVar
+from typing import Sequence
 
 import numpy as np
+import numpy.typing as npt
 
 from marlenv.models import State, ActionSpace, ContinuousActionSpace, DiscreteActionSpace
 
 from .rlenv_wrapper import MARLEnv, RLEnvWrapper
 
-A = TypeVar("A", default=Sequence[int])
 AS = TypeVar("AS", bound=ActionSpace, default=ActionSpace)
+DiscreteActionType = npt.NDArray[np.int64 | np.int32] | Sequence[int]
+ContinuousActionType = npt.NDArray[np.float32] | Sequence[Sequence[float]]
+A = TypeVar("A", bound=DiscreteActionType | ContinuousActionType)
 
 
 @dataclass
@@ -39,7 +42,7 @@ class LastAction(RLEnvWrapper[A, AS]):
             case ContinuousActionSpace():
                 self.last_actions = actions
             case DiscreteActionSpace():
-                self.last_one_hot_actions = self.compute_one_hot_actions(actions)
+                self.last_one_hot_actions = self.compute_one_hot_actions(actions)  # type: ignore
             case other:
                 raise NotImplementedError(f"Action space {other} not supported")
         step.obs.add_extra(self.last_one_hot_actions)
@@ -56,7 +59,7 @@ class LastAction(RLEnvWrapper[A, AS]):
         self.last_one_hot_actions = flattened_one_hots.reshape(self.n_agents, self.n_actions)
         return super().set_state(state)
 
-    def compute_one_hot_actions(self, actions: A):
+    def compute_one_hot_actions(self, actions: DiscreteActionType) -> npt.NDArray:
         one_hot_actions = np.zeros((self.n_agents, self.n_actions), dtype=np.float32)
         index = np.arange(self.n_agents)
         one_hot_actions[index, actions] = 1.0
