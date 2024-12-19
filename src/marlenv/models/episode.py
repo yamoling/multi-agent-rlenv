@@ -1,17 +1,18 @@
 from dataclasses import dataclass
-from typing import Iterable, Optional
+from typing import Iterable, Optional, TypeVar, Generic
 import numpy as np
 import numpy.typing as npt
 from functools import cached_property
-from typing_extensions import deprecated
 
 from .transition import Transition
 from .observation import Observation
 from .state import State
 
+A = TypeVar("A")
+
 
 @dataclass
-class Episode[A]:
+class Episode(Generic[A]):
     """Episode model made of observations, actions, rewards, ..."""
 
     _observations: list[npt.NDArray[np.float32]]
