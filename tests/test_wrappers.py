@@ -10,10 +10,16 @@ def test_padding():
     mock = DiscreteMockEnv(5)
     env = Builder(mock).pad("extra", PAD_SIZE).build()
     assert env.extra_shape == (PAD_SIZE + mock.extra_shape[0],)
+    env.reset()
+    for _ in range(10):
+        env.step(env.action_space.sample())
 
     mock = DiscreteMockEnv(5)
     env = Builder(mock).pad("obs", PAD_SIZE).build()
     assert env.observation_shape == (mock.observation_shape[0] + PAD_SIZE,)
+    env.reset()
+    for _ in range(10):
+        env.step(env.action_space.sample())
 
 
 def test_available_actions():
@@ -40,8 +46,9 @@ def test_penalty_wrapper():
     expected = np.array([0.9] * N_OBJECTIVES, dtype=np.float32)
     done = False
     while not done:
-        _, _, reward, done, *_ = env.step([0])
-        assert np.array_equal(reward, expected)
+        step = env.step([0])
+        done = step.done
+        assert np.array_equal(step.reward, expected)
 
 
 def test_time_limit_wrapper():
@@ -52,30 +59,31 @@ def test_time_limit_wrapper():
     done = False
     t = 0
     while not done:
-        obs, state, _, done, truncated, _ = env.step(np.array([0]))
-        assert obs.extras.shape == (env.n_agents, 1)
-        assert state.extras_shape == (1,)
+        step = env.step(np.array([0]))
+        assert step.obs.extras.shape == (env.n_agents, 1)
+        assert step.state.extras_shape == (1,)
+        done = step.done
         t += 1
     assert t == MAX_T
-    assert truncated
-    assert done
+    assert step.truncated
+    assert step.done
 
 
 def test_truncated_and_done():
     END_GAME = 10
     env = marlenv.wrappers.TimeLimit(DiscreteMockEnv(2, end_game=END_GAME), END_GAME)
     obs, state = env.reset()
-    episode = marlenv.EpisodeBuilder()
-    done = truncated = False
+    episode = marlenv.Episode.new(obs, state)
     while not episode.is_finished:
         action = env.action_space.sample()
-        next_obs, next_state, r, done, truncated, info = env.step(action)
-        episode.add(marlenv.Transition(obs, state, action, r, done, info, next_obs, next_state, truncated))
-        obs = next_obs
-        state = next_state
-    assert done
-    assert not truncated, "The episode is done, so it does not have to be truncated even though the time limit is reached at the same time."
-    episode = episode.build()
+        step = env.step(action)
+        episode.add(marlenv.Transition.from_step(obs, state, action, step))
+        obs = step.obs
+        state = step.state
+    assert step.done
+    assert (
+        not step.truncated
+    ), "The episode is done, so it does not have to be truncated even though the time limit is reached at the same time."
 
     assert np.all(episode.dones[:-1] == 0)
     assert episode.dones[-1] == 1
@@ -93,13 +101,13 @@ def test_time_limit_wrapper_with_extra():
     stop = False
     t = 0
     while not stop:
-        obs, _, _, done, truncated, _ = env.step(np.array([0]))
-        stop = done or truncated
+        step = env.step(np.array([0]))
+        stop = step.done or step.truncated
         t += 1
     assert t == MAX_T
-    assert np.all(obs.extras[:] == 1)
-    assert done
-    assert truncated
+    assert np.all(step.obs.extras == 1.0)
+    assert step.done
+    assert step.truncated
 
 
 def test_wrong_truncation_penalty():
@@ -125,13 +133,13 @@ def test_time_limit_wrapper_with_truncation_penalty():
     stop = False
     t = 0
     while not stop:
-        obs, _, _, done, truncated, _ = env.step(np.array([0]))
-        stop = done or truncated
+        step = env.step(np.array([0]))
+        stop = step.done or step.truncated
         t += 1
     assert t == MAX_T
-    assert np.all(obs.extras[:] == 1)
-    assert done
-    assert truncated
+    assert np.all(step.obs.extras[:] == 1)
+    assert step.done
+    assert step.truncated
 
 
 def test_blind_wrapper():

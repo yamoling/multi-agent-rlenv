@@ -120,9 +120,9 @@ class Builder(Generic[A, D, S, R]):
     def pad(self, to_pad: Literal["obs", "extra"], n: int):
         match to_pad:
             case "obs":
-                self._env = wrappers.PadObservations(self._env, n)
+                self._env = wrappers.PadObservations(self._env, n)  # type: ignore
             case "extra":
-                self._env = wrappers.PadExtras(self._env, n)
+                self._env = wrappers.PadExtras(self._env, n)  # type: ignore
             case other:
                 raise ValueError(f"Unknown padding type: {other}")
         return self
