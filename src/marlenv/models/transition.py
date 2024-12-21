@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, Optional, Generic, Sequence
+from typing import Any, Generic, Optional, Sequence
 from typing_extensions import TypeVar
 
 import numpy as np
@@ -25,7 +25,7 @@ class Transition(Generic[A]):
     next_obs: Observation
     next_state: State
     truncated: bool
-    action_probs: Optional[np.ndarray] = None
+    other: dict[str, Any]
 
     def __init__(
         self,
@@ -38,7 +38,7 @@ class Transition(Generic[A]):
         next_obs: Observation,
         next_state: State,
         truncated: bool,
-        action_probs: Optional[np.ndarray] = None,
+        **kwargs,
     ):
         self.obs = obs
         if not isinstance(action, np.ndarray):
@@ -56,9 +56,9 @@ class Transition(Generic[A]):
         self.info = info
         self.next_obs = next_obs
         self.truncated = truncated
-        self.action_probs = action_probs
         self.state = state
         self.next_state = next_state
+        self.other = kwargs
 
     @staticmethod
     def from_step(
@@ -66,7 +66,7 @@ class Transition(Generic[A]):
         prev_state: State,
         actions: A,
         step: Step,
-        probs: Optional[np.ndarray] = None,
+        **kwargs,
     ):
         return Transition(
             obs=prev_obs,
@@ -78,7 +78,7 @@ class Transition(Generic[A]):
             next_obs=step.obs,
             next_state=step.state,
             truncated=step.truncated,
-            action_probs=probs,
+            **kwargs,
         )
 
     @property
@@ -98,6 +98,9 @@ class Transition(Generic[A]):
     @property
     def n_actions(self) -> int:
         return int(self.obs.available_actions.shape[-1])
+
+    def __getitem__(self, key: str) -> Optional[Any]:
+        return self.other.get(key, None)
 
     def __hash__(self) -> int:
         ho = hash(self.obs)

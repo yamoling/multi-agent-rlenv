@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Iterable, Optional, TypeVar, Generic
+from typing import Any, Iterable, Optional, TypeVar, Generic
 import numpy as np
 import numpy.typing as npt
 from functools import cached_property
@@ -22,9 +22,9 @@ class Episode(Generic[A]):
     _available_actions: list[npt.NDArray[np.bool_]]
     _states: list[npt.NDArray[np.float32]]
     _states_extras: list[npt.NDArray[np.float32]]
-    actions_probs: list[npt.NDArray[np.float32]]
     metrics: dict[str, float]
     episode_len: int
+    other: dict[str, list[Any]]
     is_done: bool = False
     is_truncated: bool = False
     """Whether the episode did reach a terminal state (different from truncated)"""
@@ -41,11 +41,11 @@ class Episode(Generic[A]):
             _available_actions=[obs.available_actions],
             actions=[],
             rewards=[],
-            actions_probs=[],
             metrics=metrics,
             episode_len=0,
             is_done=False,
             is_truncated=False,
+            other={},
         )
 
     def padded(self, target_len: int) -> "Episode":
@@ -62,6 +62,7 @@ class Episode(Generic[A]):
         availables = self._available_actions + [self._available_actions[0]] * padding_size
         states = self._states + [self._states[0]] * padding_size
         states_extras = self._states_extras + [self._states_extras[0]] * padding_size
+        other = {key: value + [value[0]] * padding_size for key, value in self.other.items()}
         return Episode(
             _observations=obs,
             _extras=extras,
@@ -72,9 +73,13 @@ class Episode(Generic[A]):
             rewards=rewards,
             metrics=self.metrics,
             episode_len=self.episode_len,
-            actions_probs=[],
             is_done=self.is_done,
+            is_truncated=self.is_truncated,
+            other=other,
         )
+
+    def __getitem__(self, key: str):
+        return self.other.get(key, None)
 
     @cached_property
     def states(self):
@@ -213,8 +218,11 @@ class Episode(Generic[A]):
                 action = np.array(other)
                 self.actions.append(action)
         self.rewards.append(transition.reward)
-        if transition.action_probs is not None:
-            self.actions_probs.append(transition.action_probs)
+        for key, value in transition.other.items():
+            current = self.other.get(key, [])
+            current.append(value)
+            self.other[key] = current
+
         if transition.is_terminal:
             # Only set the truncated flag if the episode is not done (both could happen with a time limit)
             self.is_truncated = transition.truncated

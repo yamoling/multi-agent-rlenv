@@ -13,7 +13,7 @@ def generate_episode(env: MARLEnv[Any, Any], with_probs: bool = False) -> Episod
         if with_probs:
             probs = np.random.random(action.shape)
         step = env.step(action)
-        episode.add(Transition.from_step(obs, state, action, step, probs))
+        episode.add(Transition.from_step(obs, state, action, step, action_probs=probs))
         obs = step.obs
         state = step.state
     return episode
@@ -158,5 +158,6 @@ def test_iterate_on_episode():
 def test_episode_with_logprobs():
     env = wrappers.TimeLimit(DiscreteMockEnv(2), 10, add_extra=False)
     episode = generate_episode(env, with_probs=True)
-    assert episode.actions_probs is not None
-    assert len(episode.actions_probs) == 10
+    action_probs = episode["action_probs"]
+    assert action_probs is not None
+    assert len(action_probs) == 10
