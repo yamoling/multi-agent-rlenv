@@ -79,7 +79,13 @@ class Episode(Generic[A]):
         )
 
     def __getitem__(self, key: str):
-        return self.other.get(key, None)
+        if key not in self.other:
+            keys = self.other.keys()
+            if len(keys) == 0:
+                raise KeyError(f"Key {key} not found in episode: no key available in episode.")
+            keys = ", ".join(keys)
+            raise KeyError(f"Key {key} not found in episode. The availables keys are: {keys}")
+        return self.other[key]
 
     @cached_property
     def states(self):
@@ -191,9 +197,13 @@ class Episode(Generic[A]):
         return self.episode_len
 
     @cached_property
-    def score(self) -> float:
-        """The episode score (sum of all rewards)"""
-        return self.metrics["score"]
+    def score(self) -> list[float]:
+        """The episode score (sum of all rewards across all objectives)"""
+        score = []
+        for key, value in self.metrics.items():
+            if key.startswith("score-"):
+                score.append(value)
+        return score
 
     def compute_returns(self, discount: float = 1.0):
         """Compute the returns (discounted sum of future rewards) of the episode at each time step"""

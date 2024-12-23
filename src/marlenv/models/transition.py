@@ -99,8 +99,14 @@ class Transition(Generic[A]):
     def n_actions(self) -> int:
         return int(self.obs.available_actions.shape[-1])
 
-    def __getitem__(self, key: str) -> Optional[Any]:
-        return self.other.get(key, None)
+    def __getitem__(self, key: str):
+        if key not in self.other:
+            keys = self.other.keys()
+            if len(keys) == 0:
+                raise KeyError(f"{key} not found in transition: no key available in transition")
+            keys = ", ".join(keys)
+            raise KeyError(f"Key {key} not found in transition. The availables keys are: {keys}")
+        return self.other[key]
 
     def __hash__(self) -> int:
         ho = hash(self.obs)

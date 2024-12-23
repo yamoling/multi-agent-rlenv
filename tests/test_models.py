@@ -1,4 +1,4 @@
-from marlenv import Observation, Transition, DiscreteMockEnv, DiscreteMOMockEnv, Builder, State
+from marlenv import Observation, Transition, DiscreteMockEnv, DiscreteMOMockEnv, Builder, State, Episode
 import numpy as np
 
 
@@ -173,6 +173,88 @@ def test_transition_hash():
 
     assert hash(t1) == hash(t2)
     assert hash(t1) != hash(t3)
+
+
+def test_transition_arbitrary_keys():
+    t = Transition(
+        obs=Observation(
+            data=np.arange(20, dtype=np.float32),
+            available_actions=np.full((5,), True),
+            extras=np.arange(5, dtype=np.float32),
+        ),
+        state=State(np.ones(10, dtype=np.float32)),
+        action=np.ones(5, dtype=np.int64),
+        reward=1.0,
+        done=False,
+        info={},
+        next_obs=Observation(
+            data=np.arange(20, dtype=np.float32),
+            available_actions=np.full((5,), True),
+            extras=np.arange(5, dtype=np.float32),
+        ),
+        next_state=State(np.ones(10, dtype=np.float32)),
+        truncated=False,
+        arbitrary_key=17,
+        other_key=[1, 2, 3],
+    )
+
+    assert t["arbitrary_key"] == 17
+    assert t["other_key"] == [1, 2, 3]
+
+
+def test_episode_arbitrary_keys():
+    episode = Episode.new(
+        Observation(np.ones(10, dtype=np.float32), np.full(5, True)),
+        State(np.ones(10, dtype=np.float32)),
+    )
+    episode.add(
+        Transition(
+            obs=Observation(
+                data=np.arange(20, dtype=np.float32),
+                available_actions=np.full((5,), True),
+                extras=np.arange(5, dtype=np.float32),
+            ),
+            state=State(np.ones(10, dtype=np.float32)),
+            action=np.ones(5, dtype=np.int64),
+            reward=1.0,
+            done=False,
+            info={},
+            next_obs=Observation(
+                data=np.arange(20, dtype=np.float32),
+                available_actions=np.full((5,), True),
+                extras=np.arange(5, dtype=np.float32),
+            ),
+            next_state=State(np.ones(10, dtype=np.float32)),
+            truncated=False,
+            arbitrary_key=17,
+            other_key=[1, 2, 3],
+        )
+    )
+    episode.add(
+        Transition(
+            obs=Observation(
+                data=np.arange(20, dtype=np.float32),
+                available_actions=np.full((5,), True),
+                extras=np.arange(5, dtype=np.float32),
+            ),
+            state=State(np.ones(10, dtype=np.float32)),
+            action=np.ones(5, dtype=np.int64),
+            reward=1.0,
+            done=True,
+            info={},
+            next_obs=Observation(
+                data=np.arange(20, dtype=np.float32),
+                available_actions=np.full((5,), True),
+                extras=np.arange(5, dtype=np.float32),
+            ),
+            next_state=State(np.ones(10, dtype=np.float32)),
+            truncated=False,
+            arbitrary_key=18,
+            other_key=[2, 3, 4],
+        )
+    )
+    assert np.array_equal(episode["arbitrary_key"], [17, 18])
+    assert np.array_equal(episode["other_key"], [[1, 2, 3], [2, 3, 4]])
 
 
 def test_has_same_inouts():
