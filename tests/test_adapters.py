@@ -20,30 +20,53 @@ except ImportError:
     skip_smac = True
 
 
-import marlenv
 import numpy as np
-
-from marlenv import Observation, DiscreteMockEnv, MARLEnv, DiscreteActionSpace
-from marlenv.adapters import PymarlAdapter, SMAC
 import pytest
+
+import marlenv
+from marlenv import DiscreteActionSpace, DiscreteMockEnv, MARLEnv, Observation, State, ContinuousActionSpace
+from marlenv.adapters import SMAC, PymarlAdapter
 
 
 @pytest.mark.skipif(skip_gym, reason="Gymnasium is not installed")
-def test_gym_adapter():
+def test_gym_adapter_discrete():
     # Discrete action space
     env = marlenv.make("CartPole-v1")
-    env.reset()
+    assert isinstance(env.action_space, DiscreteActionSpace)
+    obs, state = env.reset()
+    assert isinstance(obs, Observation)
+    assert isinstance(state, State)
     assert isinstance(env, MARLEnv)
-    # assert not isinstance(env, marlenv.MOMARLEnv)
     assert env.n_actions == 2
     assert env.n_agents == 1
 
-    obs, r, done, truncated, info = env.step(env.action_space.sample())
+    step = env.step(env.sample_action())
+    assert isinstance(step.obs, Observation)
+    assert isinstance(step.reward, np.ndarray)
+    assert step.reward.shape == (1,)
+    assert isinstance(step.done, bool)
+    assert isinstance(step.truncated, bool)
+    assert isinstance(step.info, dict)
+
+
+@pytest.mark.skipif(skip_gym, reason="Gymnasium is not installed")
+def test_gym_adapter_continuous():
+    env = marlenv.make("Pendulum-v1")
+    assert isinstance(env.action_space, ContinuousActionSpace)
+    obs, state = env.reset()
     assert isinstance(obs, Observation)
-    assert isinstance(r, float)
-    assert isinstance(done, bool)
-    assert isinstance(truncated, bool)
-    assert isinstance(info, dict)
+    assert isinstance(state, State)
+    assert isinstance(env, MARLEnv)
+    assert env.n_actions == 1
+    assert env.n_agents == 1
+
+    step = env.step(env.sample_action())
+    assert isinstance(step.obs, Observation)
+    assert isinstance(step.reward, np.ndarray)
+    assert step.reward.shape == (1,)
+    assert isinstance(step.done, bool)
+    assert isinstance(step.truncated, bool)
+    assert isinstance(step.info, dict)
 
     # Continuous action space
     env = marlenv.make("Pendulum-v1")
@@ -108,6 +131,7 @@ def _check_env_3m(env: SMAC):
 @pytest.mark.skipif(skip_smac, reason="SMAC is not installed")
 def test_smac_from_class():
     from smac.env import StarCraft2Env
+
     from marlenv.adapters import SMAC
 
     env = SMAC(StarCraft2Env("3m"))
