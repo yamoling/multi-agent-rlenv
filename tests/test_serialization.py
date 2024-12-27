@@ -45,7 +45,18 @@ def test_env_json_serialization():
 def test_wrappers_serializable():
     env = DiscreteMockEnv(4)
     env = marlenv.Builder(env).agent_id().available_actions().time_limit(10).last_action().time_penalty(5).blind(0.2).build()
-    _ = orjson.dumps(env, option=orjson.OPT_SERIALIZE_NUMPY)
+    as_bytes = orjson.dumps(env, option=orjson.OPT_SERIALIZE_NUMPY)
+    deserialized = orjson.loads(as_bytes)
+
+    def check_key_values(env: object, deserialized: dict):
+        for key, value in env.__dict__.items():
+            if key.startswith("_"):
+                continue
+            assert key in deserialized
+            if key == "wrapped":
+                check_key_values(value, deserialized[key])
+
+    check_key_values(env, deserialized)
 
 
 def test_serialize_observation():
