@@ -1,23 +1,29 @@
+from dataclasses import dataclass
 from typing import Sequence
-from gymnasium import Env, spaces
+
+import gymnasium as gym
 import numpy as np
 import numpy.typing as npt
+from gymnasium import Env, spaces
 
 from marlenv.models import (
+    ActionSpace,
+    ContinuousActionSpace,
+    DiscreteActionSpace,
     MARLEnv,
     Observation,
-    ActionSpace,
-    DiscreteActionSpace,
-    ContinuousActionSpace,
-    Step,
     State,
+    Step,
 )
 
 
+@dataclass
 class Gym(MARLEnv[Sequence | npt.NDArray, ActionSpace]):
     """Wraps a gym envronment in an RLEnv"""
 
-    def __init__(self, env: Env):
+    def __init__(self, env: Env | str, **kwargs):
+        if isinstance(env, str):
+            env = gym.make(env, render_mode="rgb_array", **kwargs)
         if env.observation_space.shape is None:
             raise NotImplementedError("Observation space must have a shape")
         match env.action_space:

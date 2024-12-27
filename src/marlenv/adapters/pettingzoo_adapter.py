@@ -1,11 +1,15 @@
+from dataclasses import dataclass
 from typing import Sequence
-from pettingzoo import ParallelEnv
-from gymnasium import spaces  # pettingzoo uses gymnasium spaces
-from marlenv.models import MARLEnv, Observation, ActionSpace, DiscreteActionSpace, ContinuousActionSpace, Step, State
+
 import numpy as np
 import numpy.typing as npt
+from gymnasium import spaces  # pettingzoo uses gymnasium spaces
+from pettingzoo import ParallelEnv
+
+from marlenv.models import ActionSpace, ContinuousActionSpace, DiscreteActionSpace, MARLEnv, Observation, State, Step
 
 
+@dataclass
 class PettingZoo(MARLEnv[npt.NDArray, ActionSpace]):
     def __init__(self, env: ParallelEnv):
         aspace = env.action_space(env.possible_agents[0])

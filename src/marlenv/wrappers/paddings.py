@@ -36,6 +36,7 @@ class PadExtras(RLEnvWrapper[A, AS]):
         return obs
 
 
+@dataclass
 class PadObservations(RLEnvWrapper[A, AS]):
     """RLEnv wrapper that adds extra zeros at the end of the observation data."""
 

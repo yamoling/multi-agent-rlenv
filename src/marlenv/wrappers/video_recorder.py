@@ -1,11 +1,13 @@
 import os
+from dataclasses import dataclass
 from datetime import datetime
 from typing import Literal, Optional
-from typing_extensions import TypeVar
-from marlenv.models import ActionSpace
-import numpy as np
-import numpy.typing as npt
+
 import cv2
+import numpy.typing as npt
+from typing_extensions import TypeVar
+
+from marlenv.models import ActionSpace
 
 from .rlenv_wrapper import MARLEnv, RLEnvWrapper
 
@@ -13,6 +15,7 @@ A = TypeVar("A", default=npt.NDArray)
 AS = TypeVar("AS", bound=ActionSpace, default=ActionSpace)
 
 
+@dataclass
 class VideoRecorder(RLEnvWrapper[A, AS]):
     """Records a video of the run"""
 

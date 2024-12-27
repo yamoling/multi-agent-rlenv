@@ -1,10 +1,14 @@
+from dataclasses import dataclass
 from typing import Any, Sequence
+
 import numpy as np
 import numpy.typing as npt
-from marlenv.models import MARLEnv, DiscreteActionSpace
+
+from marlenv.models import DiscreteActionSpace, MARLEnv
 from marlenv.wrappers import TimeLimit
 
 
+@dataclass
 class PymarlAdapter:
     """
     There is no official interface for PyMARL but aims at complying

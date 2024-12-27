@@ -1,5 +1,5 @@
 from typing import Any, Optional, Sequence
-from typing_extensions import TypeVar, deprecated
+from typing_extensions import deprecated
 import numpy.typing as npt
 import numpy as np
 from dataclasses import dataclass

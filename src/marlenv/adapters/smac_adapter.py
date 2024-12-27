@@ -1,11 +1,14 @@
+from dataclasses import dataclass
+from typing import Sequence, overload
+
 import numpy as np
 import numpy.typing as npt
-from typing import Sequence, overload
 from smac.env import StarCraft2Env
 
-from marlenv.models import MARLEnv, Observation, DiscreteActionSpace, Step, State
+from marlenv.models import DiscreteActionSpace, MARLEnv, Observation, State, Step
 
 
+@dataclass
 class SMAC(MARLEnv[Sequence[int] | npt.NDArray, DiscreteActionSpace]):
     """Wrapper for the SMAC environment to work with this framework"""
 
