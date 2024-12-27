@@ -1,12 +1,13 @@
 from dataclasses import dataclass
-from typing import Any, Iterable, Optional, TypeVar, Generic
+from functools import cached_property
+from typing import Any, Generic, Optional, Sequence, TypeVar
+
 import numpy as np
 import numpy.typing as npt
-from functools import cached_property
 
-from .transition import Transition
 from .observation import Observation
 from .state import State
+from .transition import Transition
 
 A = TypeVar("A")
 
@@ -47,6 +48,14 @@ class Episode(Generic[A]):
             is_truncated=False,
             other={},
         )
+
+    @staticmethod
+    def from_transitions(transitions: Sequence[Transition[A]]) -> "Episode":
+        """Create an episode from a list of transitions"""
+        episode = Episode.new(transitions[0].obs, transitions[0].state)
+        for transition in transitions:
+            episode.add(transition)
+        return episode
 
     def padded(self, target_len: int) -> "Episode":
         """Copy of the episode, padded with mock items to the target length"""
@@ -167,7 +176,7 @@ class Episode(Generic[A]):
         """Whether the episode is done or truncated"""
         return self.is_done or self.is_truncated
 
-    def transitions(self) -> Iterable[Transition]:
+    def transitions(self):
         """The transitions that compose the episode"""
         for i in range(self.episode_len):
             yield Transition(
@@ -190,7 +199,7 @@ class Episode(Generic[A]):
                 truncated=not self.is_done and i == self.episode_len - 1,
             )
 
-    def __iter__(self) -> Iterable[Transition]:
+    def __iter__(self):
         return self.transitions()
 
     def __len__(self):

@@ -161,3 +161,25 @@ def test_episode_with_logprobs():
     action_probs = episode["action_probs"]
     assert action_probs is not None
     assert len(action_probs) == 10
+
+
+def test_from_transitions():
+    env = DiscreteMockEnv(2)
+    obs, state = env.reset()
+    transitions = list[Transition]()
+    for _ in range(10):
+        action = env.action_space.sample()
+        step = env.step(action)
+        transitions.append(Transition.from_step(obs, state, action, step))
+        obs = step.obs
+        state = step.state
+    episode = Episode.from_transitions(transitions)
+    for i in range(len(episode)):
+        assert np.array_equal(transitions[i].obs.data, episode.obs[i])
+        assert np.array_equal(transitions[i].state.data, episode.states[i])
+        assert np.array_equal(transitions[i].action, episode.actions[i])
+        assert np.array_equal(transitions[i].reward, episode.rewards[i])
+        assert transitions[i].done == episode.dones[i]
+
+        assert np.array_equal(transitions[i].next_obs.data, episode.next_obs[i])
+        assert np.array_equal(transitions[i].next_state.data, episode.next_states[i])
