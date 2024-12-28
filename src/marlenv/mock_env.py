@@ -30,6 +30,7 @@ class DiscreteMockEnv(MARLEnv[Sequence[int] | npt.NDArray, DiscreteActionSpace])
         self.reward_step = reward_step
         self.t = 0
         self.actions_history = []
+        self._seed = -1
 
     @property
     def agent_state_size(self):
@@ -37,11 +38,15 @@ class DiscreteMockEnv(MARLEnv[Sequence[int] | npt.NDArray, DiscreteActionSpace])
 
     def reset(self):
         self.t = 0
+        self._seed += 1
         return self.get_observation(), self.get_state()
+
+    def seed(self, seed_value: int):
+        self._seed = seed_value
 
     def get_observation(self):
         obs_data = np.array(
-            [np.arange(self.t + agent, self.t + agent + self.obs_size) for agent in range(self.n_agents)],
+            [self._seed + np.arange(self.t + agent, self.t + agent + self.obs_size) for agent in range(self.n_agents)],
             dtype=np.float32,
         )
         extras = np.arange(self.n_agents * self.extra_size, dtype=np.float32).reshape((self.n_agents, self.extra_size))

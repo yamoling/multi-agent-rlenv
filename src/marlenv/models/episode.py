@@ -1,13 +1,18 @@
 from dataclasses import dataclass
 from functools import cached_property
-from typing import Any, Generic, Optional, Sequence, TypeVar
+from typing import Any, Callable, Generic, Optional, Sequence, TypeVar
 
 import numpy as np
 import numpy.typing as npt
+import cv2
 
 from .observation import Observation
 from .state import State
+from .step import Step
 from .transition import Transition
+from .env import MARLEnv
+from marlenv.exceptions import EnvironmentMismatchException, ReplayMismatchException
+
 
 A = TypeVar("A")
 
@@ -146,7 +151,7 @@ class Episode(Generic[A]):
     @cached_property
     def n_agents(self):
         """The number of agents in the episode"""
-        return self.all_extras[0].shape[1]
+        return self.all_extras[0].shape[0]
 
     @cached_property
     def n_actions(self):
@@ -198,6 +203,54 @@ class Episode(Generic[A]):
                 next_state=State(data=self.all_states[i + 1], extras=self.all_states_extras[i + 1]),
                 truncated=not self.is_done and i == self.episode_len - 1,
             )
+
+    def replay(
+        self,
+        env: MARLEnv[A, Any],
+        seed: Optional[int] = None,
+        callback: Optional[Callable[[int, Step, MARLEnv[A]], None]] = None,
+    ):
+        """
+        Replay the episode in the environment (i.e. perform the actions) and assert that the outcomes match.
+        If provided, the callback is called at each step with the index of the step and the step itself.
+
+        Note: this will most likely fail in stochastic environments.
+        """
+        if env.n_actions != self.n_actions or env.n_agents != self.n_agents:
+            raise EnvironmentMismatchException(env, self)
+        if seed is not None:
+            env.seed(seed)
+        obs, state = env.reset()
+        if not np.array_equal(obs.data, self.obs[0]):
+            raise ReplayMismatchException("observation", obs.data, self.obs[0], time_step=0)
+        if not np.array_equal(state.data, self.states[0]):
+            raise ReplayMismatchException("state", state.data, self.states[0], time_step=0)
+        for i, action in enumerate(self.actions):
+            step = env.step(action)  # type: ignore
+            if not np.array_equal(step.obs.data, self.next_obs[i]):
+                raise ReplayMismatchException("observation", step.obs.data, self.next_obs[i], time_step=i)
+            if not np.array_equal(step.state.data, self.next_states[i]):
+                raise ReplayMismatchException("state", step.state.data, self.next_states[i], time_step=i)
+            if not np.array_equal(step.reward, self.rewards[i]):
+                raise ReplayMismatchException("reward", step.reward, self.rewards[i], time_step=i)
+            if callback is not None:
+                callback(i, step, env)
+
+    def get_images(self, env: MARLEnv[A], seed: Optional[int] = None) -> list[np.ndarray]:
+        images = []
+
+        def collect_image_callback(*_, **__):
+            images.append(env.get_image())
+
+        self.replay(env, seed, collect_image_callback)
+        return images
+
+    def render(self, env: MARLEnv[A], seed: Optional[int] = None, fps: int = 5):
+        def render_callback(*_, **__):
+            env.render()
+            cv2.waitKey(1000 // fps)
+
+        self.replay(env, seed, render_callback)
 
     def __iter__(self):
         return self.transitions()

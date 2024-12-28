@@ -1,6 +1,7 @@
 from typing import Any
 import numpy as np
 from marlenv.models import Transition, Episode, MARLEnv
+from marlenv.exceptions import EnvironmentMismatchException, ReplayMismatchException
 from marlenv import wrappers, DiscreteMockEnv
 
 
@@ -8,7 +9,7 @@ def generate_episode(env: MARLEnv[Any, Any], with_probs: bool = False) -> Episod
     obs, state = env.reset()
     episode = Episode.new(obs, state)
     while not episode.is_finished:
-        action = env.action_space.sample()
+        action = env.sample_action()
         probs = None
         if with_probs:
             probs = np.random.random(action.shape)
@@ -183,3 +184,45 @@ def test_from_transitions():
 
         assert np.array_equal(transitions[i].next_obs.data, episode.next_obs[i])
         assert np.array_equal(transitions[i].next_state.data, episode.next_states[i])
+
+
+def test_n_agents():
+    for n_agents in range(1, 10):
+        env = DiscreteMockEnv(n_agents=n_agents, end_game=5)
+        episode = generate_episode(env)
+        assert episode.n_agents == n_agents
+
+
+def test_replay():
+    env = DiscreteMockEnv()
+    env.seed(seed_value=0)
+    episode = generate_episode(env)
+    episode.replay(env, seed=0)
+
+
+def test_replay_mismatch():
+    env = DiscreteMockEnv()
+    env.seed(seed_value=0)
+    episode = generate_episode(env)
+    try:
+        episode.replay(env, seed=1)
+        assert False
+    except ReplayMismatchException:
+        pass
+
+
+def test_env_mismatch():
+    env = DiscreteMockEnv(n_agents=2)
+    episode = generate_episode(env)
+    env2 = DiscreteMockEnv(n_agents=3)
+    try:
+        episode.replay(env2)
+        assert False
+    except EnvironmentMismatchException:
+        pass
+    env3 = DiscreteMockEnv(n_agents=2, n_actions=6)
+    try:
+        episode.replay(env3)
+        assert False
+    except EnvironmentMismatchException:
+        pass
