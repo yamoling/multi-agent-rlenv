@@ -8,10 +8,8 @@ class UnknownEnvironmentException(Exception):
 class EnvironmentMismatchException(Exception):
     def __init__(self, env, episode):
         message = "Cannot replay the episode on the given environment:\n"
-        message += (
-            f"\tEnvironment(n_agents={env.n_agents}, n_actions={env.n_actions}, obs_shape={env.obs_shape}, extra_shape={env.extra_shape})\n"
-        )
-        message += f"\tEpisode(n_agents={episode.n_agents}, n_actions={episode.n_actions}, obs_shape={episode.obs_shape}, extra_shape={episode.extra_shape})"
+        message += f"\tEnvironment(n_agents={env.n_agents}, n_actions={env.n_actions}, obs_shape={env.observation_shape}, extra_shape={env.extra_shape})\n"
+        message += f"\tEpisode(n_agents={episode.n_agents}, n_actions={episode.n_actions}, obs_shape={episode.observation_shape}, extra_shape={episode.extra_shape})"
         super().__init__(message)
 
 

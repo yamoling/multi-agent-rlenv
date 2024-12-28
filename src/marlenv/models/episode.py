@@ -101,6 +101,14 @@ class Episode(Generic[A]):
             raise KeyError(f"Key {key} not found in episode. The availables keys are: {keys}")
         return self.other[key]
 
+    @property
+    def observation_shape(self):
+        return self.all_observations[0].shape
+
+    @property
+    def extra_shape(self):
+        return self.all_extras[0].shape
+
     @cached_property
     def states(self):
         """The states"""
