@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Generic, Optional
+from typing import Generic, Optional, Sequence
 from typing_extensions import TypeVar
 import cv2
 import numpy as np
@@ -83,7 +83,7 @@ class MARLEnv(ABC, Generic[ActionType, ActionSpaceType]):
         """
         Get the currently available actions for each agent.
 
-        The output array has shape (n_agents, n_actions) and contains 1 if the action is available and 0 otherwise.
+        The output array has shape (n_agents, n_actions) and contains `True` if the action is available and `False` otherwise.
         """
         return np.full((self.n_agents, self.n_actions), True, dtype=np.bool)
 
@@ -137,6 +137,19 @@ class MARLEnv(ABC, Generic[ActionType, ActionSpaceType]):
     def get_image(self) -> npt.NDArray[np.uint8]:
         """Retrieve an image of the environment"""
         raise NotImplementedError("No image available for this environment")
+
+    def replay(self, actions: Sequence[ActionType], seed: Optional[int] = None):
+        """Replay a sequence of actions."""
+        from .episode import Episode  # Avoid circular import
+
+        if seed is not None:
+            self.seed(seed)
+        obs, state = self.reset()
+        episode = Episode.new(obs, state)
+        for action in actions:
+            step = self.step(action)
+            episode.add(step, action)
+        return episode
 
     def has_same_inouts(self, other) -> bool:
         """Alias for `have_same_inouts(self, other)`."""

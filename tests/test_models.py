@@ -1,5 +1,6 @@
 from marlenv import Observation, Transition, DiscreteMockEnv, DiscreteMOMockEnv, Builder, State, Episode
 import numpy as np
+from .utils import generate_episode
 
 
 def test_obs_eq():
@@ -365,3 +366,29 @@ def test_unpack_step():
     assert isinstance(done, bool)
     assert isinstance(truncated, bool)
     assert isinstance(info, dict)
+
+
+def test_env_replay():
+    class PseudoRandomEnv(DiscreteMockEnv):
+        def available_actions(self):
+            availables = np.full((self.n_agents, self.n_actions), False, dtype=bool)
+            for agent, available in enumerate(availables):
+                available[(agent + self._seed) % self.n_actions] = True
+            return availables
+
+        def step(self, actions):
+            return super().step(actions)
+
+        def seed(self, seed_value: int):
+            np.random.seed(seed_value)
+            self._seed = seed_value
+
+    env = PseudoRandomEnv()
+    env.seed(0)
+    episode = generate_episode(env)
+    actions = episode.actions
+    episode2 = env.replay(actions, seed=0)
+    assert np.array_equal(episode.all_observations, episode2.all_observations)
+    assert np.array_equal(episode.all_states, episode2.all_states)
+    assert np.array_equal(episode.rewards, episode2.rewards)
+    assert np.array_equal(episode.all_available_actions, episode2.all_available_actions)

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from functools import cached_property
-from typing import Any, Callable, Generic, Optional, Sequence, TypeVar
+from typing import Any, Callable, Generic, Optional, Sequence, TypeVar, overload
 
 import numpy as np
 import numpy.typing as npt
@@ -244,7 +244,7 @@ class Episode(Generic[A]):
             if callback is not None:
                 callback(i, step, env)
 
-    def get_images(self, env: MARLEnv[A], seed: Optional[int] = None) -> list[np.ndarray]:
+    def get_images(self, env: MARLEnv[A, Any], seed: Optional[int] = None) -> list[np.ndarray]:
         images = []
 
         def collect_image_callback(*_, **__):
@@ -253,7 +253,7 @@ class Episode(Generic[A]):
         self.replay(env, seed, collect_image_callback)
         return images
 
-    def render(self, env: MARLEnv[A], seed: Optional[int] = None, fps: int = 5):
+    def render(self, env: MARLEnv[A, Any], seed: Optional[int] = None, fps: int = 5):
         def render_callback(*_, **__):
             env.render()
             cv2.waitKey(1000 // fps)
@@ -283,32 +283,75 @@ class Episode(Generic[A]):
             returns[t] = self.rewards[t] + discount * returns[t + 1]
         return returns
 
-    def add(self, transition: Transition[A]):
+    @overload
+    def add(self, transition: Transition[A], /): ...
+
+    @overload
+    def add(self, step: Step, action: A, /): ...
+
+    def add(self, *data):
+        match data:
+            case (Transition() as transition,):
+                self.add_data(
+                    transition.next_obs,
+                    transition.next_state,
+                    transition.action,
+                    transition.reward,
+                    transition.other,
+                    transition.done,
+                    transition.truncated,
+                    transition.info,
+                )
+            case (Step() as step, action):
+                self.add_data(
+                    step.obs,
+                    step.state,
+                    action,
+                    step.reward,
+                    {},
+                    step.done,
+                    step.truncated,
+                    step.info,
+                )
+            case other:
+                raise ValueError(f"Invalid arguments: {other}")
+
+    def add_data(
+        self,
+        next_obs,
+        next_state,
+        action: A,
+        reward: np.ndarray,
+        others: dict[str, Any],
+        done: bool,
+        truncated: bool,
+        info: dict[str, Any],
+    ):
         """Add a transition to the episode"""
+        is_terminal = done or truncated
         self.episode_len += 1
-        self.all_observations.append(transition.next_obs.data)
-        self.all_extras.append(transition.next_obs.extras)
-        self.all_available_actions.append(transition.next_obs.available_actions)
-        self.all_states.append(transition.next_state.data)
-        self.all_states_extras.append(transition.next_state.extras)
-        match transition.action:
+        self.all_observations.append(next_obs.data)
+        self.all_extras.append(next_obs.extras)
+        self.all_available_actions.append(next_obs.available_actions)
+        self.all_states.append(next_state.data)
+        self.all_states_extras.append(next_state.extras)
+        match action:
             case np.ndarray() as action:
                 self.actions.append(action)
             case other:
-                action = np.array(other)
-                self.actions.append(action)
-        self.rewards.append(transition.reward)
-        for key, value in transition.other.items():
+                self.actions.append(np.array(other))
+        self.rewards.append(reward)
+        for key, value in others.items():
             current = self.other.get(key, [])
             current.append(value)
             self.other[key] = current
 
-        if transition.is_terminal:
+        if is_terminal:
             # Only set the truncated flag if the episode is not done (both could happen with a time limit)
-            self.is_truncated = transition.truncated
-            self.is_done = transition.done
+            self.is_truncated = truncated
+            self.is_done = done
             # Add metrics that can be plotted
-            for key, value in transition.info.items():
+            for key, value in info.items():
                 if isinstance(value, bool):
                     value = int(value)
                 self.metrics[key] = value
@@ -318,6 +361,51 @@ class Episode(Generic[A]):
             scores = np.sum(rewards, axis=0)
             for i, s in enumerate(scores):
                 self.metrics[f"score-{i}"] = float(s)
+
+    # def add_data(
+    #     self,
+    #     new_obs: Observation,
+    #     new_state: State,
+    #     action: A,
+    #     reward: np.ndarray,
+    #     done: bool,
+    #     truncated: bool,
+    #     info: dict[str, Any],
+    #     **kwargs,
+    # ):
+    #     """Add a new transition to the episode"""
+    #     self.episode_len += 1
+    #     self.all_observations.append(new_obs.data)
+    #     self.all_extras.append(new_obs.extras)
+    #     self.all_available_actions.append(new_obs.available_actions)
+    #     self.all_states.append(new_state.data)
+    #     self.all_states_extras.append(new_state.extras)
+    #     match action:
+    #         case np.ndarray() as action:
+    #             self.actions.append(action)
+    #         case other:
+    #             self.actions.append(np.array(other))
+    #     self.rewards.append(reward)
+    #     for key, value in kwargs.items():
+    #         current = self.other.get(key, [])
+    #         current.append(value)
+    #         self.other[key] = current
+
+    #     if done:
+    #         # Only set the truncated flag if the episode is not done (both could happen with a time limit)
+    #         self.is_truncated = truncated
+    #         self.is_done = done
+    #         # Add metrics that can be plotted
+    #         for key, value in info.items():
+    #             if isinstance(value, bool):
+    #                 value = int(value)
+    #             self.metrics[key] = value
+    #         self.metrics["episode_len"] = self.episode_len
+
+    #         rewards = np.array(self.rewards)
+    #         scores = np.sum(rewards, axis=0)
+    #         for i, s in enumerate(scores):
+    #             self.metrics[f"score-{i}"] = float(s)
 
     def add_metrics(self, metrics: dict[str, float]):
         """Add metrics to the episode"""

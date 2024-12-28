@@ -1,23 +1,8 @@
-from typing import Any
 import numpy as np
-from marlenv.models import Transition, Episode, MARLEnv
+from marlenv.models import Transition, Episode
 from marlenv.exceptions import EnvironmentMismatchException, ReplayMismatchException
 from marlenv import wrappers, DiscreteMockEnv
-
-
-def generate_episode(env: MARLEnv[Any, Any], with_probs: bool = False) -> Episode:
-    obs, state = env.reset()
-    episode = Episode.new(obs, state)
-    while not episode.is_finished:
-        action = env.sample_action()
-        probs = None
-        if with_probs:
-            probs = np.random.random(action.shape)
-        step = env.step(action)
-        episode.add(Transition.from_step(obs, state, action, step, action_probs=probs))
-        obs = step.obs
-        state = step.state
-    return episode
+from .utils import generate_episode
 
 
 def test_episode_builder_is_done():
