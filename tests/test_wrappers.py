@@ -301,3 +301,30 @@ def test_last_action_set_state():
 
         assert env.last_one_hot_actions is not None
         assert np.array_equal(env.last_one_hot_actions, last_action)
+
+
+def test_wrong_extra_meanings():
+    from marlenv.wrappers import RLEnvWrapper
+
+    try:
+        RLEnvWrapper(DiscreteMockEnv(), extra_meanings=["a", "b"])
+        assert False, "It should not be possible to set extra meanings without setting the extra shape"
+    except ValueError:
+        pass
+
+
+def test_extra_meanings():
+    from marlenv.wrappers import RLEnvWrapper
+
+    env = RLEnvWrapper(DiscreteMockEnv(extras_size=0), extra_shape=(2,), extra_meanings=["added extra 1", "added extra 2"])
+    assert env.extra_shape == (2,)
+    assert env.extras_meanings == ["added extra 1", "added extra 2"]
+
+
+def test_wrapper_extra_names():
+    env = DiscreteMockEnv(extras_size=0)
+    env = TimeLimit(env, 100, add_extra=True)
+    assert env.extras_meanings[-1] == "Time ratio"
+    env = LastAction(env)
+    assert env.extras_meanings[-1] == "Last action"
+    assert env.extras_meanings == ["Time ratio"] + ["Last action"] * env.n_actions

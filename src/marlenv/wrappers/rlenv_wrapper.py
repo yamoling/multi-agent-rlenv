@@ -27,7 +27,13 @@ class RLEnvWrapper(MARLEnv[A, AS], ABC):
         state_extra_shape: Optional[tuple[int, ...]] = None,
         action_space: Optional[AS] = None,
         reward_space: Optional[DiscreteSpace] = None,
+        extra_meanings: Optional[list[str]] = None,
     ):
+        if extra_meanings is not None:
+            if extra_shape is None:
+                extra_shape = env.extra_shape
+            if len(extra_meanings) != extra_shape[0]:
+                raise ValueError(f"There are {len(extra_meanings)} extra_meanings but the announced extra_shape is {extra_shape} !")
         super().__init__(
             action_space=action_space or env.action_space,
             observation_shape=observation_shape or env.observation_shape,
@@ -35,6 +41,7 @@ class RLEnvWrapper(MARLEnv[A, AS], ABC):
             extra_shape=extra_shape or env.extra_shape,
             state_extra_shape=state_extra_shape or env.state_extra_shape,
             reward_space=reward_space or env.reward_space,
+            extra_meanings=extra_meanings or env.extras_meanings,
         )
         self.wrapped = env
         if isinstance(env, RLEnvWrapper):

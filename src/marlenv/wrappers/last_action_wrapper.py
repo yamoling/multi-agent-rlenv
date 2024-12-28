@@ -25,6 +25,7 @@ class LastAction(RLEnvWrapper[A, AS]):
             env,
             extra_shape=(env.extra_shape[0] + env.n_actions,),
             state_extra_shape=(env.state_extra_shape[0] + env.n_actions * env.n_agents,),
+            extra_meanings=env.extras_meanings + ["Last action"] * env.n_actions,
         )
         self.state_extra_index = env.state_extra_shape[0]
         self.last_one_hot_actions = np.zeros((env.n_agents, env.n_actions), dtype=np.float32)

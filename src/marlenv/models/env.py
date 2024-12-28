@@ -32,6 +32,7 @@ class MARLEnv(ABC, Generic[ActionType, ActionSpaceType]):
     """The shape of an observation for a single agent."""
     extra_shape: tuple[int, ...]
     """The shape of the extras features for a single agent (or the state)"""
+    extras_meanings: list[str]
     state_shape: tuple[int, ...]
     """The shape of the state."""
     n_agents: int
@@ -46,6 +47,7 @@ class MARLEnv(ABC, Generic[ActionType, ActionSpaceType]):
         extra_shape: tuple[int, ...] = (0,),
         state_extra_shape: tuple[int, ...] = (0,),
         reward_space: Optional[DiscreteSpace] = None,
+        extra_meanings: Optional[list[str]] = None,
     ):
         super().__init__()
         self.name = self.__class__.__name__
@@ -57,8 +59,11 @@ class MARLEnv(ABC, Generic[ActionType, ActionSpaceType]):
         self.extra_shape = extra_shape
         self.state_extra_shape = state_extra_shape
         self.reward_space = reward_space or DiscreteSpace(1, labels=["Reward"])
+        if extra_meanings is None:
+            extra_meanings = [f"{self.name}-extra-{i}" for i in range(extra_shape[0])]
+        self.extras_meanings = extra_meanings
         """The reward space has shape (1, ) for single-objective environments."""
-        self.cv2_window_name = None
+        self._cv2_window_name = None
 
     @property
     def agent_state_size(self) -> int:
@@ -123,10 +128,10 @@ class MARLEnv(ABC, Generic[ActionType, ActionSpaceType]):
     def render(self):
         """Render the environment in a window (or in console)"""
         img = self.get_image()
-        if self.cv2_window_name is None:
-            self.cv2_window_name = self.name
-            cv2.namedWindow(self.cv2_window_name, cv2.WINDOW_AUTOSIZE)
-        cv2.imshow(self.cv2_window_name, img)
+        if self._cv2_window_name is None:
+            self._cv2_window_name = self.name
+            cv2.namedWindow(self._cv2_window_name, cv2.WINDOW_AUTOSIZE)
+        cv2.imshow(self._cv2_window_name, img)
         cv2.waitKey(1)
 
     def get_image(self) -> npt.NDArray[np.uint8]:
@@ -150,5 +155,7 @@ class MARLEnv(ABC, Generic[ActionType, ActionSpaceType]):
         return True
 
     def __del__(self):
-        if self.cv2_window_name is not None:
-            cv2.destroyWindow(self.cv2_window_name)
+        if not hasattr(self, "_cv2_window_name"):
+            return
+        if self._cv2_window_name is not None:
+            cv2.destroyWindow(self._cv2_window_name)

@@ -15,7 +15,8 @@ class AgentId(RLEnvWrapper[A, AS]):
 
     def __init__(self, env: MARLEnv[A, AS]):
         assert len(env.extra_shape) == 1, "AgentIdWrapper only works with single dimension extras"
-        super().__init__(env, extra_shape=(env.n_agents + env.extra_shape[0],))
+        meanings = env.extras_meanings + [f"Agent ID-{i}" for i in range(env.n_agents)]
+        super().__init__(env, extra_shape=(env.n_agents + env.extra_shape[0],), extra_meanings=meanings)
         self._identity = np.identity(env.n_agents, dtype=np.float32)
 
     def step(self, actions):

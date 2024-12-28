@@ -15,7 +15,8 @@ class AvailableActions(RLEnvWrapper[A, AS]):
     """Adds the available actions (one-hot) as an extra feature to the observation."""
 
     def __init__(self, env: MARLEnv[A, AS]):
-        super().__init__(env, extra_shape=(env.extra_shape[0] + env.n_actions,))
+        meanings = env.extras_meanings + [f"{a} available" for a in env.action_space.action_names]
+        super().__init__(env, extra_shape=(env.extra_shape[0] + env.n_actions,), extra_meanings=meanings)
 
     def reset(self):
         obs, state = self.wrapped.reset()
