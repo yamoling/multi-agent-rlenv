@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, Generic, Optional, Sequence
+from typing import Any, Generic, Sequence
 from typing_extensions import TypeVar
 
 import numpy as np
@@ -8,6 +8,7 @@ import numpy.typing as npt
 from .observation import Observation
 from .state import State
 from .step import Step
+
 
 A = TypeVar("A", default=np.ndarray)
 
@@ -98,6 +99,27 @@ class Transition(Generic[A]):
     @property
     def n_actions(self) -> int:
         return int(self.obs.available_actions.shape[-1])
+
+    def single_agent(self, agent_id: int, keep_dim: bool = True) -> "Transition":
+        """Return a transition for a single agent"""
+        obs = self.obs.agent(agent_id, keep_dim)
+        next_obs = self.next_obs.agent(agent_id, keep_dim)
+        if keep_dim:
+            action = self.action[agent_id : agent_id + 1]  # type: ignore
+        else:
+            action = self.action[agent_id]  # type: ignore
+        return Transition(
+            obs=obs,
+            state=self.state,
+            action=action,
+            reward=self.reward[agent_id : agent_id + 1],
+            done=self.done,
+            info=self.info,
+            next_obs=next_obs,
+            next_state=self.next_state,
+            truncated=self.truncated,
+            **self.other,
+        )
 
     def __getitem__(self, key: str):
         if key not in self.other:

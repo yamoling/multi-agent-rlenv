@@ -42,6 +42,36 @@ def test_env_json_serialization():
     _ = orjson.dumps(env, option=orjson.OPT_SERIALIZE_NUMPY)
 
 
+def test_serialize_episode_fields():
+    env = DiscreteMockEnv(4, end_game=10)
+    obs, state = env.reset()
+    episode = marlenv.Episode.new(obs, state)
+    action = np.array([0, 1, 2, 3])
+    for _ in range(10):
+        step = env.step(action)
+        transition = marlenv.Transition.from_step(obs, state, action, step)
+        episode.add(transition)
+
+    serialized = orjson.dumps(episode, option=orjson.OPT_SERIALIZE_NUMPY)
+    episode = orjson.loads(serialized)
+    fields = [
+        "all_observations",
+        "all_extras",
+        "actions",
+        "rewards",
+        "all_available_actions",
+        "all_states",
+        "all_states_extras",
+        "metrics",
+        "episode_len",
+        "other",
+        "is_done",
+        "is_truncated",
+    ]
+    for field in fields:
+        assert field in episode
+
+
 def test_wrappers_serializable():
     env = DiscreteMockEnv(4)
     env = marlenv.Builder(env).agent_id().available_actions().time_limit(10).last_action().time_penalty(5).blind(0.2).build()

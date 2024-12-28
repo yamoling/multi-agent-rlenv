@@ -39,10 +39,29 @@ class Observation:
         """Append an extra feature to the observation"""
         self.extras = np.concatenate((self.extras, extra), axis=1)
 
+    def agent(self, agent_id: int, keep_dim: bool = True) -> "Observation":
+        """
+        Return the observation of the given agent.
+
+        If `keep_dim` is True, the resulting shape is [1, *obs_shape].
+        Otherwise, the resulting shape is [*obs_shape].
+        """
+        if keep_dim:
+            return Observation(
+                data=self.data[agent_id : agent_id + 1],
+                extras=self.extras[agent_id : agent_id + 1],
+                available_actions=self.available_actions[agent_id : agent_id + 1],
+            )
+        return Observation(
+            data=self.data[agent_id],
+            extras=self.extras[agent_id],
+            available_actions=self.available_actions[agent_id],
+        )
+
     @property
     def extras_shape(self) -> tuple[int, ...]:
         """The shape of the observation extras"""
-        return self.extras.shape
+        return self.extras[0].shape
 
     def __hash__(self):
         if isinstance(self.data, np.ndarray):
