@@ -19,13 +19,14 @@ AS = TypeVar("AS", bound=ActionSpace, default=ActionSpace)
 class VideoRecorder(RLEnvWrapper[A, AS]):
     """Records a video of the run"""
 
-    FPS = 10
-
     def __init__(
         self,
         env: MARLEnv[A, AS],
         video_folder: Optional[str] = None,
         video_encoding: Literal["mp4", "avi"] = "mp4",
+        initial_pause_frames: int = 1,
+        end_pause_frames: int = 1,
+        fps: int = 5,
     ) -> None:
         super().__init__(env)
         if video_folder is None:
@@ -34,6 +35,9 @@ class VideoRecorder(RLEnvWrapper[A, AS]):
         self.video_extension = video_encoding
         self._video_count = 0
         self._recorder = None
+        self.fps = fps
+        self.initial_pause_frames = initial_pause_frames
+        self.end_pause_frames = end_pause_frames
         match video_encoding:
             case "mp4":
                 self._four_cc = cv2.VideoWriter_fourcc(*"mp4v")  # type: ignore
@@ -46,8 +50,11 @@ class VideoRecorder(RLEnvWrapper[A, AS]):
         if self._recorder is None:
             raise RuntimeError("VideoRecorder not initialized")
         step = super().step(actions)
-        self._recorder.write(self.get_image())
+        img = self.get_image()
+        self._recorder.write(img)
         if step.is_terminal:
+            for _ in range(self.end_pause_frames):
+                self._recorder.write(img)
             self._recorder.release()
         return step
 
@@ -58,7 +65,9 @@ class VideoRecorder(RLEnvWrapper[A, AS]):
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         video_name = os.path.join(self.video_folder, f"{self._video_count}-{timestamp}.{self.video_extension}")
         os.makedirs(self.video_folder, exist_ok=True)
-        self._recorder = cv2.VideoWriter(video_name, self._four_cc, VideoRecorder.FPS, (width, height))
+        self._recorder = cv2.VideoWriter(video_name, self._four_cc, self.fps, (width, height))
+        for _ in range(self.initial_pause_frames):
+            self._recorder.write(image)
         self._recorder.write(image)
         self._video_count += 1
         return res
