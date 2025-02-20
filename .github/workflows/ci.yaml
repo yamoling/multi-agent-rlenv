@@ -71,7 +71,7 @@ jobs:
         uv run python -m build
     
     - name: 📡 Upload package distributions
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: wheels
         path: dist/
@@ -88,7 +88,7 @@ jobs:
       id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
     steps:
     - name: 📡 Download package distributions
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: wheels
         path: dist/
