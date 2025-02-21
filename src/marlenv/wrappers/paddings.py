@@ -17,11 +17,11 @@ class PadExtras(RLEnvWrapper[A, AS]):
     n: int
 
     def __init__(self, env: MARLEnv[A, AS], n_added: int):
-        assert len(env.extra_shape) == 1, "PadExtras only accepts 1D extras"
+        assert len(env.extras_shape) == 1, "PadExtras only accepts 1D extras"
         meanings = env.extras_meanings + [f"Padding-{i}" for i in range(n_added)]
         super().__init__(
             env,
-            extra_shape=(env.extra_shape[0] + n_added,),
+            extra_shape=(env.extras_shape[0] + n_added,),
             extra_meanings=meanings,
         )
         self.n = n_added

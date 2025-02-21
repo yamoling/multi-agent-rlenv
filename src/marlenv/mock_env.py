@@ -21,7 +21,7 @@ class DiscreteMockEnv(MARLEnv[Sequence[int] | npt.NDArray, DiscreteActionSpace])
             DiscreteActionSpace(n_agents, n_actions),
             (obs_size,),
             (n_agents * agent_state_size,),
-            extra_shape=(extras_size,),
+            extras_shape=(extras_size,),
         )
         self.obs_size = obs_size
         self.extra_size = extras_size
@@ -90,7 +90,7 @@ class DiscreteMOMockEnv(MARLEnv[Sequence[int] | npt.NDArray, DiscreteActionSpace
             DiscreteActionSpace(n_agents, n_actions),
             (obs_size,),
             (n_agents * agent_state_size,),
-            extra_shape=(extras_size,),
+            extras_shape=(extras_size,),
             reward_space=DiscreteSpace(n_objectives),
         )
         self.obs_size = obs_size

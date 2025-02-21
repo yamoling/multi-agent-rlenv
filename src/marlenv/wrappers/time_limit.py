@@ -32,14 +32,14 @@ class TimeLimit(RLEnvWrapper[A, AS]):
         add_extra: bool = True,
         truncation_penalty: Optional[float] = None,
     ) -> None:
-        assert len(env.extra_shape) == 1
+        assert len(env.extras_shape) == 1
         assert len(env.state_extra_shape) == 1
-        extras_shape = env.extra_shape
+        extras_shape = env.extras_shape
         state_extras_shape = env.state_extra_shape
         self.extra_index = 0
         extra_meanings = env.extras_meanings
         if add_extra:
-            dims = env.extra_shape[0]
+            dims = env.extras_shape[0]
             self.extra_index = dims
             extras_shape = (dims + 1,)
             state_extras_shape = (env.state_extra_shape[0] + 1,)
@@ -51,7 +51,9 @@ class TimeLimit(RLEnvWrapper[A, AS]):
         if truncation_penalty is None:
             truncation_penalty = 0.0
         else:
-            assert add_extra, "The truncation penalty can only be set when the add_extra flag is set to True, otherwise agents are not able to anticipate this punishment."
+            assert add_extra, (
+                "The truncation penalty can only be set when the add_extra flag is set to True, otherwise agents are not able to anticipate this punishment."
+            )
         assert truncation_penalty >= 0, "The truncation penalty must be a positive value."
         self.truncation_penalty = truncation_penalty
 
@@ -91,6 +93,12 @@ class TimeLimit(RLEnvWrapper[A, AS]):
         if self.add_extra:
             state.add_extra(self._current_step / self.step_limit)
         return state
+
+    def get_observation(self):
+        obs = super().get_observation()
+        if self.add_extra:
+            self.add_time_extra(obs, self.get_state())
+        return obs
 
     def set_state(self, state: State):
         if self.add_extra:

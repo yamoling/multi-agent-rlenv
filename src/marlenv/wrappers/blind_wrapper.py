@@ -25,3 +25,9 @@ class Blind(RLEnvWrapper[A, AS]):
         if random.random() < self.p:
             step.obs.data = np.zeros_like(step.obs.data)
         return step
+
+    def get_observation(self):
+        obs = super().get_observation()
+        if random.random() < self.p:
+            obs.data = np.zeros_like(obs.data)
+        return obs

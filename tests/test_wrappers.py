@@ -9,7 +9,7 @@ def test_padding():
     PAD_SIZE = 2
     mock = DiscreteMockEnv(5)
     env = Builder(mock).pad("extra", PAD_SIZE).build()
-    assert env.extra_shape == (PAD_SIZE + mock.extra_shape[0],)
+    assert env.extras_shape == (PAD_SIZE + mock.extras_shape[0],)
     env.reset()
     for _ in range(10):
         env.step(env.action_space.sample())
@@ -27,14 +27,14 @@ def test_available_actions():
     mock = DiscreteMockEnv(N_AGENTS)
     env = Builder(mock).available_actions().build()
 
-    assert env.extra_shape == (5 + mock.extra_shape[0],)
+    assert env.extras_shape == (5 + mock.extras_shape[0],)
     obs, _ = env.reset()
     assert np.array_equal(obs.extras, np.ones((N_AGENTS, env.n_actions), dtype=np.float32))
 
 
 def test_agent_id():
     env = Builder(DiscreteMockEnv(5)).agent_id().build()
-    assert env.extra_shape == (5,)
+    assert env.extras_shape == (5,)
     obs, _ = env.reset()
     assert np.array_equal(obs.extras, np.identity(5, dtype=np.float32))
 
@@ -54,7 +54,7 @@ def test_penalty_wrapper():
 def test_time_limit_wrapper():
     MAX_T = 5
     env = Builder(DiscreteMockEnv(1)).time_limit(MAX_T).build()
-    assert env.extra_shape == (1,)
+    assert env.extras_shape == (1,)
     assert env.state_extra_shape == (1,)
     done = False
     t = 0
@@ -81,9 +81,9 @@ def test_truncated_and_done():
         obs = step.obs
         state = step.state
     assert step.done
-    assert (
-        not step.truncated
-    ), "The episode is done, so it does not have to be truncated even though the time limit is reached at the same time."
+    assert not step.truncated, (
+        "The episode is done, so it does not have to be truncated even though the time limit is reached at the same time."
+    )
 
     assert np.all(episode.dones[:-1] == 0)
     assert episode.dones[-1] == 1
@@ -95,7 +95,7 @@ def test_time_limit_wrapper_with_extra():
     """
     MAX_T = 5
     env = Builder(DiscreteMockEnv(5)).time_limit(MAX_T, add_extra=True).build()
-    assert env.extra_shape == (1,)
+    assert env.extras_shape == (1,)
     obs, _ = env.reset()
     assert obs.extras.shape == (5, 1)
     stop = False
@@ -127,7 +127,7 @@ def test_wrong_truncation_penalty():
 def test_time_limit_wrapper_with_truncation_penalty():
     MAX_T = 5
     env = Builder(DiscreteMockEnv(5)).time_limit(MAX_T, add_extra=True, truncation_penalty=0.1).build()
-    assert env.extra_shape == (1,)
+    assert env.extras_shape == (1,)
     obs, _ = env.reset()
     assert obs.extras.shape == (5, 1)
     stop = False
@@ -157,7 +157,7 @@ def test_blind_wrapper():
 
 def test_last_action():
     env = Builder(DiscreteMockEnv(2)).last_action().build()
-    assert env.extra_shape == (env.n_actions,)
+    assert env.extras_shape == (env.n_actions,)
     obs, _ = env.reset()
     assert np.all(obs.extras == 0)
     step = env.step(np.array([0, 1]))
@@ -173,10 +173,10 @@ def test_centralised_shape():
     assert env.observation_shape == (2 * mock.obs_size,)
     assert env.n_agents == 1
     assert env.n_actions == mock.n_actions**2
-    assert env.extra_shape == (1,)
+    assert env.extras_shape == (1,)
     obs, _ = env.reset()
     assert obs.data.shape == (1, *env.observation_shape)
-    assert obs.extras.shape == (1, *env.extra_shape)
+    assert obs.extras.shape == (1, *env.extras_shape)
 
 
 def test_centralised_action():
@@ -262,7 +262,7 @@ def test_builder_action_mask():
     mask[0, 0] = False
     mask[1, 1] = False
     new_env = marlenv.Builder(env).mask_actions(mask).build()
-    assert env.extra_shape == new_env.extra_shape
+    assert env.extras_shape == new_env.extras_shape
 
 
 def test_time_limit_set_state():
@@ -317,7 +317,7 @@ def test_extra_meanings():
     from marlenv.wrappers import RLEnvWrapper
 
     env = RLEnvWrapper(DiscreteMockEnv(extras_size=0), extra_shape=(2,), extra_meanings=["added extra 1", "added extra 2"])
-    assert env.extra_shape == (2,)
+    assert env.extras_shape == (2,)
     assert env.extras_meanings == ["added extra 1", "added extra 2"]
 
 

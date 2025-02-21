@@ -34,3 +34,8 @@ class AvailableActionsMask(RLEnvWrapper[A, AS]):
 
     def available_actions(self):
         return self.action_mask & self.wrapped.available_actions()
+
+    def get_observation(self):
+        obs = super().get_observation()
+        obs.available_actions = self.available_actions()
+        return obs

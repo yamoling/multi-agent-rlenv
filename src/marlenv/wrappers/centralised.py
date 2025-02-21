@@ -25,13 +25,17 @@ class Centralised(RLEnvWrapper[A, DiscreteActionSpace]):
             env,
             joint_observation_shape,
             env.state_shape,
-            env.extra_shape,
+            env.extras_shape,
             action_space=self._make_joint_action_space(env),
         )
 
     def reset(self):
         obs, state = super().reset()
         return self._joint_observation(obs), state
+
+    def get_observation(self):
+        obs = super().get_observation()
+        return self._joint_observation(obs)
 
     def _make_joint_action_space(self, env: MARLEnv[A, DiscreteActionSpace]):
         agent_actions = list[list[str]]()

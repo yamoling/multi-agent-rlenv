@@ -20,10 +20,10 @@ class LastAction(RLEnvWrapper[A, AS]):
     """Env wrapper that adds the last action taken by the agents to the extra features."""
 
     def __init__(self, env: MARLEnv[A, AS]):
-        assert len(env.extra_shape) == 1, "Adding last action is only possible with 1D extras"
+        assert len(env.extras_shape) == 1, "Adding last action is only possible with 1D extras"
         super().__init__(
             env,
-            extra_shape=(env.extra_shape[0] + env.n_actions,),
+            extra_shape=(env.extras_shape[0] + env.n_actions,),
             state_extra_shape=(env.state_extra_shape[0] + env.n_actions * env.n_agents,),
             extra_meanings=env.extras_meanings + ["Last action"] * env.n_actions,
         )

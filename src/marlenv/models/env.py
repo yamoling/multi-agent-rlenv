@@ -30,7 +30,7 @@ class MARLEnv(ABC, Generic[ActionType, ActionSpaceType]):
     action_space: ActionSpaceType
     observation_shape: tuple[int, ...]
     """The shape of an observation for a single agent."""
-    extra_shape: tuple[int, ...]
+    extras_shape: tuple[int, ...]
     """The shape of the extras features for a single agent (or the state)"""
     extras_meanings: list[str]
     state_shape: tuple[int, ...]
@@ -44,10 +44,10 @@ class MARLEnv(ABC, Generic[ActionType, ActionSpaceType]):
         action_space: ActionSpaceType,
         observation_shape: tuple[int, ...],
         state_shape: tuple[int, ...],
-        extra_shape: tuple[int, ...] = (0,),
+        extras_shape: tuple[int, ...] = (0,),
         state_extra_shape: tuple[int, ...] = (0,),
         reward_space: Optional[DiscreteSpace] = None,
-        extra_meanings: Optional[list[str]] = None,
+        extras_meanings: Optional[list[str]] = None,
     ):
         super().__init__()
         self.name = self.__class__.__name__
@@ -56,12 +56,14 @@ class MARLEnv(ABC, Generic[ActionType, ActionSpaceType]):
         self.n_agents = action_space.n_agents
         self.observation_shape = observation_shape
         self.state_shape = state_shape
-        self.extra_shape = extra_shape
+        self.extras_shape = extras_shape
         self.state_extra_shape = state_extra_shape
         self.reward_space = reward_space or DiscreteSpace(1, labels=["Reward"])
-        if extra_meanings is None:
-            extra_meanings = [f"{self.name}-extra-{i}" for i in range(extra_shape[0])]
-        self.extras_meanings = extra_meanings
+        if extras_meanings is None:
+            extras_meanings = [f"{self.name}-extra-{i}" for i in range(extras_shape[0])]
+        elif len(extras_meanings) != extras_shape[0]:
+            raise ValueError(f"extras_meanings has length {len(extras_meanings)} but expected {extras_shape[0]}")
+        self.extras_meanings = extras_meanings
         """The reward space has shape (1, ) for single-objective environments."""
         self._cv2_window_name = None
 
@@ -121,9 +123,9 @@ class MARLEnv(ABC, Generic[ActionType, ActionSpaceType]):
         - info: Extra information
         """
 
-    @abstractmethod
     def reset(self) -> tuple[Observation, State]:
-        """Reset the environment."""
+        """Reset the environment and return the initial observation and state."""
+        return self.get_observation(), self.get_state()
 
     def render(self):
         """Render the environment in a window (or in console)"""
@@ -161,7 +163,7 @@ class MARLEnv(ABC, Generic[ActionType, ActionSpaceType]):
             return False
         if self.state_shape != other.state_shape:
             return False
-        if self.extra_shape != other.extra_shape:
+        if self.extras_shape != other.extras_shape:
             return False
         if self.reward_space != other.reward_space:
             return False

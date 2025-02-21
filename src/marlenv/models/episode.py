@@ -106,7 +106,7 @@ class Episode(Generic[A]):
         return self.all_observations[0].shape
 
     @property
-    def extra_shape(self):
+    def extras_shape(self):
         return self.all_extras[0].shape
 
     @cached_property

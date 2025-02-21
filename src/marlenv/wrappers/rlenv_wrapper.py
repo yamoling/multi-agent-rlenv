@@ -31,17 +31,17 @@ class RLEnvWrapper(MARLEnv[A, AS], ABC):
     ):
         if extra_meanings is not None:
             if extra_shape is None:
-                extra_shape = env.extra_shape
+                extra_shape = env.extras_shape
             if len(extra_meanings) != extra_shape[0]:
                 raise ValueError(f"There are {len(extra_meanings)} extra_meanings but the announced extra_shape is {extra_shape} !")
         super().__init__(
             action_space=action_space or env.action_space,
             observation_shape=observation_shape or env.observation_shape,
             state_shape=state_shape or env.state_shape,
-            extra_shape=extra_shape or env.extra_shape,
+            extras_shape=extra_shape or env.extras_shape,
             state_extra_shape=state_extra_shape or env.state_extra_shape,
             reward_space=reward_space or env.reward_space,
-            extra_meanings=extra_meanings or env.extras_meanings,
+            extras_meanings=extra_meanings or env.extras_meanings,
         )
         self.wrapped = env
         if isinstance(env, RLEnvWrapper):

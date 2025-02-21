@@ -1,5 +1,6 @@
-from marlenv import Observation, Transition, DiscreteMockEnv, DiscreteMOMockEnv, Builder, State, Episode
+from marlenv import Observation, Transition, DiscreteMockEnv, DiscreteMOMockEnv, Builder, State, Episode, MARLEnv, DiscreteActionSpace
 import numpy as np
+
 from .utils import generate_episode
 
 
@@ -392,3 +393,32 @@ def test_env_replay():
     assert np.array_equal(episode.all_states, episode2.all_states)
     assert np.array_equal(episode.rewards, episode2.rewards)
     assert np.array_equal(episode.all_available_actions, episode2.all_available_actions)
+
+
+def test_env_extras_meanings():
+    env = DiscreteMockEnv(4, extras_size=4)
+    assert len(env.extras_meanings) == 4
+
+
+def test_wrong_extras_meanings_length():
+    class TestClass(MARLEnv):
+        def __init__(self):
+            super().__init__(DiscreteActionSpace(4, 5), (10,), (10,), extras_shape=(5,), extras_meanings=["a", "b", "c"])
+
+        def get_observation(self):
+            pass
+
+        def get_state(self):
+            pass
+
+        def step(self, actions):
+            pass
+
+        def reset(self):
+            pass
+
+    try:
+        TestClass()
+        assert False, "This should raise a ValueError because the length of extras_meanings is different from the actual number of extras"
+    except ValueError:
+        pass
