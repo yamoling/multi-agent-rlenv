@@ -13,7 +13,7 @@ A design choice is taht almost every class is a dataclass. This makes it easy to
 serialize and deserialize classes, for instance to json with the `orjson` library.
 """
 
-__version__ = "3.2.0"
+__version__ = "3.2.1"
 
 from . import models
 from . import wrappers

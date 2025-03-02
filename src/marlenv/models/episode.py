@@ -216,7 +216,9 @@ class Episode(Generic[A]):
         self,
         env: MARLEnv[A, Any],
         seed: Optional[int] = None,
-        callback: Optional[Callable[[int, Step, MARLEnv[A]], None]] = None,
+        *,
+        after_reset: Optional[Callable[[Observation, State, MARLEnv[A]], None]] = None,
+        after_step: Optional[Callable[[int, Step, MARLEnv[A]], None]] = None,
     ):
         """
         Replay the episode in the environment (i.e. perform the actions) and assert that the outcomes match.
@@ -229,6 +231,8 @@ class Episode(Generic[A]):
         if seed is not None:
             env.seed(seed)
         obs, state = env.reset()
+        if after_reset is not None:
+            after_reset(obs, state, env)
         if not np.array_equal(obs.data, self.obs[0]):
             raise ReplayMismatchException("observation", obs.data, self.obs[0], time_step=0)
         if not np.array_equal(state.data, self.states[0]):
@@ -241,16 +245,16 @@ class Episode(Generic[A]):
                 raise ReplayMismatchException("state", step.state.data, self.next_states[i], time_step=i)
             if not np.array_equal(step.reward, self.rewards[i]):
                 raise ReplayMismatchException("reward", step.reward, self.rewards[i], time_step=i)
-            if callback is not None:
-                callback(i, step, env)
+            if after_step is not None:
+                after_step(i, step, env)
 
     def get_images(self, env: MARLEnv[A, Any], seed: Optional[int] = None) -> list[np.ndarray]:
         images = []
 
-        def collect_image_callback(*_, **__):
+        def collect_image(*_, **__):
             images.append(env.get_image())
 
-        self.replay(env, seed, collect_image_callback)
+        self.replay(env, seed, after_reset=collect_image, after_step=collect_image)
         return images
 
     def render(self, env: MARLEnv[A, Any], seed: Optional[int] = None, fps: int = 5):
@@ -258,7 +262,7 @@ class Episode(Generic[A]):
             env.render()
             cv2.waitKey(1000 // fps)
 
-        self.replay(env, seed, render_callback)
+        self.replay(env, seed, after_reset=render_callback, after_step=render_callback)
 
     def __iter__(self):
         return self.transitions()

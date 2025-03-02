@@ -211,3 +211,11 @@ def test_env_mismatch():
         assert False
     except EnvironmentMismatchException:
         pass
+
+
+def test_get_images():
+    env = DiscreteMockEnv()
+    episode = generate_episode(env, seed=0)
+    images = episode.get_images(env, seed=0)
+    # +1 because there is one image for the initial state (after reset)
+    assert len(images) == len(episode) + 1

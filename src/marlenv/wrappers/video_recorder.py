@@ -73,5 +73,5 @@ class VideoRecorder(RLEnvWrapper[A, AS]):
         return res
 
     def __del__(self):
-        if self._recorder is not None:
+        if hasattr(self, "_recorder") and self._recorder is not None:
             self._recorder.release()

@@ -41,6 +41,9 @@ class DiscreteMockEnv(MARLEnv[Sequence[int] | npt.NDArray, DiscreteActionSpace])
         self._seed += 1
         return self.get_observation(), self.get_state()
 
+    def get_image(self):
+        return np.zeros((100, 100, 3), dtype=np.uint8)
+
     def seed(self, seed_value: int):
         self._seed = seed_value
 
