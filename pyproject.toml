@@ -1,46 +1,39 @@
 [project]
-name = "rlenv"
-version = "1.0.4"
+name = "multi-agent-rlenv"
+dynamic = ["version"]
 description = "A strongly typed Multi-Agent Reinforcement Learning framework"
-authors = [{ name = "Yannick Molinghen", email = "yannick.molinghen@ulb.be" }]
-license = "MIT"
-readme = "readme.md"
-
-dependencies = ["numpy>=1.23", "opencv-python>=4.6.0", "pytest", "pytest-xdist"]
-
-
-[project.optional-dependencies]
-smac = [
-    "smac@git+https://github.com/oxwhirl/smac.git",
-    "pysc2@git+https://github.com/google-deepmind/pysc2.git", # Required to fix a bug in pysc2
-    "pygame==2.5.2",
-    "pymunk==6.6.0",
+authors = [
+    { "name" = "Yannick Molinghen", "email" = "yannick.molinghen@ulb.be" },
 ]
-gymnasium = ["gymnasium"]
-pettingzoo = ["pettingzoo"]
+readme = "README.md"
+requires-python = ">=3.10, <4"
+dependencies = ["numpy>=2.0.0", "opencv-python>=4.10.0.84", "gymnasium>=0.29.1"]
+urls = { "repository" = "https://github.com/yamoling/multi-agent-rlenv" }
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
 
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [tool.ruff]
 line-length = 140
 
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+[tool.hatch.build.targets.wheel]
+packages = ["src/marlenv"]
+
+[tool.hatch]
+version = { "path" = "src/marlenv/__init__.py", "attr" = "__version__" }
 
 
-# pytest configuration
 [tool.pytest.ini_options]
-filterwarnings = [
-    # Ignore deprecation warnings related to Pysc2 (smac)
-    "ignore:Call to deprecated create function Descriptor().*:DeprecationWarning",
-    "ignore:Call to deprecated create function FieldDescriptor().*:DeprecationWarning",
-    "ignore:Call to deprecated create function EnumValueDescriptor().*:DeprecationWarning",
-    "ignore:Call to deprecated create function EnumDescriptor().*:DeprecationWarning",
-    "ignore:Call to deprecated create function FileDescriptor().*:DeprecationWarning",
-    "ignore:pkg_resources is deprecated as an API*:DeprecationWarning",
-    "ignore:protobuf",
-]
-# Run tests on two cores with xdist
-addopts = "-n 4"
 testpaths = ["tests"]
 pythonpath = "src"
+# Ignore deprecation warnings caused by SMAC
+filterwarnings = "ignore::DeprecationWarning"
+
+[dependency-groups]
+dev = ["orjson>=3.10.12", "pytest>=8.3.2"]

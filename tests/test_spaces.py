@@ -1,5 +1,5 @@
 import numpy as np
-from rlenv.models import DiscreteActionSpace, ContinuousActionSpace, DiscreteSpace, MultiDiscreteSpace, ContinuousSpace
+from marlenv.models import DiscreteActionSpace, ContinuousActionSpace, DiscreteSpace, MultiDiscreteSpace, ContinuousSpace
 
 
 def test_discrete_action_space():
@@ -118,3 +118,17 @@ def test_continuous_space():
         action = s.sample()
         assert action.shape == (2, 2)
         assert np.all(action >= [[0.0, 0.5], [-1, -1]]) and np.all(action < [[1.0, 1.0], [1.0, 1.0]])
+
+
+def test_eq_spaces():
+    s1 = DiscreteSpace(3)
+    s2 = DiscreteSpace(3)
+    s3 = DiscreteSpace(4)
+    assert s1 == s2
+    assert s1 != s3
+
+    s4 = DiscreteActionSpace(2, 5)
+    s5 = DiscreteActionSpace(2, 5)
+    s6 = DiscreteActionSpace(2, 4)
+    assert s4 == s5
+    assert s4 != s6

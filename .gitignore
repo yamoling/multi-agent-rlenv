@@ -184,3 +184,6 @@ runs
 logs
 data/game_images/*.png
 poetry.lock
+uv.lock
+src/main.py
+src/test.py

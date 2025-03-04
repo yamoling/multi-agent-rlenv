@@ -1,103 +1,150 @@
+try:
+    import gymnasium
+
+    skip_gym = False
+except ImportError:
+    skip_gym = True
+
+try:
+    import pettingzoo
+
+    skip_pettingzoo = False
+except ImportError:
+    skip_pettingzoo = True
+
+try:
+    import smac
+
+    skip_smac = False
+except ImportError:
+    skip_smac = True
+
+
 import numpy as np
-import rlenv
+import pytest
 
-from rlenv.adapters import PymarlAdapter
-from rlenv import MockEnv, Observation, DiscreteActionSpace
+import marlenv
+from marlenv import DiscreteActionSpace, DiscreteMockEnv, MARLEnv, Observation, State, ContinuousActionSpace
+from marlenv.adapters import SMAC, PymarlAdapter
 
-try:
 
-    def test_gym_adapter():
-        # Discrete action space
-        env = rlenv.make("CartPole-v1")
-        env.reset()
-        assert env.n_actions == 2
-        assert env.n_agents == 1
-        assert env.reward_size == 1
+@pytest.mark.skipif(skip_gym, reason="Gymnasium is not installed")
+def test_gym_adapter_discrete():
+    # Discrete action space
+    env = marlenv.make("CartPole-v1")
+    assert isinstance(env.action_space, DiscreteActionSpace)
+    obs, state = env.reset()
+    assert isinstance(obs, Observation)
+    assert isinstance(state, State)
+    assert isinstance(env, MARLEnv)
+    assert env.n_actions == 2
+    assert env.n_agents == 1
 
-        obs, r, done, truncated, info = env.step(env.action_space.sample())
-        assert isinstance(obs, Observation)
-        assert isinstance(r, np.ndarray)
-        assert r.shape == (1,)
-        assert isinstance(done, bool)
-        assert isinstance(truncated, bool)
-        assert isinstance(info, dict)
+    step = env.step(env.sample_action())
+    assert isinstance(step.obs, Observation)
+    assert isinstance(step.reward, np.ndarray)
+    assert step.reward.shape == (1,)
+    assert isinstance(step.done, bool)
+    assert isinstance(step.truncated, bool)
+    assert isinstance(step.info, dict)
 
-        # Continuous action space
-        env = rlenv.make("Pendulum-v1")
-        env.reset()
-except ImportError:
-    # Skip the test if gym is not installed
-    pass
 
-try:
-    from pettingzoo.sisl import pursuit_v4, waterworld_v4
+@pytest.mark.skipif(skip_gym, reason="Gymnasium is not installed")
+def test_gym_adapter_continuous():
+    env = marlenv.make("Pendulum-v1")
+    assert isinstance(env.action_space, ContinuousActionSpace)
+    obs, state = env.reset()
+    assert isinstance(obs, Observation)
+    assert isinstance(state, State)
+    assert isinstance(env, MARLEnv)
+    assert env.n_actions == 1
+    assert env.n_agents == 1
 
-    def test_pettingzoo_adapter_discrete_action():
-        # https://pettingzoo.farama.org/environments/sisl/pursuit/#pursuit
-        env = rlenv.adapters.PettingZoo(pursuit_v4.parallel_env())
-        env.reset()
-        action = env.action_space.sample()
-        obs, r, done, truncated, info = env.step(action)
-        assert isinstance(obs, Observation)
-        assert isinstance(r, np.ndarray)
-        assert r.shape == (1,)
-        assert isinstance(done, bool)
-        assert isinstance(truncated, bool)
-        assert isinstance(info, dict)
-        assert env.n_agents == 8
-        assert env.n_actions == 5
-        assert isinstance(env.action_space, rlenv.DiscreteActionSpace)
+    step = env.step(env.sample_action())
+    assert isinstance(step.obs, Observation)
+    assert isinstance(step.reward, np.ndarray)
+    assert step.reward.shape == (1,)
+    assert isinstance(step.done, bool)
+    assert isinstance(step.truncated, bool)
+    assert isinstance(step.info, dict)
 
-    def test_pettingzoo_adapter_continuous_action():
-        # https://pettingzoo.farama.org/environments/sisl/waterworld/
+    # Continuous action space
+    env = marlenv.make("Pendulum-v1")
+    env.reset()
 
-        env = rlenv.adapters.PettingZoo(waterworld_v4.parallel_env())
-        env.reset()
-        action = env.action_space.sample()
-        obs, r, done, truncated, info = env.step(action)
-        assert isinstance(obs, Observation)
-        assert isinstance(r, np.ndarray)
-        assert r.shape == (1,)
-        assert isinstance(done, bool)
-        assert isinstance(truncated, bool)
-        assert isinstance(info, dict)
-        assert env.n_actions == 2
-        assert env.n_agents == 2
-        assert isinstance(env.action_space, rlenv.ContinuousActionSpace)
-except ImportError:
-    # Skip the test if pettingzoo is not installed
-    pass
 
-# Only perform the tests if SMAC is installed.
-try:
-    from rlenv.adapters import SMAC
+@pytest.mark.skipif(skip_pettingzoo, reason="PettingZoo is not installed")
+def test_pettingzoo_adapter_discrete_action():
+    # https://pettingzoo.farama.org/environments/sisl/pursuit/#pursuit
+    from pettingzoo.sisl import pursuit_v4
+
+    env = marlenv.adapters.PettingZoo(pursuit_v4.parallel_env())
+    env.reset()
+    action = env.action_space.sample()
+    step = env.step(action)
+    assert isinstance(step.obs, Observation)
+    assert isinstance(step.reward, np.ndarray)
+    assert step.reward.shape == (1,)
+    assert isinstance(step.done, bool)
+    assert isinstance(step.truncated, bool)
+    assert isinstance(step.info, dict)
+    assert env.n_agents == 8
+    assert env.n_actions == 5
+    assert isinstance(env.action_space, marlenv.DiscreteActionSpace)
+
+
+@pytest.mark.skipif(skip_pettingzoo, reason="PettingZoo is not installed")
+def test_pettingzoo_adapter_continuous_action():
+    from pettingzoo.sisl import waterworld_v4
+
+    # https://pettingzoo.farama.org/environments/sisl/waterworld/
+    env = marlenv.adapters.PettingZoo(waterworld_v4.parallel_env())
+    env.reset()
+    action = env.action_space.sample()
+    step = env.step(action)
+    assert isinstance(step.obs, Observation)
+    assert isinstance(step.reward, np.ndarray)
+    assert step.reward.shape == (1,)
+    assert isinstance(step.done, bool)
+    assert isinstance(step.truncated, bool)
+    assert isinstance(step.info, dict)
+    assert env.n_actions == 2
+    assert env.n_agents == 2
+    assert isinstance(env.action_space, marlenv.ContinuousActionSpace)
+
+
+def _check_env_3m(env: SMAC):
+    obs = env.reset()
+    assert isinstance(obs, Observation)
+    assert env.n_agents == 3
+    assert isinstance(env.action_space, DiscreteActionSpace)
+
+    step = env.step(env.action_space.sample(env.available_actions()))
+    assert isinstance(step.obs, Observation)
+    assert isinstance(step.reward, np.ndarray)
+    assert step.reward.shape == (1,)
+    assert isinstance(step.done, bool)
+    assert isinstance(step.truncated, bool)
+    assert isinstance(step.info, dict)
+
+
+@pytest.mark.skipif(skip_smac, reason="SMAC is not installed")
+def test_smac_from_class():
     from smac.env import StarCraft2Env
 
-    def _check_env_3m(env: SMAC):
-        obs = env.reset()
-        assert isinstance(obs, Observation)
-        assert env.n_agents == 3
-        assert isinstance(env.action_space, DiscreteActionSpace)
+    from marlenv.adapters import SMAC
 
-        obs, r, done, truncated, info = env.step(env.action_space.sample(env.available_actions()))
-        assert isinstance(obs, Observation)
-        assert isinstance(r, np.ndarray)
-        assert r.shape == (1,)
-        assert isinstance(done, bool)
-        assert isinstance(truncated, bool)
-        assert isinstance(info, dict)
+    env = SMAC(StarCraft2Env("3m"))
+    _check_env_3m(env)
 
-    def test_smac_from_class():
-        env = SMAC(StarCraft2Env("3m"))
-        _check_env_3m(env)
 
-    def test_smac_render():
-        env = SMAC("3m")
-        env.reset()
-        env.render("human")
-except ImportError:
-    # Skip the test if SMAC is not installed
-    pass
+@pytest.mark.skipif(skip_smac, reason="SMAC is not installed")
+def test_smac_render():
+    from marlenv.adapters import SMAC
+
+    env = SMAC("3m")
+    env.reset()
+    env.render()
 
 
 def test_pymarl():
@@ -108,7 +155,7 @@ def test_pymarl():
     OBS_SIZE = 42
     REWARD_STEP = 1
     env = PymarlAdapter(
-        MockEnv(
+        DiscreteMockEnv(
             N_AGENTS,
             n_actions=N_ACTIONS,
             agent_state_size=UNIT_STATE_SIZE,
