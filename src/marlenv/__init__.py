@@ -13,7 +13,7 @@ A design choice is taht almost every class is a dataclass. This makes it easy to
 serialize and deserialize classes, for instance to json with the `orjson` library.
 """
 
-__version__ = "3.2.1"
+__version__ = "3.2.2"
 
 from . import models
 from . import wrappers
@@ -35,6 +35,7 @@ from .models import (
     DiscreteActionSpace,
     ContinuousActionSpace,
 )
+from .wrappers import RLEnvWrapper
 from .mock_env import DiscreteMockEnv, DiscreteMOMockEnv
 
 __all__ = [
@@ -57,4 +58,5 @@ __all__ = [
     "ContinuousActionSpace",
     "DiscreteMockEnv",
     "DiscreteMOMockEnv",
+    "RLEnvWrapper",
 ]
