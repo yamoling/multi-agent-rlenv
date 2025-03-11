@@ -2,7 +2,7 @@ from typing import Sequence
 import numpy as np
 import numpy.typing as npt
 from dataclasses import dataclass
-from marlenv import MARLEnv, Observation, DiscreteActionSpace, DiscreteSpace, Step, State
+from marlenv import MARLEnv, Observation, DiscreteActionSpace, ContinuousSpace, Step, State
 
 
 @dataclass
@@ -13,21 +13,31 @@ class DiscreteMockEnv(MARLEnv[Sequence[int] | npt.NDArray, DiscreteActionSpace])
         obs_size: int = 42,
         n_actions: int = 5,
         end_game: int = 30,
-        reward_step: int = 1,
+        reward_step: int | float | np.ndarray | list = 1,
         agent_state_size: int = 1,
         extras_size: int = 0,
     ) -> None:
+        match reward_step:
+            case int() | float():
+                reward_step = np.array([reward_step])
+            case list():
+                reward_step = np.array(reward_step)
+            case np.ndarray():
+                reward_step = reward_step
+            case _:
+                raise ValueError("reward_step must be an int, float or np.ndarray")
         super().__init__(
             DiscreteActionSpace(n_agents, n_actions),
             (obs_size,),
             (n_agents * agent_state_size,),
             extras_shape=(extras_size,),
+            reward_space=ContinuousSpace.from_shape(reward_step.shape),
         )
+        self.reward_step = reward_step
         self.obs_size = obs_size
         self.extra_size = extras_size
         self._agent_state_size = agent_state_size
         self.end_game = end_game
-        self.reward_step = reward_step
         self.t = 0
         self.actions_history = []
         self._seed = -1
@@ -70,7 +80,7 @@ class DiscreteMockEnv(MARLEnv[Sequence[int] | npt.NDArray, DiscreteActionSpace])
         return Step(
             self.get_observation(),
             self.get_state(),
-            np.array([self.reward_step]),
+            self.reward_step,
             self.t >= self.end_game,
         )
 
@@ -94,7 +104,7 @@ class DiscreteMOMockEnv(MARLEnv[Sequence[int] | npt.NDArray, DiscreteActionSpace
             (obs_size,),
             (n_agents * agent_state_size,),
             extras_shape=(extras_size,),
-            reward_space=DiscreteSpace(n_objectives),
+            reward_space=ContinuousSpace.from_shape(n_objectives),
         )
         self.obs_size = obs_size
         self.extra_size = extras_size

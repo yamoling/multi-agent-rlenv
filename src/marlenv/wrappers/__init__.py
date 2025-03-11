@@ -9,6 +9,7 @@ from .available_actions_wrapper import AvailableActions
 from .blind_wrapper import Blind
 from .centralised import Centralised
 from .available_actions_mask import AvailableActionsMask
+from .delayed_rewards import DelayedReward
 
 __all__ = [
     "RLEnvWrapper",
@@ -24,4 +25,5 @@ __all__ = [
     "AvailableActions",
     "Blind",
     "Centralised",
+    "DelayedReward",
 ]

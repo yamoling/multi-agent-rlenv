@@ -116,6 +116,11 @@ class Builder(Generic[A, AS]):
         self._env = wrappers.TimeLimit(self._env, n_steps, add_extra, truncation_penalty)
         return self
 
+    def delay_rewards(self, delay: int):
+        """Delays the rewards by `delay` steps"""
+        self._env = wrappers.DelayedReward(self._env, delay)
+        return self
+
     def pad(self, to_pad: Literal["obs", "extra"], n: int):
         match to_pad:
             case "obs":
