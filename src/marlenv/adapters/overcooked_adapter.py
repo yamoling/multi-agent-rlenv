@@ -10,6 +10,9 @@ from overcooked_ai_py.mdp.overcooked_env import OvercookedEnv
 from overcooked_ai_py.visualization.state_visualizer import StateVisualizer
 from dataclasses import dataclass
 
+# For compatibility with older numpy versions
+setattr(np, "Inf", np.inf)
+
 
 @dataclass
 class Overcooked(MARLEnv[Sequence[int] | npt.NDArray, DiscreteActionSpace]):
