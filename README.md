@@ -1,4 +1,6 @@
 # `marlenv` - A unified interface for muti-agent reinforcement learning
+Documentation: [https://yamoling.github.io/multi-agent-rlenv](https://yamoling.github.io/multi-agent-rlenv)
+
 The objective of `marlenv` is to provide a common (typed) interface for many different reinforcement learning environments.
 
 As such, `marlenv` provides high level abstractions of RL concepts such as `Observation`s or `Transition`s that are commonly represented as mere (confusing) lists or tuples.
