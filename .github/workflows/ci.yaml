@@ -43,10 +43,14 @@ jobs:
       - name: Install uv
         uses: yezz123/setup-uv@v4
         with:
-          uv-version: 0.5.6
+          uv-version: 0.6.4
       - name: Install dependencies and run pytest
-        run: |
-          uv sync --extra overcooked --extra gym --extra pettingzoo
+        run: | # Windows does not support overcooked from github because of the length of some filenames.
+          if [[ "${{ matrix.os }}" == "ubuntu-latest" || "${{ matrix.os }}" == "macOS-latest" ]]; then
+            uv sync --extra overcooked --extra gym --extra pettingzoo
+          else
+            uv sync --extra gym --extra pettingzoo
+          fi
           uv run pytest
 
   build:
