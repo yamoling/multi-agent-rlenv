@@ -96,24 +96,24 @@ def test_multi_discrete_space():
 
 def test_wrong_continuous_space():
     try:
-        ContinuousSpace([0, 1], [0, 1, 2])
+        ContinuousSpace.from_bounds([0, 1], [0, 1, 2])
     except AssertionError:
         pass
 
     try:
-        ContinuousSpace([0, 1], [0, 0])
+        ContinuousSpace.from_bounds([0, 1], [0, 0])
     except AssertionError:
         pass
 
 
 def test_continuous_space():
-    s = ContinuousSpace(low=[0.0, -1.0, 0.0], high=[1.0, 1.0, 2.0])
+    s = ContinuousSpace.from_bounds(low=[0.0, -1.0, 0.0], high=[1.0, 1.0, 2.0])
     for _ in range(100):
         action = s.sample()
         assert action.shape == (3,)
         assert np.all(action >= [0.0, -1.0, 0.0]) and np.all(action < [1.0, 1.0, 2.0])
 
-    s = ContinuousSpace(low=[[0.0, 0.5], [-1, -1]], high=[[1.0, 1.0], [1.0, 1.0]])
+    s = ContinuousSpace.from_bounds(low=[[0.0, 0.5], [-1, -1]], high=[[1.0, 1.0], [1.0, 1.0]])
     for _ in range(100):
         action = s.sample()
         assert action.shape == (2, 2)

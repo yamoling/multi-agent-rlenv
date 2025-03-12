@@ -12,14 +12,14 @@ S = TypeVar("S", bound="Space")
 @dataclass
 class Space(ABC):
     shape: tuple[int, ...]
-    n_dims: int
+    size: int
     labels: list[str]
 
     def __init__(self, shape: tuple[int, ...], labels: Optional[list[str]] = None):
         self.shape = shape
-        self.n_dims = len(shape)
+        self.size = math.prod(shape)
         if labels is None:
-            labels = [f"Dim {i}" for i in range(self.n_dims)]
+            labels = [f"Dim {i}" for i in range(self.size)]
         self.labels = labels
 
     @abstractmethod
@@ -100,16 +100,55 @@ class ContinuousSpace(Space):
     high: npt.NDArray[np.float32]
     """Upper bound of the space for each dimension."""
 
-    def __init__(
-        self,
-        low: list | npt.NDArray[np.float32],
-        high: list | npt.NDArray[np.float32],
+    @staticmethod
+    def from_bounds(
+        low: int | float | list | npt.NDArray[np.float32],
+        high: int | float | list | npt.NDArray[np.float32],
         labels: Optional[list[str]] = None,
     ):
-        if isinstance(low, list):
-            low = np.array(low, dtype=np.float32)
-        if isinstance(high, list):
-            high = np.array(high, dtype=np.float32)
+        match low:
+            case list():
+                low = np.array(low, dtype=np.float32)
+            case float() | int():
+                low = np.array([low], dtype=np.float32)
+        match high:
+            case list():
+                high = np.array(high, dtype=np.float32)
+            case float() | int():
+                high = np.array([high], dtype=np.float32)
+        return ContinuousSpace(low, high, labels)
+
+    @staticmethod
+    def from_shape(
+        shape: int | tuple[int, ...],
+        low: Optional[int | float | list | npt.NDArray[np.float32]] = None,
+        high: Optional[int | float | list | npt.NDArray[np.float32]] = None,
+        labels: Optional[list[str]] = None,
+    ):
+        if isinstance(shape, int):
+            shape = (shape,)
+        match low:
+            case None:
+                low = np.full(shape, -np.inf, dtype=np.float32)
+            case float() | int():
+                low = np.full(shape, low, dtype=np.float32)
+            case list():
+                low = np.array(low, dtype=np.float32)
+        match high:
+            case None:
+                high = np.full(shape, np.inf, dtype=np.float32)
+            case float() | int():
+                high = np.full(shape, high, dtype=np.float32)
+            case list():
+                high = np.array(high, dtype=np.float32)
+        return ContinuousSpace(low, high, labels)
+
+    def __init__(
+        self,
+        low: npt.NDArray[np.float32],
+        high: npt.NDArray[np.float32],
+        labels: Optional[list[str]] = None,
+    ):
         assert low.shape == high.shape, "Low and high must have the same shape."
         assert np.all(low <= high), "All elements in low must be less than the corresponding elements in high."
         Space.__init__(self, low.shape, labels)
@@ -182,5 +221,5 @@ class MultiDiscreteActionSpace(ActionSpace[MultiDiscreteSpace]):
 @dataclass
 class ContinuousActionSpace(ActionSpace[ContinuousSpace]):
     def __init__(self, n_agents: int, low: np.ndarray | list, high: np.ndarray | list, action_names: list | None = None):
-        space = ContinuousSpace(low, high, action_names)
+        space = ContinuousSpace.from_bounds(low, high, action_names)
         super().__init__(n_agents, space, action_names)

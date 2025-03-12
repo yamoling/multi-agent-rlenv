@@ -1,17 +1,17 @@
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
+from itertools import product
 from typing import Generic, Optional, Sequence
-from typing_extensions import TypeVar
+
 import cv2
 import numpy as np
 import numpy.typing as npt
-from dataclasses import dataclass
-from itertools import product
+from typing_extensions import TypeVar
 
-
-from .step import Step
-from .state import State
-from .spaces import ActionSpace, DiscreteSpace
 from .observation import Observation
+from .spaces import ActionSpace, ContinuousSpace, Space
+from .state import State
+from .step import Step
 
 ActionType = TypeVar("ActionType", default=npt.NDArray)
 ActionSpaceType = TypeVar("ActionSpaceType", bound=ActionSpace, default=ActionSpace)
@@ -25,6 +25,34 @@ class MARLEnv(ABC, Generic[ActionType, ActionSpaceType]):
     This type is generic on
         - the action type
         - the action space
+
+    You can inherit from this class to create your own environemnt:
+    ```
+    import numpy as np
+    from marlenv import MARLEnv, DiscreteActionSpace, Observation
+
+    N_AGENTS = 3
+    N_ACTIONS = 5
+
+    class CustomEnv(MARLEnv[DiscreteActionSpace]):
+        def __init__(self, width: int, height: int):
+            super().__init__(
+                action_space=DiscreteActionSpace(N_AGENTS, N_ACTIONS),
+                observation_shape=(height, width),
+                state_shape=(1,),
+            )
+            self.time = 0
+
+        def reset(self) -> Observation:
+            self.time = 0
+            ...
+            return obs
+
+        def get_state(self):
+            return np.array([self.time])
+
+        ...
+    ```
     """
 
     action_space: ActionSpaceType
@@ -38,6 +66,7 @@ class MARLEnv(ABC, Generic[ActionType, ActionSpaceType]):
     n_agents: int
     n_actions: int
     name: str
+    reward_space: Space
 
     def __init__(
         self,
@@ -46,7 +75,7 @@ class MARLEnv(ABC, Generic[ActionType, ActionSpaceType]):
         state_shape: tuple[int, ...],
         extras_shape: tuple[int, ...] = (0,),
         state_extra_shape: tuple[int, ...] = (0,),
-        reward_space: Optional[DiscreteSpace] = None,
+        reward_space: Optional[Space] = None,
         extras_meanings: Optional[list[str]] = None,
     ):
         super().__init__()
@@ -58,7 +87,9 @@ class MARLEnv(ABC, Generic[ActionType, ActionSpaceType]):
         self.state_shape = state_shape
         self.extras_shape = extras_shape
         self.state_extra_shape = state_extra_shape
-        self.reward_space = reward_space or DiscreteSpace(1, labels=["Reward"])
+        if reward_space is None:
+            reward_space = ContinuousSpace.from_shape(1, labels=["Reward"])
+        self.reward_space = reward_space
         if extras_meanings is None:
             extras_meanings = [f"{self.name}-extra-{i}" for i in range(extras_shape[0])]
         elif len(extras_meanings) != extras_shape[0]:
@@ -77,9 +108,9 @@ class MARLEnv(ABC, Generic[ActionType, ActionSpaceType]):
         """Whether the environment is multi-objective."""
         return self.reward_space.size > 1
 
-    def sample_action(self):
+    def sample_action(self) -> ActionType:
         """Sample an available action from the action space."""
-        return self.action_space.sample(self.available_actions())
+        return self.action_space.sample(self.available_actions())  # type: ignore
 
     def available_actions(self) -> npt.NDArray[np.bool]:
         """
@@ -122,6 +153,10 @@ class MARLEnv(ABC, Generic[ActionType, ActionSpaceType]):
         - truncated: Whether the episode is truncated
         - info: Extra information
         """
+
+    def random_step(self) -> Step:
+        """Perform a random step in the environment."""
+        return self.step(self.sample_action())
 
     def reset(self) -> tuple[Observation, State]:
         """Reset the environment and return the initial observation and state."""

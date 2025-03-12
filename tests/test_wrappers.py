@@ -1,7 +1,7 @@
 import numpy as np
 from typing import Any
-from marlenv import Builder, DiscreteMOMockEnv, DiscreteMockEnv
-from marlenv.wrappers import Centralised, AvailableActionsMask, TimeLimit, LastAction
+from marlenv import Builder, DiscreteMOMockEnv, DiscreteMockEnv, MARLEnv
+from marlenv.wrappers import Centralised, AvailableActionsMask, TimeLimit, LastAction, DelayedReward
 import marlenv
 
 
@@ -328,3 +328,33 @@ def test_wrapper_extra_names():
     env = LastAction(env)
     assert env.extras_meanings[-1] == "Last action"
     assert env.extras_meanings == ["Time ratio"] + ["Last action"] * env.n_actions
+
+
+def _test_delayed_rewards(env: MARLEnv[Any, Any]):
+    assert isinstance(env, DelayedReward)
+    assert isinstance(env.wrapped, DiscreteMockEnv)
+    expected = []
+    for i in range(env.wrapped.end_game):
+        if i < env.delay:
+            expected.append(np.zeros(env.reward_space.shape, dtype=np.float32))
+        elif i < env.wrapped.end_game - 1:
+            expected.append(env.wrapped.reward_step)
+        else:
+            expected.append(env.wrapped.reward_step * (env.delay + 1))
+    env.reset()
+    for i in range(env.wrapped.end_game):
+        step = env.random_step()
+        assert np.array_equal(step.reward, expected[i])
+
+
+def test_delayed_rewards():
+    env = DiscreteMockEnv(reward_step=[1, 2, 3], end_game=5, n_agents=2)
+    env = DelayedReward(env, 2)
+    _test_delayed_rewards(env)
+
+
+def test_delayed_rewards_from_builder():
+    for delay in range(0, 10):
+        for end_game in range(delay + 1, delay * 2):
+            env = Builder(DiscreteMockEnv(reward_step=10, end_game=end_game, n_agents=2)).delay_rewards(delay).build()
+            _test_delayed_rewards(env)
