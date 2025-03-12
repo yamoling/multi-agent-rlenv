@@ -13,18 +13,19 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 
-dependencies = ["numpy>=2.0.0", "opencv-python>=4.0"]
+dependencies = ["numpy>=2.0.0", "opencv-python>=4.0", "typing_extensions>=4.0"]
 
 [project.optional-dependencies]
 gym = ["gymnasium>=0.29.1"]
-smac = ["smac"]
+smac = ["smac", "pysc2"]
 pettingzoo = ["pettingzoo>=1.20", "pymunk>=6.0"]
-overcooked = ["overcooked-ai"]
+overcooked = ["overcooked_ai"]
 all = [
     "gymnasium>0.29.1",
     "pettingzoo>=1.20",
-    "overcooked-ai",
+    "overcooked_ai",
     "smac",
+    "pysc2",
     "pymunk>=6.0",
 ]
 
@@ -50,6 +51,7 @@ filterwarnings = "ignore::DeprecationWarning"
 
 [tool.uv.sources]
 smac = { git = "https://github.com/oxwhirl/smac.git" }
+pysc2 = { git = "https://github.com/google-deepmind/pysc2.git" }
 overcooked_ai = { git = "https://github.com/HumanCompatibleAI/overcooked_ai.git" }
 
 [dependency-groups]

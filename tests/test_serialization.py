@@ -1,9 +1,14 @@
 import pickle
-import marlenv
+from importlib.util import find_spec
+
 import numpy as np
 import orjson
+import pytest
 
+import marlenv
 from marlenv import DiscreteMockEnv
+
+skip_gym = find_spec("gymnasium") is None
 
 
 def test_registry():
@@ -17,6 +22,7 @@ def test_registry():
     assert restored_env.n_actions == env.n_actions
 
 
+@pytest.mark.skipif(skip_gym, reason="Gymnasium is not installed")
 def test_registry_gym():
     env = marlenv.make("CartPole-v1")
     restored_env = pickle.loads(pickle.dumps(env))

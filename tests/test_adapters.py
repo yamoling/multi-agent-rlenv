@@ -1,38 +1,18 @@
-try:
-    import gymnasium
-
-    skip_gym = False
-except ImportError:
-    skip_gym = True
-
-try:
-    import pettingzoo
-
-    skip_pettingzoo = False
-except ImportError:
-    skip_pettingzoo = True
-
-try:
-    import smac
-
-    skip_smac = False
-except ImportError:
-    skip_smac = True
-
-try:
-    import overcooked_ai_py
-
-    skip_overcooked = False
-except ImportError:
-    skip_overcooked = True
-
+from importlib.util import find_spec
 
 import numpy as np
 import pytest
 
 import marlenv
-from marlenv import DiscreteActionSpace, DiscreteMockEnv, MARLEnv, Observation, State, ContinuousActionSpace
+from marlenv import ContinuousActionSpace, DiscreteActionSpace, DiscreteMockEnv, MARLEnv, Observation, State
 from marlenv.adapters import SMAC, PymarlAdapter
+
+skip_gym = find_spec("gymnasium") is None
+skip_pettingzoo = find_spec("pettingzoo") is None
+skip_smac = find_spec("smac") is None
+# Check for "overcooked_ai_py.mdp" specifically because after uninstalling, the package
+# can still be found because of some remaining .pkl file.
+skip_overcooked = find_spec("overcooked_ai_py.mdp") is None
 
 
 @pytest.mark.skipif(skip_gym, reason="Gymnasium is not installed")
@@ -156,8 +136,9 @@ def test_smac_render():
 
 @pytest.mark.skipif(skip_overcooked, reason="Overcooked is not installed")
 def test_overcooked_attributes():
-    from marlenv.adapters import Overcooked
     from overcooked_ai_py.mdp.overcooked_mdp import Action
+
+    from marlenv.adapters import Overcooked
 
     env = Overcooked.from_layout("simple_o")
     height, width = env._mdp.shape
