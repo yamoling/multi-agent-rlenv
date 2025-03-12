@@ -22,3 +22,11 @@ try:
     __all__.append("SMAC")
 except ImportError:
     SMAC = Any
+
+
+try:
+    from .overcooked_adapter import Overcooked
+
+    __all__.append("Overcooked")
+except ImportError:
+    Overcooked = Any

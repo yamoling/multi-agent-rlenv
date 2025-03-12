@@ -1,17 +1,17 @@
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
+from itertools import product
 from typing import Generic, Optional, Sequence
-from typing_extensions import TypeVar
+
 import cv2
 import numpy as np
 import numpy.typing as npt
-from dataclasses import dataclass
-from itertools import product
+from typing_extensions import TypeVar
 
-
-from .step import Step
-from .state import State
-from .spaces import ActionSpace, ContinuousSpace, Space
 from .observation import Observation
+from .spaces import ActionSpace, ContinuousSpace, Space
+from .state import State
+from .step import Step
 
 ActionType = TypeVar("ActionType", default=npt.NDArray)
 ActionSpaceType = TypeVar("ActionSpaceType", bound=ActionSpace, default=ActionSpace)
@@ -25,6 +25,34 @@ class MARLEnv(ABC, Generic[ActionType, ActionSpaceType]):
     This type is generic on
         - the action type
         - the action space
+
+    You can inherit from this class to create your own environemnt:
+    ```
+    import numpy as np
+    from marlenv import MARLEnv, DiscreteActionSpace, Observation
+
+    N_AGENTS = 3
+    N_ACTIONS = 5
+
+    class CustomEnv(MARLEnv[DiscreteActionSpace]):
+        def __init__(self, width: int, height: int):
+            super().__init__(
+                action_space=DiscreteActionSpace(N_AGENTS, N_ACTIONS),
+                observation_shape=(height, width),
+                state_shape=(1,),
+            )
+            self.time = 0
+
+        def reset(self) -> Observation:
+            self.time = 0
+            ...
+            return obs
+
+        def get_state(self):
+            return np.array([self.time])
+
+        ...
+    ```
     """
 
     action_space: ActionSpaceType

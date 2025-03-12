@@ -1,3 +1,5 @@
+import sys
+import cv2
 from dataclasses import dataclass
 from typing import Sequence
 
@@ -79,7 +81,10 @@ class Gym(MARLEnv[Sequence | npt.NDArray, ActionSpace]):
         return self.last_obs, self.get_state()
 
     def get_image(self):
-        return self.env.render()
+        image = np.array(self.env.render())
+        if sys.platform in ("linux", "linux2"):
+            image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+        return image
 
     def seed(self, seed_value: int):
         self.env.reset(seed=seed_value)
