@@ -19,6 +19,13 @@ try:
 except ImportError:
     skip_smac = True
 
+try:
+    import overcooked_ai_py
+
+    skip_overcooked = False
+except ImportError:
+    skip_overcooked = True
+
 
 import numpy as np
 import pytest
@@ -145,6 +152,47 @@ def test_smac_render():
     env = SMAC("3m")
     env.reset()
     env.render()
+
+
+@pytest.mark.skipif(skip_overcooked, reason="Overcooked is not installed")
+def test_overcooked_attributes():
+    from marlenv.adapters import Overcooked
+    from overcooked_ai_py.mdp.overcooked_mdp import Action
+
+    env = Overcooked.from_layout("simple_o")
+    height, width = env._mdp.shape
+    assert env.n_agents == 2
+    assert env.n_actions == Action.NUM_ACTIONS
+    assert env.observation_shape == (26, height, width)
+    assert env.reward_space.shape == (1,)
+    assert env.extras_shape == (1,)
+    assert not env.is_multi_objective
+
+
+@pytest.mark.skipif(skip_overcooked, reason="Overcooked is not installed")
+def test_overcooked_obs_state():
+    from marlenv.adapters import Overcooked
+
+    HORIZON = 100
+    env = Overcooked.from_layout("coordination_ring", horizon=HORIZON)
+    height, width = env._mdp.shape
+    obs, state = env.reset()
+    for i in range(HORIZON):
+        assert obs.shape == (26, height, width)
+        assert obs.extras_shape == (1,)
+        assert state.shape == (26, height, width)
+        assert state.extras_shape == (1,)
+
+        assert np.all(obs.extras == i / HORIZON)
+        assert np.all(state.extras == i / HORIZON)
+
+        step = env.random_step()
+        obs = step.obs
+        state = step.state
+        if i < HORIZON - 1:
+            assert not step.done
+        else:
+            assert step.done
 
 
 def test_pymarl():

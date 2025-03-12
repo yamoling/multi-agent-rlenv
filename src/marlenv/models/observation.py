@@ -59,8 +59,13 @@ class Observation:
         )
 
     @property
+    def shape(self) -> tuple[int, ...]:
+        """The individual shape of the observation data"""
+        return self.data[0].shape
+
+    @property
     def extras_shape(self) -> tuple[int, ...]:
-        """The shape of the observation extras"""
+        """The individual shape of the observation extras"""
         return self.extras[0].shape
 
     def __hash__(self):
