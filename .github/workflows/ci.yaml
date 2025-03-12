@@ -73,7 +73,7 @@ jobs:
       - name: Install uv
         uses: yezz123/setup-uv@v4
         with:
-          uv-version: 0.6.4
+          uv-version: 0.5.6
       - name: Install dependencies and run pytest
         run: | # Windows does not support overcooked from github because of the length of some filenames.
           uv sync
