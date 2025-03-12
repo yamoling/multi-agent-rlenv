@@ -18,7 +18,7 @@ dependencies = ["numpy>=2.0.0", "opencv-python>=4.0", "typing_extensions>=4.0"]
 [project.optional-dependencies]
 gym = ["gymnasium>=0.29.1"]
 smac = ["smac", "pysc2"]
-pettingzoo = ["pettingzoo>=1.20", "pymunk>=6.0"]
+pettingzoo = ["pettingzoo>=1.20", "pymunk>=6.0", "scipy>=1.10"]
 overcooked = ["overcooked-ai>=1.1.0"]
 all = [
     "gymnasium>0.29.1",
@@ -27,6 +27,7 @@ all = [
     "smac",
     "pysc2",
     "pymunk>=6.0",
+    "scipy>=1.10",
 ]
 
 [build-system]
