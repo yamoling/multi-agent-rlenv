@@ -15,13 +15,12 @@ permissions:
   contents: read
 
 jobs:
-  test:
-    name: 🧪 Test
+  test-linux-macos:
+    name: 🧪 Test (Linux & macOS)
     strategy:
       matrix:
         os:
           - ubuntu-latest
-          - windows-latest
           - macOS-latest
         target:
           - x86_64
@@ -45,18 +44,45 @@ jobs:
         with:
           uv-version: 0.6.4
       - name: Install dependencies and run pytest
+        run: |
+          uv sync --extra overcooked --extra gym --extra pettingzoo
+          uv run pytest
+  test-windows:
+    name: 🧪 Test (Windows)
+    strategy:
+      matrix:
+        os:
+          - windows-latest
+        target:
+          - x86_64
+          - aarch64
+        python-version: 
+          - '3.10'
+          - '3.11'
+          - '3.12'
+          - '3.13'
+    runs-on: ${{ matrix.os }}
+    steps:
+      # Checkout the repository
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Python setup
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install uv
+        uses: yezz123/setup-uv@v4
+        with:
+          uv-version: 0.6.4
+      - name: Install dependencies and run pytest
         run: | # Windows does not support overcooked from github because of the length of some filenames.
-          if [[ "${{ matrix.os }}" == "ubuntu-latest" || "${{ matrix.os }}" == "macOS-latest" ]]; then
-            uv sync --extra overcooked --extra gym --extra pettingzoo
-          else
-            uv sync --extra gym --extra pettingzoo
-          fi
+          uv sync --extra gym --extra pettingzoo
           uv run pytest
 
   build:
     name: 📦 Build package
     if: startsWith(github.ref, 'refs/tags/')  # only publish to PyPI on tag pushes
-    needs: test
+    needs: [test-linux-macos, test-windows]
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
