@@ -76,7 +76,7 @@ jobs:
           uv-version: 0.6.4
       - name: Install dependencies and run pytest
         run: | # Windows does not support overcooked from github because of the length of some filenames.
-          uv sync --extra gym --extra pettingzoo
+          uv sync
           uv run pytest
 
   build:
