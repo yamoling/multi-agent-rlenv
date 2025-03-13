@@ -158,9 +158,9 @@ class MARLEnv(ABC, Generic[ActionType, ActionSpaceType]):
         """Perform a random step in the environment."""
         return self.step(self.sample_action())
 
+    @abstractmethod
     def reset(self) -> tuple[Observation, State]:
         """Reset the environment and return the initial observation and state."""
-        return self.get_observation(), self.get_state()
 
     def render(self):
         """Render the environment in a window (or in console)"""

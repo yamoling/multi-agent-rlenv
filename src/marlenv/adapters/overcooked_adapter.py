@@ -88,6 +88,10 @@ class Overcooked(MARLEnv[Sequence[int] | npt.NDArray, DiscreteActionSpace]):
             info=info,
         )
 
+    def reset(self):
+        self._oenv.reset()
+        return self.get_observation(), self.get_state()
+
     def __deepcopy__(self, memo: dict):
         mdp = deepcopy(self._mdp)
         return Overcooked(OvercookedEnv.from_mdp(mdp, horizon=self.horizon))
