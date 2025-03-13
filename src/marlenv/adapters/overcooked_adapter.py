@@ -1,6 +1,7 @@
 import sys
 from dataclasses import dataclass
 from typing import Literal, Sequence
+from copy import deepcopy
 
 import cv2
 import numpy as np
@@ -86,6 +87,16 @@ class Overcooked(MARLEnv[Sequence[int] | npt.NDArray, DiscreteActionSpace]):
             truncated=False,
             info=info,
         )
+
+    def __deepcopy__(self, memo: dict):
+        mdp = deepcopy(self._mdp)
+        return Overcooked(OvercookedEnv.from_mdp(mdp, horizon=self.horizon))
+
+    def __getstate__(self):
+        return {"horizon": self.horizon, "mdp": self._mdp}
+
+    def __setstate__(self, state: dict):
+        self.__init__(OvercookedEnv.from_mdp(state["mdp"], horizon=state["horizon"]))
 
     def get_image(self):
         rewards_dict = {}  # dictionary of details you want rendered in the UI

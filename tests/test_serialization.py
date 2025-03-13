@@ -1,14 +1,11 @@
 import pickle
-from importlib.util import find_spec
-
 import numpy as np
 import orjson
 import pytest
+from copy import deepcopy
 
 import marlenv
 from marlenv import DiscreteMockEnv
-
-skip_gym = find_spec("gymnasium") is None
 
 
 def test_registry():
@@ -22,7 +19,7 @@ def test_registry():
     assert restored_env.n_actions == env.n_actions
 
 
-@pytest.mark.skipif(skip_gym, reason="Gymnasium is not installed")
+@pytest.mark.skipif(not marlenv.adapters.HAS_GYM, reason="Gymnasium is not installed")
 def test_registry_gym():
     env = marlenv.make("CartPole-v1")
     restored_env = pickle.loads(pickle.dumps(env))
@@ -135,3 +132,27 @@ def test_serialize_episode():
         episode.add(transition)
 
     _ = orjson.dumps(episode, option=orjson.OPT_SERIALIZE_NUMPY)
+
+
+@pytest.mark.skipif(not marlenv.adapters.HAS_OVERCOOKED, reason="Overcooked is not installed")
+def test_deepcopy_overcooked():
+    env = marlenv.adapters.Overcooked.from_layout("scenario4")
+    env2 = deepcopy(env)
+    assert env == env2
+
+
+@pytest.mark.skipif(not marlenv.adapters.HAS_OVERCOOKED, reason="Overcooked is not installed")
+def test_pickle_overcooked():
+    env = marlenv.adapters.Overcooked.from_layout("scenario1_s", horizon=60)
+    serialized = pickle.dumps(env)
+    restored = pickle.loads(serialized)
+    assert env == restored
+
+    env.reset()
+    restored.reset()
+
+    for _ in range(50):
+        actions = env.sample_action()
+        step = env.step(actions)
+        step_restored = restored.step(actions)
+        assert step == step_restored
