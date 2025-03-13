@@ -53,19 +53,19 @@ class Overcooked(MARLEnv[Sequence[int] | npt.NDArray, DiscreteActionSpace]):
         return self.state.timestep
 
     def _state_data(self):
-        state = np.array(self._mdp.lossless_state_encoding(self.state))
+        state = np.array(self._mdp.lossless_state_encoding(self.state), dtype=np.float32)
         # Use axes (agents, channels, height, width) instead of (agents, height, width, channels)
         state = np.transpose(state, (0, 3, 1, 2))
         return state
 
     def get_state(self):
-        return State(self._state_data()[0], np.array([self.time_step / self.horizon]))
+        return State(self._state_data()[0], np.array([self.time_step / self.horizon], dtype=np.float32))
 
     def get_observation(self) -> Observation:
         return Observation(
             data=self._state_data(),
             available_actions=self.available_actions(),
-            extras=np.array([[self.time_step / self.horizon]] * self.n_agents),
+            extras=np.array([[self.time_step / self.horizon]] * self.n_agents, dtype=np.float32),
         )
 
     def available_actions(self):

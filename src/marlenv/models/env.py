@@ -127,7 +127,7 @@ class MARLEnv(ABC, Generic[ActionType, ActionSpaceType]):
 
     def seed(self, seed_value: int):
         """Set the environment seed"""
-        raise NotImplementedError("Method not implemented")
+        return
 
     @abstractmethod
     def get_observation(self) -> Observation:
