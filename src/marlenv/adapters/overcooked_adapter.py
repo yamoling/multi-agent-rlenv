@@ -6,11 +6,11 @@ import cv2
 import numpy as np
 import numpy.typing as npt
 import pygame
+from marlenv.models import ContinuousSpace, DiscreteActionSpace, MARLEnv, Observation, State, Step
+
 from overcooked_ai_py.mdp.overcooked_env import OvercookedEnv
 from overcooked_ai_py.mdp.overcooked_mdp import Action, OvercookedGridworld, OvercookedState
 from overcooked_ai_py.visualization.state_visualizer import StateVisualizer
-
-from marlenv.models import ContinuousSpace, DiscreteActionSpace, MARLEnv, Observation, State, Step
 
 
 @dataclass
@@ -18,8 +18,6 @@ class Overcooked(MARLEnv[Sequence[int] | npt.NDArray, DiscreteActionSpace]):
     horizon: int
 
     def __init__(self, oenv: OvercookedEnv):
-        # Overcooked assumes a former version of numpy where np.Inf is available.
-        setattr(np, "Inf", np.inf)
         self._oenv = oenv
         assert isinstance(oenv.mdp, OvercookedGridworld)
         self._mdp = oenv.mdp

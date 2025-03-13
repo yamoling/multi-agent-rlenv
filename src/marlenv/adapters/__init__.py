@@ -21,6 +21,10 @@ if find_spec("smac") is not None:
 
 HAS_OVERCOOKED = False
 if find_spec("overcooked_ai_py.mdp") is not None:
+    import numpy
+
+    # Overcooked assumes a version of numpy <2.0 where np.Inf is available.
+    setattr(numpy, "Inf", numpy.inf)
     from .overcooked_adapter import Overcooked
 
     HAS_OVERCOOKED = True
