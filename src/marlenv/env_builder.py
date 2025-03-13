@@ -1,32 +1,27 @@
 from dataclasses import dataclass
 from typing import Generic, Literal, Optional, TypeVar, overload
-
 import numpy as np
 import numpy.typing as npt
 
 from . import wrappers
+from marlenv import adapters
 from .models import ActionSpace, MARLEnv
-from .adapters import PettingZoo
 
 A = TypeVar("A")
 AS = TypeVar("AS", bound=ActionSpace)
 
-try:
+if adapters.HAS_PETTINGZOO:
+    from .adapters import PettingZoo
     from pettingzoo import ParallelEnv
 
     @overload
-    def make(
-        env: ParallelEnv,
-    ) -> PettingZoo: ...
-
-    HAS_PETTINGZOO = True
-except ImportError:
-    HAS_PETTINGZOO = False
+    def make(env: ParallelEnv) -> PettingZoo: ...
 
 
-try:
-    from gymnasium import Env
+if adapters.HAS_GYM:
     from .adapters import Gym
+    from gymnasium import Env
+    import gymnasium
 
     @overload
     def make(env: Env) -> Gym: ...
@@ -37,25 +32,21 @@ try:
         Make an RLEnv from the `gymnasium` registry (e.g: "CartPole-v1").
         """
 
-    HAS_GYM = True
-except ImportError:
-    HAS_GYM = False
 
-try:
-    from smac.env import StarCraft2Env
+if adapters.HAS_SMAC:
     from .adapters import SMAC
+    from smac.env import StarCraft2Env
 
     @overload
     def make(env: StarCraft2Env) -> SMAC: ...
 
-    HAS_SMAC = True
-except ImportError:
-    HAS_SMAC = False
 
+if adapters.HAS_OVERCOOKED:
+    from .adapters import Overcooked
+    from overcooked_ai_py.mdp.overcooked_env import OvercookedEnv
 
-@overload
-def make(env: MARLEnv[A, AS]) -> MARLEnv[A, AS]:
-    """Why would you do this ?"""
+    @overload
+    def make(env: OvercookedEnv) -> Overcooked: ...
 
 
 def make(env, **kwargs):
@@ -64,32 +55,18 @@ def make(env, **kwargs):
         case MARLEnv():
             return env
         case str(env_id):
-            try:
-                import gymnasium
-            except ImportError:
-                raise ImportError("Gymnasium is not installed !")
-            from marlenv.adapters import Gym
+            if adapters.HAS_GYM:
+                gym_env = gymnasium.make(env_id, render_mode="rgb_array", **kwargs)
+                return Gym(gym_env)
 
-            gym_env = gymnasium.make(env_id, render_mode="rgb_array", **kwargs)
-            return Gym(gym_env)
-
-    try:
-        from marlenv.adapters import PettingZoo
-
-        if isinstance(env, ParallelEnv):
-            return PettingZoo(env)
-    except ImportError:
-        pass
-    try:
-        from smac.env import StarCraft2Env
-
-        from marlenv.adapters import SMAC
-
-        if isinstance(env, StarCraft2Env):
-            return SMAC(env)
-    except ImportError:
-        pass
-
+    if adapters.HAS_PETTINGZOO and isinstance(env, ParallelEnv):
+        return PettingZoo(env)  # type: ignore
+    if adapters.HAS_SMAC and isinstance(env, StarCraft2Env):
+        return SMAC(env)
+    if adapters.HAS_OVERCOOKED and isinstance(env, OvercookedEnv):
+        return Overcooked(env)  # type: ignore
+    if adapters.HAS_GYM and isinstance(env, Env):
+        return Gym(env)
     raise ValueError(f"Unknown environment type: {type(env)}")
 
 

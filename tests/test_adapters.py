@@ -5,7 +5,7 @@ import pytest
 
 import marlenv
 from marlenv import ContinuousActionSpace, DiscreteActionSpace, DiscreteMockEnv, MARLEnv, Observation, State
-from marlenv.adapters import SMAC, PymarlAdapter
+from marlenv.adapters import PymarlAdapter
 
 skip_gym = find_spec("gymnasium") is None
 skip_pettingzoo = find_spec("pettingzoo") is None
@@ -100,7 +100,10 @@ def test_pettingzoo_adapter_continuous_action():
     assert isinstance(env.action_space, marlenv.ContinuousActionSpace)
 
 
-def _check_env_3m(env: SMAC):
+def _check_env_3m(env):
+    from marlenv.adapters import SMAC
+
+    assert isinstance(env, SMAC)
     obs = env.reset()
     assert isinstance(obs, Observation)
     assert env.n_agents == 3
