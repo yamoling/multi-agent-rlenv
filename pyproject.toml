@@ -7,13 +7,28 @@ authors = [
 ]
 readme = "README.md"
 requires-python = ">=3.10, <4"
-dependencies = ["numpy>=2.0.0", "opencv-python>=4.10.0.84", "gymnasium>=0.29.1"]
 urls = { "repository" = "https://github.com/yamoling/multi-agent-rlenv" }
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
 ]
 
+dependencies = ["numpy>=2.0.0", "opencv-python>=4.0", "typing_extensions>=4.0"]
+
+[project.optional-dependencies]
+gym = ["gymnasium>=0.29.1"]
+smac = ["smac", "pysc2"]
+pettingzoo = ["pettingzoo>=1.20", "pymunk>=6.0", "scipy>=1.10"]
+overcooked = ["overcooked-ai>=1.1.0", "scipy>=1.10"]
+all = [
+    "gymnasium>0.29.1",
+    "pettingzoo>=1.20",
+    "overcooked-ai",
+    "smac",
+    "pysc2",
+    "pymunk>=6.0",
+    "scipy>=1.10",
+]
 
 [build-system]
 requires = ["hatchling"]
@@ -34,6 +49,11 @@ testpaths = ["tests"]
 pythonpath = "src"
 # Ignore deprecation warnings caused by SMAC
 filterwarnings = "ignore::DeprecationWarning"
+
+[tool.uv.sources]
+smac = { git = "https://github.com/oxwhirl/smac.git" }
+pysc2 = { git = "https://github.com/google-deepmind/pysc2.git" }
+
 
 [dependency-groups]
 dev = ["orjson>=3.10.12", "pdoc>=15.0.1", "pytest>=8.3.2"]

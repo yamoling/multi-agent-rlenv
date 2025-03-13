@@ -1,9 +1,29 @@
-# `marlenv` - A unified interface for muti-agent reinforcement learning
-Documentation: [https://yamoling.github.io/multi-agent-rlenv](https://yamoling.github.io/multi-agent-rlenv)
+# `marlenv` - A unified framework for muti-agent reinforcement learning
+**Documentation: [https://yamoling.github.io/multi-agent-rlenv](https://yamoling.github.io/multi-agent-rlenv)**
 
 The objective of `marlenv` is to provide a common (typed) interface for many different reinforcement learning environments.
 
 As such, `marlenv` provides high level abstractions of RL concepts such as `Observation`s or `Transition`s that are commonly represented as mere (confusing) lists or tuples.
+
+## Installation
+Install with you preferred package manager (`uv`, `pip`, `poetry`, ...):
+```bash
+$ pip install marlenv[all] # Enable all features
+$ pip install marlenv      # Basic installation
+```
+
+There are multiple optional dependencies if you want to support specific libraries and environments. Available options are:
+- `smac` for StarCraft II environments
+- `gym` for OpenAI Gym environments
+- `pettingzoo` for PettingZoo environments
+- `overcooked` for Overcooked environments
+
+Install them with:
+```bash
+$ pip install marlenv[smac] # Install SMAC
+$ pip install marlenv[gym,smac]  # Install Gym & smac support
+```
+
 
 ## Using `marlenv` with existing libraries
 `marlenv` unifies multiple popular libraries under a single interface. Namely, `marlenv` supports `smac`, `gymnasium` and `pettingzoo`.
@@ -34,7 +54,7 @@ from marlenv import RLEnv, DiscreteActionSpace, Observation
 N_AGENTS = 3
 N_ACTIONS = 5
 
-class CustomEnv(RLEnv[DiscreteActionSpace]):
+class CustomEnv(MARLEnv[DiscreteActionSpace]):
     def __init__(self, width: int, height: int):
         super().__init__(
             action_space=DiscreteActionSpace(N_AGENTS, N_ACTIONS),

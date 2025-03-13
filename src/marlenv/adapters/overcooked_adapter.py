@@ -1,41 +1,71 @@
-import numpy as np
-import pygame
-import cv2
 import sys
-from marlenv.models import MARLEnv, State, Observation, Step, DiscreteActionSpace
-from typing import Literal, Sequence
-import numpy.typing as npt
-from overcooked_ai_py.mdp.overcooked_mdp import OvercookedGridworld, Action
-from overcooked_ai_py.mdp.overcooked_env import OvercookedEnv
-from overcooked_ai_py.visualization.state_visualizer import StateVisualizer
 from dataclasses import dataclass
+from typing import Literal, Sequence
+
+import cv2
+import numpy as np
+import numpy.typing as npt
+import pygame
+from marlenv.models import ContinuousSpace, DiscreteActionSpace, MARLEnv, Observation, State, Step
+
+from overcooked_ai_py.mdp.overcooked_env import OvercookedEnv
+from overcooked_ai_py.mdp.overcooked_mdp import Action, OvercookedGridworld, OvercookedState
+from overcooked_ai_py.visualization.state_visualizer import StateVisualizer
 
 
 @dataclass
 class Overcooked(MARLEnv[Sequence[int] | npt.NDArray, DiscreteActionSpace]):
+    horizon: int
+
     def __init__(self, oenv: OvercookedEnv):
         self._oenv = oenv
         assert isinstance(oenv.mdp, OvercookedGridworld)
         self._mdp = oenv.mdp
         self.visualizer = StateVisualizer()
+        shape = tuple(int(s) for s in self._mdp.get_lossless_state_encoding_shape())
+        shape = (shape[2], shape[0], shape[1])
         super().__init__(
-            action_space=DiscreteActionSpace(n_agents=self._mdp.num_players, n_actions=Action.NUM_ACTIONS),
-            observation_shape=(1,),
-            state_shape=(1,),
+            action_space=DiscreteActionSpace(
+                n_agents=self._mdp.num_players,
+                n_actions=Action.NUM_ACTIONS,
+                action_names=[Action.ACTION_TO_CHAR[a] for a in Action.ALL_ACTIONS],
+            ),
+            observation_shape=shape,
+            extras_shape=(1,),
+            extras_meanings=["timestep"],
+            state_shape=shape,
+            state_extra_shape=(1,),
+            reward_space=ContinuousSpace.from_shape(1),
         )
+        self.horizon = int(self._oenv.horizon)
+
+    @property
+    def state(self) -> OvercookedState:
+        """Current state of the environment"""
+        return self._oenv.state
+
+    def set_state(self, state: State):
+        raise NotImplementedError("Not yet implemented")
+
+    @property
+    def time_step(self):
+        return self.state.timestep
 
     def _state_data(self):
-        state = self._oenv.state
-        state = np.array(self._mdp.lossless_state_encoding(state))
+        state = np.array(self._mdp.lossless_state_encoding(self.state))
         # Use axes (agents, channels, height, width) instead of (agents, height, width, channels)
         state = np.transpose(state, (0, 3, 1, 2))
         return state
 
     def get_state(self):
-        return State(self._state_data())
+        return State(self._state_data()[0], np.array([self.time_step / self.horizon]))
 
     def get_observation(self) -> Observation:
-        return Observation(self._state_data(), self.available_actions())
+        return Observation(
+            data=self._state_data(),
+            available_actions=self.available_actions(),
+            extras=np.array([[self.time_step / self.horizon]] * self.n_agents),
+        )
 
     def available_actions(self):
         available_actions = np.full((self.n_agents, self.n_actions), False)

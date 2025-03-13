@@ -1,31 +1,18 @@
-try:
-    import gymnasium
-
-    skip_gym = False
-except ImportError:
-    skip_gym = True
-
-try:
-    import pettingzoo
-
-    skip_pettingzoo = False
-except ImportError:
-    skip_pettingzoo = True
-
-try:
-    import smac
-
-    skip_smac = False
-except ImportError:
-    skip_smac = True
-
+from importlib.util import find_spec
 
 import numpy as np
 import pytest
 
 import marlenv
-from marlenv import DiscreteActionSpace, DiscreteMockEnv, MARLEnv, Observation, State, ContinuousActionSpace
-from marlenv.adapters import SMAC, PymarlAdapter
+from marlenv import ContinuousActionSpace, DiscreteActionSpace, DiscreteMockEnv, MARLEnv, Observation, State
+from marlenv.adapters import PymarlAdapter
+
+skip_gym = find_spec("gymnasium") is None
+skip_pettingzoo = find_spec("pettingzoo") is None
+skip_smac = find_spec("smac") is None
+# Check for "overcooked_ai_py.mdp" specifically because after uninstalling, the package
+# can still be found because of some remaining .pkl file.
+skip_overcooked = find_spec("overcooked_ai_py.mdp") is None
 
 
 @pytest.mark.skipif(skip_gym, reason="Gymnasium is not installed")
@@ -113,7 +100,10 @@ def test_pettingzoo_adapter_continuous_action():
     assert isinstance(env.action_space, marlenv.ContinuousActionSpace)
 
 
-def _check_env_3m(env: SMAC):
+def _check_env_3m(env):
+    from marlenv.adapters import SMAC
+
+    assert isinstance(env, SMAC)
     obs = env.reset()
     assert isinstance(obs, Observation)
     assert env.n_agents == 3
@@ -145,6 +135,48 @@ def test_smac_render():
     env = SMAC("3m")
     env.reset()
     env.render()
+
+
+@pytest.mark.skipif(skip_overcooked, reason="Overcooked is not installed")
+def test_overcooked_attributes():
+    from overcooked_ai_py.mdp.overcooked_mdp import Action
+
+    from marlenv.adapters import Overcooked
+
+    env = Overcooked.from_layout("simple_o")
+    height, width = env._mdp.shape
+    assert env.n_agents == 2
+    assert env.n_actions == Action.NUM_ACTIONS
+    assert env.observation_shape == (26, height, width)
+    assert env.reward_space.shape == (1,)
+    assert env.extras_shape == (1,)
+    assert not env.is_multi_objective
+
+
+@pytest.mark.skipif(skip_overcooked, reason="Overcooked is not installed")
+def test_overcooked_obs_state():
+    from marlenv.adapters import Overcooked
+
+    HORIZON = 100
+    env = Overcooked.from_layout("coordination_ring", horizon=HORIZON)
+    height, width = env._mdp.shape
+    obs, state = env.reset()
+    for i in range(HORIZON):
+        assert obs.shape == (26, height, width)
+        assert obs.extras_shape == (1,)
+        assert state.shape == (26, height, width)
+        assert state.extras_shape == (1,)
+
+        assert np.all(obs.extras == i / HORIZON)
+        assert np.all(state.extras == i / HORIZON)
+
+        step = env.random_step()
+        obs = step.obs
+        state = step.state
+        if i < HORIZON - 1:
+            assert not step.done
+        else:
+            assert step.done
 
 
 def test_pymarl():

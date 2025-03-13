@@ -1,6 +1,5 @@
 from typing import Sequence
 from dataclasses import dataclass
-import numpy as np
 import numpy.typing as npt
 from typing_extensions import TypeVar
 import random
