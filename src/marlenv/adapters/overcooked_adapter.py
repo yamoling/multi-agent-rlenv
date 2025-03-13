@@ -96,6 +96,10 @@ class Overcooked(MARLEnv[Sequence[int] | npt.NDArray, DiscreteActionSpace]):
         return {"horizon": self.horizon, "mdp": self._mdp}
 
     def __setstate__(self, state: dict):
+        from overcooked_ai_py.mdp.overcooked_mdp import Recipe
+
+        mdp = state["mdp"]
+        Recipe.configure(mdp.recipe_config)
         self.__init__(OvercookedEnv.from_mdp(state["mdp"], horizon=state["horizon"]))
 
     def get_image(self):

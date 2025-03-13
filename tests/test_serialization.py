@@ -2,6 +2,7 @@ import pickle
 import numpy as np
 import orjson
 import pytest
+import os
 from copy import deepcopy
 
 import marlenv
@@ -156,3 +157,35 @@ def test_pickle_overcooked():
         step = env.step(actions)
         step_restored = restored.step(actions)
         assert step == step_restored
+
+
+@pytest.mark.skipif(not marlenv.adapters.HAS_OVERCOOKED, reason="Overcooked is not installed")
+def test_unpickling_from_blank_process():
+    from marlenv.adapters import Overcooked
+    import pickle
+    import subprocess
+    import tempfile
+
+    env = Overcooked.from_layout("large_room")
+    env_file = tempfile.NamedTemporaryFile("wb", delete=False)
+    pickle.dump(env, env_file)
+    env_file.close()
+
+    # Write the python file
+
+    f = tempfile.NamedTemporaryFile("w", delete=False)
+    f.write("""
+import pickle
+import sys
+
+with open(sys.argv[1], "rb") as f:
+    env = pickle.load(f)
+
+env.reset()""")
+    f.close()
+    try:
+        output = subprocess.run(f"python {f.name} {env_file.name}", shell=True, capture_output=True)
+        assert output.returncode == 0, output.stderr.decode("utf-8")
+    finally:
+        os.remove(f.name)
+        os.remove(env_file.name)
