@@ -62,7 +62,7 @@ print(env.extras_shape) # (1, )
 If you want to create a new environment, you can simply create a class that inherits from `MARLEnv`. If you want to create a wrapper around an existing `MARLEnv`, you probably want to subclass `RLEnvWrapper` which implements a default behaviour for every method.
 """
 
-__version__ = "3.3.2"
+__version__ = "3.3.3"
 
 from . import models
 from . import wrappers
