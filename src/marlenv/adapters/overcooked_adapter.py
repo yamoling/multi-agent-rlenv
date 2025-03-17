@@ -23,8 +23,9 @@ class Overcooked(MARLEnv[Sequence[int] | npt.NDArray, DiscreteActionSpace]):
         assert isinstance(oenv.mdp, OvercookedGridworld)
         self._mdp = oenv.mdp
         self._visualizer = StateVisualizer()
-        shape = tuple(int(s) for s in self._mdp.get_lossless_state_encoding_shape())
-        shape = (shape[2], shape[0], shape[1])
+        width, height, layers = tuple(self._mdp.lossless_state_encoding_shape)
+        # -1 because we extract the "urgent" layer to the extras
+        shape = (int(layers - 1), int(width), int(height))
         super().__init__(
             action_space=DiscreteActionSpace(
                 n_agents=self._mdp.num_players,
@@ -32,10 +33,10 @@ class Overcooked(MARLEnv[Sequence[int] | npt.NDArray, DiscreteActionSpace]):
                 action_names=[Action.ACTION_TO_CHAR[a] for a in Action.ALL_ACTIONS],
             ),
             observation_shape=shape,
-            extras_shape=(1,),
-            extras_meanings=["timestep"],
+            extras_shape=(2,),
+            extras_meanings=["timestep", "urgent"],
             state_shape=shape,
-            state_extra_shape=(1,),
+            state_extra_shape=(2,),
             reward_space=ContinuousSpace.from_shape(1),
         )
         self.horizon = int(self._oenv.horizon)
@@ -53,19 +54,25 @@ class Overcooked(MARLEnv[Sequence[int] | npt.NDArray, DiscreteActionSpace]):
         return self.state.timestep
 
     def _state_data(self):
-        state = np.array(self._mdp.lossless_state_encoding(self.state), dtype=np.float32)
+        players_layers = self._mdp.lossless_state_encoding(self.state)
+        state = np.array(players_layers, dtype=np.float32)
         # Use axes (agents, channels, height, width) instead of (agents, height, width, channels)
         state = np.transpose(state, (0, 3, 1, 2))
-        return state
+        # The last last layer is for "urgency", put it in the extras
+        urgency = float(np.all(state[:, -1]))
+        state = state[:, :-1]
+        return state, urgency
 
     def get_state(self):
-        return State(self._state_data()[0], np.array([self.time_step / self.horizon], dtype=np.float32))
+        data, is_urgent = self._state_data()
+        return State(data[0], np.array([self.time_step / self.horizon, is_urgent], dtype=np.float32))
 
     def get_observation(self) -> Observation:
+        data, is_urgent = self._state_data()
         return Observation(
-            data=self._state_data(),
+            data=data,
             available_actions=self.available_actions(),
-            extras=np.array([[self.time_step / self.horizon]] * self.n_agents, dtype=np.float32),
+            extras=np.array([[self.time_step / self.horizon, is_urgent]] * self.n_agents, dtype=np.float32),
         )
 
     def available_actions(self):

@@ -147,9 +147,9 @@ def test_overcooked_attributes():
     height, width = env._mdp.shape
     assert env.n_agents == 2
     assert env.n_actions == Action.NUM_ACTIONS
-    assert env.observation_shape == (26, height, width)
+    assert env.observation_shape == (25, height, width)
     assert env.reward_space.shape == (1,)
-    assert env.extras_shape == (1,)
+    assert env.extras_shape == (2,)
     assert not env.is_multi_objective
 
 
@@ -166,13 +166,13 @@ def test_overcooked_obs_state():
         assert state.data.dtype == np.float32
         assert obs.extras.dtype == np.float32
         assert state.extras.dtype == np.float32
-        assert obs.shape == (26, height, width)
-        assert obs.extras_shape == (1,)
-        assert state.shape == (26, height, width)
-        assert state.extras_shape == (1,)
+        assert obs.shape == (25, height, width)
+        assert obs.extras_shape == (2,)
+        assert state.shape == (25, height, width)
+        assert state.extras_shape == (2,)
 
-        assert np.all(obs.extras == i / HORIZON)
-        assert np.all(state.extras == i / HORIZON)
+        assert np.all(obs.extras[:, 0] == i / HORIZON)
+        assert np.all(state.extras[0] == i / HORIZON)
 
         step = env.random_step()
         obs = step.obs
