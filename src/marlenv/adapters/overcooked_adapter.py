@@ -22,7 +22,7 @@ class Overcooked(MARLEnv[Sequence[int] | npt.NDArray, DiscreteActionSpace]):
         self._oenv = oenv
         assert isinstance(oenv.mdp, OvercookedGridworld)
         self._mdp = oenv.mdp
-        self.visualizer = StateVisualizer()
+        self._visualizer = StateVisualizer()
         shape = tuple(int(s) for s in self._mdp.get_lossless_state_encoding_shape())
         shape = (shape[2], shape[0], shape[1])
         super().__init__(
@@ -53,19 +53,19 @@ class Overcooked(MARLEnv[Sequence[int] | npt.NDArray, DiscreteActionSpace]):
         return self.state.timestep
 
     def _state_data(self):
-        state = np.array(self._mdp.lossless_state_encoding(self.state))
+        state = np.array(self._mdp.lossless_state_encoding(self.state), dtype=np.float32)
         # Use axes (agents, channels, height, width) instead of (agents, height, width, channels)
         state = np.transpose(state, (0, 3, 1, 2))
         return state
 
     def get_state(self):
-        return State(self._state_data()[0], np.array([self.time_step / self.horizon]))
+        return State(self._state_data()[0], np.array([self.time_step / self.horizon], dtype=np.float32))
 
     def get_observation(self) -> Observation:
         return Observation(
             data=self._state_data(),
             available_actions=self.available_actions(),
-            extras=np.array([[self.time_step / self.horizon]] * self.n_agents),
+            extras=np.array([[self.time_step / self.horizon]] * self.n_agents, dtype=np.float32),
         )
 
     def available_actions(self):
@@ -87,6 +87,10 @@ class Overcooked(MARLEnv[Sequence[int] | npt.NDArray, DiscreteActionSpace]):
             truncated=False,
             info=info,
         )
+
+    def reset(self):
+        self._oenv.reset()
+        return self.get_observation(), self.get_state()
 
     def __deepcopy__(self, memo: dict):
         mdp = deepcopy(self._mdp)
@@ -111,7 +115,7 @@ class Overcooked(MARLEnv[Sequence[int] | npt.NDArray, DiscreteActionSpace]):
             ]:
                 rewards_dict[key] = value
 
-        image = self.visualizer.render_state(
+        image = self._visualizer.render_state(
             state=self._oenv.state,
             grid=self._mdp.terrain_mtx,
             hud_data=StateVisualizer.default_hud_data(self._oenv.state, **rewards_dict),

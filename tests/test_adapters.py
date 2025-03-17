@@ -162,6 +162,10 @@ def test_overcooked_obs_state():
     height, width = env._mdp.shape
     obs, state = env.reset()
     for i in range(HORIZON):
+        assert obs.data.dtype == np.float32
+        assert state.data.dtype == np.float32
+        assert obs.extras.dtype == np.float32
+        assert state.extras.dtype == np.float32
         assert obs.shape == (26, height, width)
         assert obs.extras_shape == (1,)
         assert state.shape == (26, height, width)
