@@ -22,7 +22,7 @@ class Overcooked(MARLEnv[Sequence[int] | npt.NDArray, DiscreteActionSpace]):
         self._oenv = oenv
         assert isinstance(oenv.mdp, OvercookedGridworld)
         self._mdp = oenv.mdp
-        self.visualizer = StateVisualizer()
+        self._visualizer = StateVisualizer()
         shape = tuple(int(s) for s in self._mdp.get_lossless_state_encoding_shape())
         shape = (shape[2], shape[0], shape[1])
         super().__init__(
@@ -115,7 +115,7 @@ class Overcooked(MARLEnv[Sequence[int] | npt.NDArray, DiscreteActionSpace]):
             ]:
                 rewards_dict[key] = value
 
-        image = self.visualizer.render_state(
+        image = self._visualizer.render_state(
             state=self._oenv.state,
             grid=self._mdp.terrain_mtx,
             hud_data=StateVisualizer.default_hud_data(self._oenv.state, **rewards_dict),

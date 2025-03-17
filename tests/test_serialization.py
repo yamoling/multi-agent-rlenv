@@ -189,3 +189,18 @@ env.reset()""")
     finally:
         os.remove(f.name)
         os.remove(env_file.name)
+
+
+@pytest.mark.skipif(not marlenv.adapters.HAS_OVERCOOKED, reason="Overcooked is not installed")
+def test_serialize_json_overcooked():
+    env = marlenv.adapters.Overcooked.from_layout("scenario1_s", horizon=60)
+    res = orjson.dumps(env, option=orjson.OPT_SERIALIZE_NUMPY)
+    deserialized = orjson.loads(res)
+
+    assert deserialized["n_agents"] == env.n_agents
+    assert tuple(deserialized["observation_shape"]) == env.observation_shape
+    assert tuple(deserialized["state_shape"]) == env.state_shape
+    assert tuple(deserialized["extras_shape"]) == env.extras_shape
+    assert deserialized["n_actions"] == env.n_actions
+    assert deserialized["name"] == env.name
+    assert deserialized["extras_meanings"] == env.extras_meanings
