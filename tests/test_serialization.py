@@ -6,7 +6,7 @@ import os
 from copy import deepcopy
 
 import marlenv
-from marlenv import DiscreteMockEnv
+from marlenv import DiscreteMockEnv, wrappers
 
 
 def test_registry():
@@ -76,21 +76,78 @@ def test_serialize_episode_fields():
         assert field in episode
 
 
+def serde_and_check_key_values(env: object):
+    serialized = orjson.dumps(env, option=orjson.OPT_SERIALIZE_NUMPY)
+    deserialized = orjson.loads(serialized)
+    checked_keys = []
+    for key, value in env.__dict__.items():
+        if key.startswith("_"):
+            continue
+        checked_keys.append(key)
+        assert key in deserialized
+        match value:
+            case int() | float() | str() | bool() | list() | dict():
+                assert deserialized[key] == value
+            case np.ndarray():
+                assert np.all(deserialized[key] == value)
+    assert len(checked_keys) > 0
+
+
+def test_serialize_blind():
+    env = DiscreteMockEnv(4)
+    serde_and_check_key_values(wrappers.Blind(env, 0.2))
+
+
+def test_serialize_time_limit():
+    env = DiscreteMockEnv(4)
+    serde_and_check_key_values(wrappers.TimeLimit(env, 10))
+
+
+def test_serialize_time_penalty():
+    env = DiscreteMockEnv(4)
+    serde_and_check_key_values(wrappers.TimePenalty(env, 0.2))
+
+
+def test_serialize_agent_id():
+    env = DiscreteMockEnv(4)
+    serde_and_check_key_values(wrappers.AgentId(env))
+
+
+def test_serialize_last_action():
+    env = DiscreteMockEnv(4)
+    serde_and_check_key_values(wrappers.LastAction(env))
+
+
+def test_serialize_available_actions():
+    env = DiscreteMockEnv(4)
+    serde_and_check_key_values(wrappers.AvailableActions(env))
+
+
+def test_serialize_video():
+    env = DiscreteMockEnv(4)
+    serde_and_check_key_values(wrappers.VideoRecorder(env))
+
+
+def test_serialize_centralised():
+    env = DiscreteMockEnv(4)
+    serde_and_check_key_values(wrappers.Centralized(env))
+
+
+def test_serialize_pad_extras():
+    env = DiscreteMockEnv(4)
+    serde_and_check_key_values(wrappers.PadExtras(env, 5))
+
+
+def test_serialize_pad_observation():
+    env = DiscreteMockEnv(4)
+    serde_and_check_key_values(wrappers.PadObservations(env, 5))
+
+
 def test_wrappers_serializable():
     env = DiscreteMockEnv(4)
     env = marlenv.Builder(env).agent_id().available_actions().time_limit(10).last_action().time_penalty(5).blind(0.2).build()
-    as_bytes = orjson.dumps(env, option=orjson.OPT_SERIALIZE_NUMPY)
-    deserialized = orjson.loads(as_bytes)
 
-    def check_key_values(env: object, deserialized: dict):
-        for key, value in env.__dict__.items():
-            if key.startswith("_"):
-                continue
-            assert key in deserialized
-            if key == "wrapped":
-                check_key_values(value, deserialized[key])
-
-    check_key_values(env, deserialized)
+    serde_and_check_key_values(env)
 
 
 def test_serialize_observation():
@@ -204,3 +261,23 @@ def test_serialize_json_overcooked():
     assert deserialized["n_actions"] == env.n_actions
     assert deserialized["name"] == env.name
     assert deserialized["extras_meanings"] == env.extras_meanings
+
+
+@pytest.mark.skipif(not marlenv.adapters.HAS_GYM, reason="Gymnasium is not installed")
+def test_json_serialize_gym():
+    env = marlenv.make("CartPole-v1")
+    serde_and_check_key_values(env)
+
+
+@pytest.mark.skipif(not marlenv.adapters.HAS_PETTINGZOO, reason="PettingZoo is not installed")
+def test_json_serialize_pettingzoo():
+    from pettingzoo.sisl import pursuit_v4
+
+    env = marlenv.adapters.PettingZoo(pursuit_v4.parallel_env())
+    serde_and_check_key_values(env)
+
+
+@pytest.mark.skipif(not marlenv.adapters.HAS_SMAC, reason="SMAC is not installed")
+def test_json_serialize_smac():
+    env = marlenv.adapters.SMAC("3m")
+    serde_and_check_key_values(env)

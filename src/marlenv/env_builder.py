@@ -127,7 +127,7 @@ class Builder(Generic[A, AS]):
         from marlenv.models import DiscreteActionSpace
 
         assert isinstance(self._env.action_space, DiscreteActionSpace)
-        self._env = wrappers.Centralised(self._env)  # type: ignore
+        self._env = wrappers.Centralized(self._env)  # type: ignore
         return self
 
     def record(
