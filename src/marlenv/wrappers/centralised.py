@@ -14,7 +14,7 @@ A = TypeVar("A", bound=npt.NDArray | Sequence[int] | Sequence[Sequence[float]])
 
 
 @dataclass
-class Centralised(RLEnvWrapper[A, DiscreteActionSpace]):
+class Centralized(RLEnvWrapper[A, DiscreteActionSpace]):
     joint_action_space: ActionSpace
 
     def __init__(self, env: MARLEnv[A, DiscreteActionSpace]):

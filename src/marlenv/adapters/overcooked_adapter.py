@@ -81,7 +81,7 @@ class Overcooked(MARLEnv[Sequence[int] | npt.NDArray, DiscreteActionSpace]):
         for agent_num, agent_actions in enumerate(actions):
             for action in agent_actions:
                 available_actions[agent_num, Action.ACTION_TO_INDEX[action]] = True
-        return np.array(available_actions)
+        return np.array(available_actions, dtype=np.bool)
 
     def step(self, actions: Sequence[int] | npt.NDArray[np.int32 | np.int64]) -> Step:
         actions = [Action.ALL_ACTIONS[a] for a in actions]

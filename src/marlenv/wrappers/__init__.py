@@ -7,7 +7,7 @@ from .paddings import PadObservations, PadExtras
 from .penalty_wrapper import TimePenalty
 from .available_actions_wrapper import AvailableActions
 from .blind_wrapper import Blind
-from .centralised import Centralised
+from .centralised import Centralized
 from .available_actions_mask import AvailableActionsMask
 from .delayed_rewards import DelayedReward
 
@@ -24,6 +24,6 @@ __all__ = [
     "TimePenalty",
     "AvailableActions",
     "Blind",
-    "Centralised",
+    "Centralized",
     "DelayedReward",
 ]

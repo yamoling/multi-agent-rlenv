@@ -32,7 +32,7 @@ class PettingZoo(MARLEnv[npt.NDArray, ActionSpace]):
         obs_space = env.observation_space(env.possible_agents[0])
         if obs_space.shape is None:
             raise NotImplementedError("Only discrete observation spaces are supported")
-        self._env = env
+        self._pz_env = env
         env.reset()
         super().__init__(space, obs_space.shape, self.get_state().shape)
         self.agents = env.possible_agents
@@ -40,13 +40,13 @@ class PettingZoo(MARLEnv[npt.NDArray, ActionSpace]):
 
     def get_state(self):
         try:
-            return self._env.state()
+            return self._pz_env.state()
         except NotImplementedError:
             return np.array([0])
 
     def step(self, actions: npt.NDArray | Sequence):
         action_dict = dict(zip(self.agents, actions))
-        obs, reward, term, trunc, info = self._env.step(action_dict)
+        obs, reward, term, trunc, info = self._pz_env.step(action_dict)
         obs_data = np.array([v for v in obs.values()])
         reward = np.sum([r for r in reward.values()], keepdims=True)
         self.last_observation = Observation(obs_data, self.available_actions())
@@ -54,7 +54,7 @@ class PettingZoo(MARLEnv[npt.NDArray, ActionSpace]):
         return Step(self.last_observation, state, reward, any(term.values()), any(trunc.values()), info)
 
     def reset(self):
-        obs = self._env.reset()[0]
+        obs = self._pz_env.reset()[0]
         obs_data = np.array([v for v in obs.values()])
         self.last_observation = Observation(obs_data, self.available_actions(), self.get_state())
         return self.last_observation
@@ -65,7 +65,7 @@ class PettingZoo(MARLEnv[npt.NDArray, ActionSpace]):
         return self.last_observation
 
     def seed(self, seed_value: int):
-        self._env.reset(seed=seed_value)
+        self._pz_env.reset(seed=seed_value)
 
     def render(self, *_):
-        return self._env.render()
+        return self._pz_env.render()

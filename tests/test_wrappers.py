@@ -1,7 +1,7 @@
 import numpy as np
 from typing import Any
 from marlenv import Builder, DiscreteMOMockEnv, DiscreteMockEnv, MARLEnv
-from marlenv.wrappers import Centralised, AvailableActionsMask, TimeLimit, LastAction, DelayedReward
+from marlenv.wrappers import Centralized, AvailableActionsMask, TimeLimit, LastAction, DelayedReward
 import marlenv
 
 
@@ -181,7 +181,7 @@ def test_centralised_shape():
 
 def test_centralised_action():
     mock = DiscreteMockEnv(2)
-    env = Centralised(mock)
+    env = Centralized(mock)
     for action1 in range(mock.n_actions):
         for action2 in range(mock.n_actions):
             joint_action = action1 * mock.n_actions + action2
@@ -192,7 +192,7 @@ def test_centralised_action():
 
 def test_centralised_obs_and_state():
     wrapped = DiscreteMockEnv(2)
-    env = Centralised(wrapped)
+    env = Centralized(wrapped)
     assert env.observation_shape == (2 * wrapped.obs_size,)
     assert env.state_shape == (wrapped.agent_state_size * wrapped.n_agents,)
     obs, state = env.reset()
@@ -214,7 +214,7 @@ def test_centralised_available_actions():
     mask = np.zeros((N_AGENTS, mock.n_actions), dtype=np.bool_)
     mask[0, 0] = True
     mask[1, 0] = True
-    env = Centralised(AvailableActionsMask(mock, mask))
+    env = Centralized(AvailableActionsMask(mock, mask))
     expected_joint_mask = np.zeros((1, mock.n_actions**N_AGENTS))
     expected_joint_mask[0, 0] = 1
     obs, _ = env.reset()

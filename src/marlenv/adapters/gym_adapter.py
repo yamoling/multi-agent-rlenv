@@ -42,26 +42,26 @@ class Gym(MARLEnv[Sequence | npt.NDArray, ActionSpace]):
             case other:
                 raise NotImplementedError(f"Action space {other} not supported")
         super().__init__(space, env.observation_space.shape, (1,))
-        self.env = env
-        if self.env.unwrapped.spec is not None:
-            self.name = self.env.unwrapped.spec.id
+        self._gym_env = env
+        if self._gym_env.unwrapped.spec is not None:
+            self.name = self._gym_env.unwrapped.spec.id
         else:
             self.name = "gym-no-id"
-        self.last_obs = None
+        self._last_obs = None
 
     def get_observation(self):
-        if self.last_obs is None:
+        if self._last_obs is None:
             raise ValueError("No observation available. Call reset() first.")
-        return self.last_obs
+        return self._last_obs
 
     def step(self, actions):
-        obs, reward, done, truncated, info = self.env.step(list(actions)[0])
-        self.last_obs = Observation(
+        obs, reward, done, truncated, info = self._gym_env.step(list(actions)[0])
+        self._last_obs = Observation(
             np.array([obs], dtype=np.float32),
             self.available_actions(),
         )
         return Step(
-            self.last_obs,
+            self._last_obs,
             self.get_state(),
             np.array([reward]),
             done,
@@ -73,18 +73,18 @@ class Gym(MARLEnv[Sequence | npt.NDArray, ActionSpace]):
         return State(np.zeros(1, dtype=np.float32))
 
     def reset(self):
-        obs_data, _info = self.env.reset()
-        self.last_obs = Observation(
+        obs_data, _info = self._gym_env.reset()
+        self._last_obs = Observation(
             np.array([obs_data], dtype=np.float32),
             self.available_actions(),
         )
-        return self.last_obs, self.get_state()
+        return self._last_obs, self.get_state()
 
     def get_image(self):
-        image = np.array(self.env.render())
+        image = np.array(self._gym_env.render())
         if sys.platform in ("linux", "linux2"):
             image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
         return image
 
     def seed(self, seed_value: int):
-        self.env.reset(seed=seed_value)
+        self._gym_env.reset(seed=seed_value)
