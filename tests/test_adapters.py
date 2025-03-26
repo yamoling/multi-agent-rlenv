@@ -188,9 +188,7 @@ def test_overcooked_shaping():
     from marlenv.adapters import Overcooked
 
     UP = 0
-    DOWN = 1
     RIGHT = 2
-    LEFT = 3
     STAY = 4
     INTERACT = 5
     grid = [
@@ -214,6 +212,28 @@ def test_overcooked_shaping():
         step = env.step(action)
         if expected_reward:
             assert step.reward.item() > 0
+
+
+@pytest.mark.skipif(skip_overcooked, reason="Overcooked is not installed")
+def test_overcooked_name():
+    from marlenv.adapters import Overcooked
+
+    grid = [
+        ["X", "X", "X", "D", "X"],
+        ["X", "O", "S", "2", "X"],
+        ["X", "1", "P", " ", "X"],
+        ["X", "T", "S", " ", "X"],
+        ["X", "X", "X", "X", "X"],
+    ]
+
+    env = Overcooked.from_grid(grid, reward_shaping=True)
+    assert env.name == "Overcooked-custom-layout"
+
+    env = Overcooked.from_grid(grid, reward_shaping=True, layout_name="my incredible grid")
+    assert env.name == "Overcooked-my incredible grid"
+
+    env = Overcooked.from_layout("asymmetric_advantages")
+    assert env.name == "Overcooked-asymmetric_advantages"
 
 
 def test_pymarl():

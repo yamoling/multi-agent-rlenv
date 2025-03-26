@@ -1,6 +1,6 @@
 import sys
 from dataclasses import dataclass
-from typing import Literal, Sequence
+from typing import Literal, Sequence, Optional
 from copy import deepcopy
 from time import time
 
@@ -20,7 +20,7 @@ class Overcooked(MARLEnv[Sequence[int] | npt.NDArray, DiscreteActionSpace]):
     horizon: int
     reward_shaping: bool
 
-    def __init__(self, oenv: OvercookedEnv, reward_shaping: bool = True):
+    def __init__(self, oenv: OvercookedEnv, reward_shaping: bool = True, name_suffix: Optional[str] = None):
         self.reward_shaping = reward_shaping
         self._oenv = oenv
         assert isinstance(oenv.mdp, OvercookedGridworld)
@@ -43,6 +43,8 @@ class Overcooked(MARLEnv[Sequence[int] | npt.NDArray, DiscreteActionSpace]):
             reward_space=ContinuousSpace.from_shape(1),
         )
         self.horizon = int(self._oenv.horizon)
+        if name_suffix is not None:
+            self.name = f"{self.name}-{name_suffix}"
 
     @property
     def state(self) -> OvercookedState:
@@ -193,13 +195,14 @@ class Overcooked(MARLEnv[Sequence[int] | npt.NDArray, DiscreteActionSpace]):
         reward_shaping: bool = True,
     ):
         mdp = OvercookedGridworld.from_layout_name(layout)
-        return Overcooked(OvercookedEnv.from_mdp(mdp, horizon=horizon), reward_shaping=reward_shaping)
+        return Overcooked(OvercookedEnv.from_mdp(mdp, horizon=horizon), reward_shaping=reward_shaping, name_suffix=layout)
 
     @staticmethod
     def from_grid(
         grid: Sequence[Sequence[Literal["S", "P", "X", "O", "D", "T", "1", "2", " "] | str]],
         horizon: int = 400,
         reward_shaping: bool = True,
+        layout_name: Optional[str] = None,
     ):
         """
         Create an Overcooked environment from a grid layout where
@@ -212,10 +215,14 @@ class Overcooked(MARLEnv[Sequence[int] | npt.NDArray, DiscreteActionSpace]):
         - 1 is a player 1 starting location
         - 2 is a player 2 starting location
         - ' ' is a walkable space
+
+        If provided, `custom_name` is added to the environment name.
         """
         # It is necessary to add an explicit layout name because Overcooked saves some files under this
         # name. By default the name is a concatenation of the grid elements, which may include characters
         # such as white spaces, pipes ('|') and square brackets ('[' and ']') that are invalid Windows file paths.
-        layout_name = str(time())
+        if layout_name is None:
+            layout_name = "custom-layout"
         mdp = OvercookedGridworld.from_grid(grid, base_layout_params={"layout_name": layout_name})
-        return Overcooked(OvercookedEnv.from_mdp(mdp, horizon=horizon), reward_shaping=reward_shaping)
+
+        return Overcooked(OvercookedEnv.from_mdp(mdp, horizon=horizon), reward_shaping=reward_shaping, name_suffix=layout_name)
