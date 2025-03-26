@@ -183,6 +183,39 @@ def test_overcooked_obs_state():
             assert step.done
 
 
+@pytest.mark.skipif(skip_overcooked, reason="Overcooked is not installed")
+def test_overcooked_shaping():
+    from marlenv.adapters import Overcooked
+
+    UP = 0
+    DOWN = 1
+    RIGHT = 2
+    LEFT = 3
+    STAY = 4
+    INTERACT = 5
+    grid = [
+        ["X", "X", "X", "D", "X"],
+        ["X", "O", "S", "2", "X"],
+        ["X", "1", "P", " ", "X"],
+        ["X", "T", "S", " ", "X"],
+        ["X", "X", "X", "X", "X"],
+    ]
+
+    env = Overcooked.from_grid(grid, reward_shaping=True)
+    env.reset()
+    actions_rewards = [
+        ([UP, STAY], False),
+        ([INTERACT, STAY], False),
+        ([RIGHT, STAY], False),
+        ([INTERACT, STAY], True),
+    ]
+
+    for action, expected_reward in actions_rewards:
+        step = env.step(action)
+        if expected_reward:
+            assert step.reward.item() > 0
+
+
 def test_pymarl():
     LIMIT = 20
     N_AGENTS = 2
