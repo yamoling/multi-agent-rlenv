@@ -2,6 +2,7 @@ import sys
 from dataclasses import dataclass
 from typing import Literal, Sequence
 from copy import deepcopy
+from time import time
 
 import cv2
 import numpy as np
@@ -212,5 +213,9 @@ class Overcooked(MARLEnv[Sequence[int] | npt.NDArray, DiscreteActionSpace]):
         - 2 is a player 2 starting location
         - ' ' is a walkable space
         """
-        mdp = OvercookedGridworld.from_grid(grid)
+        # It is necessary to add an explicit layout name because Overcooked saves some files under this
+        # name. By default the name is a concatenation of the grid elements, which may include characters
+        # such as white spaces, pipes ('|') and square brackets ('[' and ']') that are invalid Windows file paths.
+        layout_name = str(time())
+        mdp = OvercookedGridworld.from_grid(grid, base_layout_params={"layout_name": layout_name})
         return Overcooked(OvercookedEnv.from_mdp(mdp, horizon=horizon), reward_shaping=reward_shaping)
