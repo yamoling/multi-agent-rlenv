@@ -7,6 +7,7 @@ from copy import deepcopy
 
 import marlenv
 from marlenv import DiscreteMockEnv, wrappers
+from marlenv.utils import Schedule
 
 
 def test_registry():
@@ -197,6 +198,16 @@ def test_deepcopy_overcooked():
     env = marlenv.adapters.Overcooked.from_layout("scenario4")
     env2 = deepcopy(env)
     assert env == env2
+
+
+@pytest.mark.skipif(not marlenv.adapters.HAS_OVERCOOKED, reason="Overcooked is not installed")
+def test_deepcopy_overcooked_schedule():
+    env = marlenv.adapters.Overcooked.from_layout("scenario4", reward_shaping_factor=Schedule.linear(1, 0, 10))
+    env2 = deepcopy(env)
+    assert env == env2
+
+    env.random_step()
+    assert not env == env2, "The reward shaping factor should be different"
 
 
 @pytest.mark.skipif(not marlenv.adapters.HAS_OVERCOOKED, reason="Overcooked is not installed")

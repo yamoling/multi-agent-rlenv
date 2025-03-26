@@ -199,7 +199,7 @@ def test_overcooked_shaping():
         ["X", "X", "X", "X", "X"],
     ]
 
-    env = Overcooked.from_grid(grid, reward_shaping=True)
+    env = Overcooked.from_grid(grid)
     env.reset()
     actions_rewards = [
         ([UP, STAY], False),
@@ -226,10 +226,10 @@ def test_overcooked_name():
         ["X", "X", "X", "X", "X"],
     ]
 
-    env = Overcooked.from_grid(grid, reward_shaping=True)
+    env = Overcooked.from_grid(grid)
     assert env.name == "Overcooked-custom-layout"
 
-    env = Overcooked.from_grid(grid, reward_shaping=True, layout_name="my incredible grid")
+    env = Overcooked.from_grid(grid, layout_name="my incredible grid")
     assert env.name == "Overcooked-my incredible grid"
 
     env = Overcooked.from_layout("asymmetric_advantages")
