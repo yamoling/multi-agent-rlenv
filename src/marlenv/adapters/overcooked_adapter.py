@@ -17,8 +17,10 @@ from overcooked_ai_py.visualization.state_visualizer import StateVisualizer
 @dataclass
 class Overcooked(MARLEnv[Sequence[int] | npt.NDArray, DiscreteActionSpace]):
     horizon: int
+    reward_shaping: bool
 
-    def __init__(self, oenv: OvercookedEnv):
+    def __init__(self, oenv: OvercookedEnv, reward_shaping: bool = True):
+        self.reward_shaping = reward_shaping
         self._oenv = oenv
         assert isinstance(oenv.mdp, OvercookedGridworld)
         self._mdp = oenv.mdp
@@ -86,10 +88,12 @@ class Overcooked(MARLEnv[Sequence[int] | npt.NDArray, DiscreteActionSpace]):
     def step(self, actions: Sequence[int] | npt.NDArray[np.int32 | np.int64]) -> Step:
         actions = [Action.ALL_ACTIONS[a] for a in actions]
         _, reward, done, info = self._oenv.step(actions, display_phi=True)
+        if self.reward_shaping:
+            reward += sum(info["shaped_r_by_agent"])
         return Step(
             obs=self.get_observation(),
             state=self.get_state(),
-            reward=np.array([reward]),
+            reward=np.array([reward], dtype=np.float32),
             done=done,
             truncated=False,
             info=info,
@@ -185,6 +189,28 @@ class Overcooked(MARLEnv[Sequence[int] | npt.NDArray, DiscreteActionSpace]):
             "you_shall_not_pass",
         ],
         horizon: int = 400,
+        reward_shaping: bool = True,
     ):
         mdp = OvercookedGridworld.from_layout_name(layout)
-        return Overcooked(OvercookedEnv.from_mdp(mdp, horizon=horizon))
+        return Overcooked(OvercookedEnv.from_mdp(mdp, horizon=horizon), reward_shaping=reward_shaping)
+
+    @staticmethod
+    def from_grid(
+        grid: Sequence[Sequence[Literal["S", "P", "X", "O", "D", "T", "1", "2", " "] | str]],
+        horizon: int = 400,
+        reward_shaping: bool = True,
+    ):
+        """
+        Create an Overcooked environment from a grid layout where
+        - S is a serving location
+        - P is a cooking pot
+        - X is a counter
+        - O is an onion dispenser
+        - D is a dish dispenser
+        - T is a tomato dispenser
+        - 1 is a player 1 starting location
+        - 2 is a player 2 starting location
+        - ' ' is a walkable space
+        """
+        mdp = OvercookedGridworld.from_grid(grid)
+        return Overcooked(OvercookedEnv.from_mdp(mdp, horizon=horizon), reward_shaping=reward_shaping)
