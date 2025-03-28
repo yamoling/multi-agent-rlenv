@@ -209,7 +209,7 @@ class Overcooked(MARLEnv[Sequence[int] | npt.NDArray, DiscreteActionSpace]):
         reward_shaping_factor: float | Schedule = 1.0,
     ):
         mdp = OvercookedGridworld.from_layout_name(layout)
-        return Overcooked(OvercookedEnv.from_mdp(mdp, horizon=horizon), reward_shaping_factor, layout)
+        return Overcooked(OvercookedEnv.from_mdp(mdp, horizon=horizon, info_level=0), reward_shaping_factor, layout)
 
     @staticmethod
     def from_grid(
