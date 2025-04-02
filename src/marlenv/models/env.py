@@ -108,6 +108,11 @@ class MARLEnv(ABC, Generic[ActionType, ActionSpaceType]):
         """Whether the environment is multi-objective."""
         return self.reward_space.size > 1
 
+    @property
+    def n_objectives(self) -> int:
+        """The number of objectives in the environment."""
+        return self.reward_space.size
+
     def sample_action(self) -> ActionType:
         """Sample an available action from the action space."""
         return self.action_space.sample(self.available_actions())  # type: ignore
