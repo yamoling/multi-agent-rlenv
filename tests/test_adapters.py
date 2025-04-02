@@ -1,5 +1,3 @@
-from importlib.util import find_spec
-
 import numpy as np
 import pytest
 
@@ -7,12 +5,12 @@ import marlenv
 from marlenv import ContinuousActionSpace, DiscreteActionSpace, DiscreteMockEnv, MARLEnv, Observation, State
 from marlenv.adapters import PymarlAdapter
 
-skip_gym = find_spec("gymnasium") is None
-skip_pettingzoo = find_spec("pettingzoo") is None
-skip_smac = find_spec("smac") is None
+skip_gym = not marlenv.adapters.HAS_GYM
+skip_pettingzoo = not marlenv.adapters.HAS_PETTINGZOO
+skip_smac = not marlenv.adapters.HAS_SMAC
 # Check for "overcooked_ai_py.mdp" specifically because after uninstalling, the package
 # can still be found because of some remaining .pkl file.
-skip_overcooked = find_spec("overcooked_ai_py.mdp") is None
+skip_overcooked = not marlenv.adapters.HAS_OVERCOOKED
 
 
 @pytest.mark.skipif(skip_gym, reason="Gymnasium is not installed")
