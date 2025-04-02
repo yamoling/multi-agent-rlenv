@@ -239,4 +239,4 @@ class Overcooked(MARLEnv[Sequence[int] | npt.NDArray, DiscreteActionSpace]):
             layout_name = "custom-layout"
         mdp = OvercookedGridworld.from_grid(grid, base_layout_params={"layout_name": layout_name})
 
-        return Overcooked(OvercookedEnv.from_mdp(mdp, horizon=horizon), shaping_factor, layout_name)
+        return Overcooked(OvercookedEnv.from_mdp(mdp, horizon=horizon, info_level=0), shaping_factor, layout_name)
