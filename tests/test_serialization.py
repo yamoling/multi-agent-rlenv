@@ -7,6 +7,7 @@ from copy import deepcopy
 
 import marlenv
 from marlenv import DiscreteMockEnv, wrappers
+from marlenv.utils import Schedule
 
 
 def test_registry():
@@ -200,6 +201,16 @@ def test_deepcopy_overcooked():
 
 
 @pytest.mark.skipif(not marlenv.adapters.HAS_OVERCOOKED, reason="Overcooked is not installed")
+def test_deepcopy_overcooked_schedule():
+    env = marlenv.adapters.Overcooked.from_layout("scenario4", reward_shaping_factor=Schedule.linear(1, 0, 10))
+    env2 = deepcopy(env)
+    assert env == env2
+
+    env.random_step()
+    assert not env == env2, "The reward shaping factor should be different"
+
+
+@pytest.mark.skipif(not marlenv.adapters.HAS_OVERCOOKED, reason="Overcooked is not installed")
 def test_pickle_overcooked():
     env = marlenv.adapters.Overcooked.from_layout("scenario1_s", horizon=60)
     serialized = pickle.dumps(env)
@@ -281,3 +292,42 @@ def test_json_serialize_pettingzoo():
 def test_json_serialize_smac():
     env = marlenv.adapters.SMAC("3m")
     serde_and_check_key_values(env)
+
+
+class C:
+    def __call__(self, t):
+        return t + 1
+
+
+def test_serialize_schedule():
+    s = Schedule.linear(0, 1, 10)
+    orjson.dumps(s)
+    b = pickle.dumps(s)
+    s2 = pickle.loads(b)
+    assert s == s2
+
+    s = Schedule.exp(1, 16, 5)
+    orjson.dumps(s)
+    b = pickle.dumps(s)
+    s2 = pickle.loads(b)
+    assert s == s2
+
+    s = Schedule.constant(50)
+    orjson.dumps(s)
+    b = pickle.dumps(s)
+    s2 = pickle.loads(b)
+    assert s == s2
+
+    s = Schedule.arbitrary(lambda t: t + 1)
+    b = orjson.dumps(s)
+    try:
+        pickle.dumps(s)
+        assert False, "Should not be able to pickle arbitrary schedules because of the callable lambda"
+    except AttributeError:
+        pass
+
+    s = Schedule.arbitrary(C())
+    orjson.dumps(s)
+    b = pickle.dumps(s)
+    s2 = pickle.loads(b)
+    assert s == s2

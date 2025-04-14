@@ -1,5 +1,3 @@
-from importlib.util import find_spec
-
 import numpy as np
 import pytest
 
@@ -7,12 +5,12 @@ import marlenv
 from marlenv import ContinuousActionSpace, DiscreteActionSpace, DiscreteMockEnv, MARLEnv, Observation, State
 from marlenv.adapters import PymarlAdapter
 
-skip_gym = find_spec("gymnasium") is None
-skip_pettingzoo = find_spec("pettingzoo") is None
-skip_smac = find_spec("smac") is None
+skip_gym = not marlenv.adapters.HAS_GYM
+skip_pettingzoo = not marlenv.adapters.HAS_PETTINGZOO
+skip_smac = not marlenv.adapters.HAS_SMAC
 # Check for "overcooked_ai_py.mdp" specifically because after uninstalling, the package
 # can still be found because of some remaining .pkl file.
-skip_overcooked = find_spec("overcooked_ai_py.mdp") is None
+skip_overcooked = not marlenv.adapters.HAS_OVERCOOKED
 
 
 @pytest.mark.skipif(skip_gym, reason="Gymnasium is not installed")
@@ -188,9 +186,7 @@ def test_overcooked_shaping():
     from marlenv.adapters import Overcooked
 
     UP = 0
-    DOWN = 1
     RIGHT = 2
-    LEFT = 3
     STAY = 4
     INTERACT = 5
     grid = [
@@ -201,7 +197,7 @@ def test_overcooked_shaping():
         ["X", "X", "X", "X", "X"],
     ]
 
-    env = Overcooked.from_grid(grid, reward_shaping=True)
+    env = Overcooked.from_grid(grid)
     env.reset()
     actions_rewards = [
         ([UP, STAY], False),
@@ -214,6 +210,28 @@ def test_overcooked_shaping():
         step = env.step(action)
         if expected_reward:
             assert step.reward.item() > 0
+
+
+@pytest.mark.skipif(skip_overcooked, reason="Overcooked is not installed")
+def test_overcooked_name():
+    from marlenv.adapters import Overcooked
+
+    grid = [
+        ["X", "X", "X", "D", "X"],
+        ["X", "O", "S", "2", "X"],
+        ["X", "1", "P", " ", "X"],
+        ["X", "T", "S", " ", "X"],
+        ["X", "X", "X", "X", "X"],
+    ]
+
+    env = Overcooked.from_grid(grid)
+    assert env.name == "Overcooked-custom-layout"
+
+    env = Overcooked.from_grid(grid, layout_name="my incredible grid")
+    assert env.name == "Overcooked-my incredible grid"
+
+    env = Overcooked.from_layout("asymmetric_advantages")
+    assert env.name == "Overcooked-asymmetric_advantages"
 
 
 def test_pymarl():

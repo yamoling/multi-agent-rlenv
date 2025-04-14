@@ -1,14 +1,14 @@
 import sys
 from dataclasses import dataclass
-from typing import Literal, Sequence
+from typing import Literal, Sequence, Optional
 from copy import deepcopy
-from time import time
 
 import cv2
 import numpy as np
 import numpy.typing as npt
 import pygame
 from marlenv.models import ContinuousSpace, DiscreteActionSpace, MARLEnv, Observation, State, Step
+from marlenv.utils import Schedule
 
 from overcooked_ai_py.mdp.overcooked_env import OvercookedEnv
 from overcooked_ai_py.mdp.overcooked_mdp import Action, OvercookedGridworld, OvercookedState
@@ -18,10 +18,17 @@ from overcooked_ai_py.visualization.state_visualizer import StateVisualizer
 @dataclass
 class Overcooked(MARLEnv[Sequence[int] | npt.NDArray, DiscreteActionSpace]):
     horizon: int
-    reward_shaping: bool
+    shaping_factor: Schedule
 
-    def __init__(self, oenv: OvercookedEnv, reward_shaping: bool = True):
-        self.reward_shaping = reward_shaping
+    def __init__(
+        self,
+        oenv: OvercookedEnv,
+        shaping_factor: float | Schedule = 1.0,
+        name_suffix: Optional[str] = None,
+    ):
+        if isinstance(shaping_factor, (int, float)):
+            shaping_factor = Schedule.constant(shaping_factor)
+        self.shaping_factor = shaping_factor
         self._oenv = oenv
         assert isinstance(oenv.mdp, OvercookedGridworld)
         self._mdp = oenv.mdp
@@ -43,6 +50,8 @@ class Overcooked(MARLEnv[Sequence[int] | npt.NDArray, DiscreteActionSpace]):
             reward_space=ContinuousSpace.from_shape(1),
         )
         self.horizon = int(self._oenv.horizon)
+        if name_suffix is not None:
+            self.name = f"{self.name}-{name_suffix}"
 
     @property
     def state(self) -> OvercookedState:
@@ -87,10 +96,11 @@ class Overcooked(MARLEnv[Sequence[int] | npt.NDArray, DiscreteActionSpace]):
         return np.array(available_actions, dtype=np.bool)
 
     def step(self, actions: Sequence[int] | npt.NDArray[np.int32 | np.int64]) -> Step:
+        self.shaping_factor.update()
         actions = [Action.ALL_ACTIONS[a] for a in actions]
         _, reward, done, info = self._oenv.step(actions, display_phi=True)
-        if self.reward_shaping:
-            reward += sum(info["shaped_r_by_agent"])
+
+        reward += sum(info["shaped_r_by_agent"]) * self.shaping_factor
         return Step(
             obs=self.get_observation(),
             state=self.get_state(),
@@ -104,19 +114,25 @@ class Overcooked(MARLEnv[Sequence[int] | npt.NDArray, DiscreteActionSpace]):
         self._oenv.reset()
         return self.get_observation(), self.get_state()
 
-    def __deepcopy__(self, memo: dict):
+    def __deepcopy__(self, _):
+        """
+        Note: a specific implementation is needed because `pygame.font.Font` objects are not deep-copiable by default.
+        """
         mdp = deepcopy(self._mdp)
-        return Overcooked(OvercookedEnv.from_mdp(mdp, horizon=self.horizon))
+        copy = Overcooked(OvercookedEnv.from_mdp(mdp, horizon=self.horizon), deepcopy(self.shaping_factor))
+        copy.name = self.name
+        return copy
 
     def __getstate__(self):
-        return {"horizon": self.horizon, "mdp": self._mdp}
+        return {"horizon": self.horizon, "mdp": self._mdp, "name": self.name, "schedule": self.shaping_factor}
 
     def __setstate__(self, state: dict):
         from overcooked_ai_py.mdp.overcooked_mdp import Recipe
 
         mdp = state["mdp"]
         Recipe.configure(mdp.recipe_config)
-        self.__init__(OvercookedEnv.from_mdp(state["mdp"], horizon=state["horizon"]))
+        self.__init__(OvercookedEnv.from_mdp(state["mdp"], horizon=state["horizon"]), shaping_factor=state["schedule"])
+        self.name = state["name"]
 
     def get_image(self):
         rewards_dict = {}  # dictionary of details you want rendered in the UI
@@ -190,16 +206,17 @@ class Overcooked(MARLEnv[Sequence[int] | npt.NDArray, DiscreteActionSpace]):
             "you_shall_not_pass",
         ],
         horizon: int = 400,
-        reward_shaping: bool = True,
+        reward_shaping_factor: float | Schedule = 1.0,
     ):
         mdp = OvercookedGridworld.from_layout_name(layout)
-        return Overcooked(OvercookedEnv.from_mdp(mdp, horizon=horizon), reward_shaping=reward_shaping)
+        return Overcooked(OvercookedEnv.from_mdp(mdp, horizon=horizon, info_level=0), reward_shaping_factor, layout)
 
     @staticmethod
     def from_grid(
         grid: Sequence[Sequence[Literal["S", "P", "X", "O", "D", "T", "1", "2", " "] | str]],
         horizon: int = 400,
-        reward_shaping: bool = True,
+        shaping_factor: float | Schedule = 1.0,
+        layout_name: Optional[str] = None,
     ):
         """
         Create an Overcooked environment from a grid layout where
@@ -212,10 +229,14 @@ class Overcooked(MARLEnv[Sequence[int] | npt.NDArray, DiscreteActionSpace]):
         - 1 is a player 1 starting location
         - 2 is a player 2 starting location
         - ' ' is a walkable space
+
+        If provided, `custom_name` is added to the environment name.
         """
         # It is necessary to add an explicit layout name because Overcooked saves some files under this
         # name. By default the name is a concatenation of the grid elements, which may include characters
         # such as white spaces, pipes ('|') and square brackets ('[' and ']') that are invalid Windows file paths.
-        layout_name = str(time())
+        if layout_name is None:
+            layout_name = "custom-layout"
         mdp = OvercookedGridworld.from_grid(grid, base_layout_params={"layout_name": layout_name})
-        return Overcooked(OvercookedEnv.from_mdp(mdp, horizon=horizon), reward_shaping=reward_shaping)
+
+        return Overcooked(OvercookedEnv.from_mdp(mdp, horizon=horizon, info_level=0), shaping_factor, layout_name)

@@ -179,9 +179,9 @@ class Episode(Generic[A]):
     @cached_property
     def dones(self):
         """The done flags for each transition"""
-        dones = np.zeros_like(self.rewards, dtype=np.float32)
+        dones = np.zeros_like(self.rewards, dtype=np.bool)
         if self.is_done:
-            dones[self.episode_len - 1 :] = 1.0
+            dones[self.episode_len - 1 :] = True
         return dones
 
     @property

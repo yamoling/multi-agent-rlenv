@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from itertools import product
-from typing import Generic, Optional, Sequence
+from typing import Any, Generic, Optional, Sequence
 
 import cv2
 import numpy as np
@@ -13,8 +13,8 @@ from .spaces import ActionSpace, ContinuousSpace, Space
 from .state import State
 from .step import Step
 
-ActionType = TypeVar("ActionType", default=npt.NDArray)
-ActionSpaceType = TypeVar("ActionSpaceType", bound=ActionSpace, default=ActionSpace)
+ActionType = TypeVar("ActionType", default=Any)
+ActionSpaceType = TypeVar("ActionSpaceType", bound=ActionSpace, default=Any)
 
 
 @dataclass
@@ -107,6 +107,11 @@ class MARLEnv(ABC, Generic[ActionType, ActionSpaceType]):
     def is_multi_objective(self) -> bool:
         """Whether the environment is multi-objective."""
         return self.reward_space.size > 1
+
+    @property
+    def n_objectives(self) -> int:
+        """The number of objectives in the environment."""
+        return self.reward_space.size
 
     def sample_action(self) -> ActionType:
         """Sample an available action from the action space."""
