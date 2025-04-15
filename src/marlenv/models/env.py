@@ -1,20 +1,19 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from itertools import product
-from typing import Any, Generic, Optional, Sequence
+from typing import Generic, Optional, Sequence, TypeVar
 
 import cv2
 import numpy as np
 import numpy.typing as npt
-from typing_extensions import TypeVar
 
 from .observation import Observation
-from .spaces import ActionSpace, ContinuousSpace, Space
+from .spaces import ContinuousSpace, Space, DiscreteSpace, MultiDiscreteSpace
 from .state import State
 from .step import Step
 
-ActionType = TypeVar("ActionType", default=Any)
-ActionSpaceType = TypeVar("ActionSpaceType", bound=ActionSpace, default=Any)
+ActionType = TypeVar("ActionType")
+ActionSpaceType = TypeVar("ActionSpaceType", bound=Space)
 
 
 @dataclass
@@ -70,6 +69,7 @@ class MARLEnv(ABC, Generic[ActionType, ActionSpaceType]):
 
     def __init__(
         self,
+        n_agents: int,
         action_space: ActionSpaceType,
         observation_shape: tuple[int, ...],
         state_shape: tuple[int, ...],
@@ -81,8 +81,8 @@ class MARLEnv(ABC, Generic[ActionType, ActionSpaceType]):
         super().__init__()
         self.name = self.__class__.__name__
         self.action_space = action_space
-        self.n_actions = action_space.n_actions
-        self.n_agents = action_space.n_agents
+        self.n_actions = action_space.shape[-1]
+        self.n_agents = n_agents
         self.observation_shape = observation_shape
         self.state_shape = state_shape
         self.extras_shape = extras_shape
@@ -115,7 +115,12 @@ class MARLEnv(ABC, Generic[ActionType, ActionSpaceType]):
 
     def sample_action(self) -> ActionType:
         """Sample an available action from the action space."""
-        return self.action_space.sample(self.available_actions())  # type: ignore
+        match self.action_space:
+            case MultiDiscreteSpace() | DiscreteSpace() as aspace:
+                return aspace.sample(mask=self.available_actions())  # type: ignore
+            case ContinuousSpace() as aspace:
+                return aspace.sample()  # type: ignore
+        raise NotImplementedError("Action space not supported")
 
     def available_actions(self) -> npt.NDArray[np.bool]:
         """

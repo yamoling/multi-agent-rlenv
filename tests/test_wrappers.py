@@ -143,7 +143,7 @@ def test_time_limit_wrapper_with_truncation_penalty():
 
 
 def test_blind_wrapper():
-    def test(env: marlenv.MARLEnv[Any, Any]):
+    def test(env: marlenv.MARLEnv):
         obs, _ = env.reset()
         assert np.any(obs.data != 0)
         step = env.step(env.action_space.sample())

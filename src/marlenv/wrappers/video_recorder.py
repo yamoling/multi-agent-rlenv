@@ -7,12 +7,12 @@ import cv2
 import numpy.typing as npt
 from typing_extensions import TypeVar
 
-from marlenv.models import ActionSpace
+from marlenv.models import Space
 
 from .rlenv_wrapper import MARLEnv, RLEnvWrapper
 
 A = TypeVar("A", default=npt.NDArray)
-AS = TypeVar("AS", bound=ActionSpace, default=ActionSpace)
+AS = TypeVar("AS", bound=Space, default=Space)
 
 
 @dataclass

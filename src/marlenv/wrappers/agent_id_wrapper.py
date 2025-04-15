@@ -1,12 +1,12 @@
 import numpy as np
-from marlenv.models import MARLEnv, ActionSpace
+from marlenv.models import MARLEnv, Space
 from dataclasses import dataclass
 from .rlenv_wrapper import RLEnvWrapper
 
 from typing_extensions import TypeVar
 
 A = TypeVar("A", default=np.ndarray)
-AS = TypeVar("AS", bound=ActionSpace, default=ActionSpace)
+AS = TypeVar("AS", bound=Space, default=Space)
 
 
 @dataclass

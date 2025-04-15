@@ -5,11 +5,11 @@ import numpy as np
 import numpy.typing as npt
 from smac.env import StarCraft2Env
 
-from marlenv.models import DiscreteActionSpace, MARLEnv, Observation, State, Step
+from marlenv.models import MARLEnv, Observation, State, Step, MultiDiscreteSpace, DiscreteSpace
 
 
 @dataclass
-class SMAC(MARLEnv[Sequence[int] | npt.NDArray, DiscreteActionSpace]):
+class SMAC(MARLEnv[Sequence[int] | npt.NDArray, MultiDiscreteSpace]):
     """Wrapper for the SMAC environment to work with this framework"""
 
     @overload
@@ -157,10 +157,10 @@ class SMAC(MARLEnv[Sequence[int] | npt.NDArray, DiscreteActionSpace]):
             case other:
                 raise ValueError(f"Invalid argument type: {type(other)}")
         self._env = StarCraft2Env(map_name=map_name)
-        action_space = DiscreteActionSpace(self._env.n_agents, self._env.n_actions)
         self._env_info = self._env.get_env_info()
         super().__init__(
-            action_space=action_space,
+            self._env.n_agents,
+            action_space=DiscreteSpace(self._env.n_actions).repeat(self._env.n_agents),
             observation_shape=(self._env_info["obs_shape"],),
             state_shape=(self._env_info["state_shape"],),
         )
@@ -195,7 +195,7 @@ class SMAC(MARLEnv[Sequence[int] | npt.NDArray, DiscreteActionSpace]):
         )
         return step
 
-    def available_actions(self) -> npt.NDArray[np.bool_]:
+    def available_actions(self) -> npt.NDArray[np.bool]:
         return np.array(self._env.get_avail_actions()) == 1
 
     def get_image(self):

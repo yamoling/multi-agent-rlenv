@@ -8,19 +8,11 @@ import numpy as np
 import numpy.typing as npt
 from gymnasium import Env, spaces
 
-from marlenv.models import (
-    ActionSpace,
-    ContinuousActionSpace,
-    DiscreteActionSpace,
-    MARLEnv,
-    Observation,
-    State,
-    Step,
-)
+from marlenv import Space, MARLEnv, Observation, State, Step, DiscreteSpace, ContinuousSpace
 
 
 @dataclass
-class Gym(MARLEnv[Sequence | npt.NDArray, ActionSpace]):
+class Gym(MARLEnv[Sequence | npt.NDArray, Space]):
     """Wraps a gym envronment in an RLEnv"""
 
     def __init__(self, env: Env | str, **kwargs):
@@ -30,7 +22,7 @@ class Gym(MARLEnv[Sequence | npt.NDArray, ActionSpace]):
             raise NotImplementedError("Observation space must have a shape")
         match env.action_space:
             case spaces.Discrete() as s:
-                space = DiscreteActionSpace(1, int(s.n))
+                space = DiscreteSpace(int(s.n), labels=[f"Action {i}" for i in range(s.n)]).repeat(1)
             case spaces.Box() as s:
                 low = s.low.astype(np.float32)
                 high = s.high.astype(np.float32)
@@ -38,10 +30,10 @@ class Gym(MARLEnv[Sequence | npt.NDArray, ActionSpace]):
                     low = np.full(s.shape, s.low, dtype=np.float32)
                 if not isinstance(high, np.ndarray):
                     high = np.full(s.shape, s.high, dtype=np.float32)
-                space = ContinuousActionSpace(1, low, high)
+                space = ContinuousSpace(low, high, labels=[f"Action {i}" for i in range(s.shape[0])]).repeat(1)
             case other:
                 raise NotImplementedError(f"Action space {other} not supported")
-        super().__init__(space, env.observation_space.shape, (1,))
+        super().__init__(1, space, env.observation_space.shape, (1,))
         self._gym_env = env
         if self._gym_env.unwrapped.spec is not None:
             self.name = self._gym_env.unwrapped.spec.id

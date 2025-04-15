@@ -65,13 +65,8 @@ If you want to create a new environment, you can simply create a class that inhe
 __version__ = "3.4.0"
 
 from . import models
-from . import wrappers
-from . import adapters
-from .models import spaces
-
-
-from .env_builder import make, Builder
 from .models import (
+    spaces,
     MARLEnv,
     State,
     Step,
@@ -80,10 +75,14 @@ from .models import (
     Transition,
     DiscreteSpace,
     ContinuousSpace,
-    ActionSpace,
-    DiscreteActionSpace,
-    ContinuousActionSpace,
+    Space,
+    MultiDiscreteSpace,
 )
+
+
+from . import wrappers
+from . import adapters
+from .env_builder import make, Builder
 from .wrappers import RLEnvWrapper
 from .mock_env import DiscreteMockEnv, DiscreteMOMockEnv
 
@@ -100,12 +99,11 @@ __all__ = [
     "Observation",
     "Episode",
     "Transition",
-    "ActionSpace",
     "DiscreteSpace",
     "ContinuousSpace",
-    "DiscreteActionSpace",
-    "ContinuousActionSpace",
     "DiscreteMockEnv",
     "DiscreteMOMockEnv",
     "RLEnvWrapper",
+    "Space",
+    "MultiDiscreteSpace",
 ]

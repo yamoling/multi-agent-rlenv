@@ -6,7 +6,7 @@ import numpy as np
 import numpy.typing as npt
 from typing_extensions import TypeVar
 
-from marlenv.models import ActionSpace, DiscreteActionSpace, DiscreteSpace, MARLEnv, Observation
+from marlenv.models import DiscreteSpace, MARLEnv, Observation, MultiDiscreteSpace
 
 from .rlenv_wrapper import RLEnvWrapper
 
@@ -14,18 +14,19 @@ A = TypeVar("A", bound=npt.NDArray | Sequence[int] | Sequence[Sequence[float]])
 
 
 @dataclass
-class Centralized(RLEnvWrapper[A, DiscreteActionSpace]):
-    joint_action_space: ActionSpace
+class Centralized(RLEnvWrapper[A, MultiDiscreteSpace]):
+    joint_action_space: DiscreteSpace
 
-    def __init__(self, env: MARLEnv[A, DiscreteActionSpace]):
-        if not isinstance(env.action_space.individual_action_space, DiscreteSpace):
+    def __init__(self, env: MARLEnv[A, MultiDiscreteSpace]):
+        if not isinstance(env.action_space, MultiDiscreteSpace):
             raise NotImplementedError(f"Action space {env.action_space} not supported")
         joint_observation_shape = (env.observation_shape[0] * env.n_agents, *env.observation_shape[1:])
         super().__init__(
             env,
-            joint_observation_shape,
-            env.state_shape,
-            env.extras_shape,
+            n_agents=1,
+            observation_shape=joint_observation_shape,
+            state_shape=env.state_shape,
+            state_extra_shape=env.extras_shape,
             action_space=self._make_joint_action_space(env),
         )
 
@@ -37,12 +38,12 @@ class Centralized(RLEnvWrapper[A, DiscreteActionSpace]):
         obs = super().get_observation()
         return self._joint_observation(obs)
 
-    def _make_joint_action_space(self, env: MARLEnv[A, DiscreteActionSpace]):
+    def _make_joint_action_space(self, env: MARLEnv[A, MultiDiscreteSpace]):
         agent_actions = list[list[str]]()
         for agent in range(env.n_agents):
-            agent_actions.append([f"{agent}-{action}" for action in env.action_space.action_names])
+            agent_actions.append([f"{agent}-{action}" for action in env.action_space.labels])
         action_names = [str(a) for a in product(*agent_actions)]
-        return DiscreteActionSpace(1, env.n_actions**env.n_agents, action_names)
+        return DiscreteSpace(env.n_actions**env.n_agents, action_names).repeat(1)
 
     def step(self, actions: npt.NDArray | Sequence):
         action = actions[0]

@@ -217,8 +217,8 @@ class Episode(Generic[A]):
         env: MARLEnv[A, Any],
         seed: Optional[int] = None,
         *,
-        after_reset: Optional[Callable[[Observation, State, MARLEnv[A]], None]] = None,
-        after_step: Optional[Callable[[int, Step, MARLEnv[A]], None]] = None,
+        after_reset: Optional[Callable[[Observation, State, MARLEnv[A, Any]], None]] = None,
+        after_step: Optional[Callable[[int, Step, MARLEnv[A, Any]], None]] = None,
     ):
         """
         Replay the episode in the environment (i.e. perform the actions) and assert that the outcomes match.

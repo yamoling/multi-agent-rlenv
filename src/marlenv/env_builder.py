@@ -5,10 +5,10 @@ import numpy.typing as npt
 
 from . import wrappers
 from marlenv import adapters
-from .models import ActionSpace, MARLEnv
+from .models import Space, MARLEnv
 
 A = TypeVar("A")
-AS = TypeVar("AS", bound=ActionSpace)
+AS = TypeVar("AS", bound=Space)
 
 if adapters.HAS_PETTINGZOO:
     from .adapters import PettingZoo
@@ -124,9 +124,9 @@ class Builder(Generic[A, AS]):
 
     def centralised(self):
         """Centralises the observations and actions"""
-        from marlenv.models import DiscreteActionSpace
+        from marlenv.models import MultiDiscreteSpace
 
-        assert isinstance(self._env.action_space, DiscreteActionSpace)
+        assert isinstance(self._env.action_space, MultiDiscreteSpace)
         self._env = wrappers.Centralized(self._env)  # type: ignore
         return self
 

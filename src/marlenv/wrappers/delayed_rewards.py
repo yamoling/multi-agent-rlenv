@@ -1,5 +1,5 @@
 from .rlenv_wrapper import RLEnvWrapper, MARLEnv
-from marlenv.models import ActionSpace
+from marlenv.models import Space
 from typing_extensions import TypeVar
 import numpy.typing as npt
 import numpy as np
@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from collections import deque
 
 A = TypeVar("A", default=npt.NDArray)
-AS = TypeVar("AS", bound=ActionSpace, default=ActionSpace)
+AS = TypeVar("AS", bound=Space, default=Space)
 
 
 @dataclass

@@ -5,11 +5,11 @@ from typing import Sequence
 import numpy as np
 import numpy.typing as npt
 
-from marlenv.models import State, ActionSpace, ContinuousActionSpace, DiscreteActionSpace
+from marlenv.models import State, Space, ContinuousSpace, DiscreteSpace, MultiDiscreteSpace
 
 from .rlenv_wrapper import MARLEnv, RLEnvWrapper
 
-AS = TypeVar("AS", bound=ActionSpace, default=ActionSpace)
+AS = TypeVar("AS", bound=Space, default=Space)
 DiscreteActionType = npt.NDArray[np.int64 | np.int32] | Sequence[int]
 ContinuousActionType = npt.NDArray[np.float32] | Sequence[Sequence[float]]
 A = TypeVar("A", bound=DiscreteActionType | ContinuousActionType)
@@ -40,9 +40,9 @@ class LastAction(RLEnvWrapper[A, AS]):
     def step(self, actions: A):
         step = super().step(actions)
         match self.wrapped.action_space:
-            case ContinuousActionSpace():
+            case ContinuousSpace():
                 self.last_actions = actions
-            case DiscreteActionSpace():
+            case DiscreteSpace() | MultiDiscreteSpace():
                 self.last_one_hot_actions = self.compute_one_hot_actions(actions)  # type: ignore
             case other:
                 raise NotImplementedError(f"Action space {other} not supported")

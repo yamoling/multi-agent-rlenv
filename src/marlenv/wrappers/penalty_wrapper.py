@@ -1,14 +1,14 @@
 from dataclasses import dataclass
 import numpy as np
 import numpy.typing as npt
-from marlenv.models import ActionSpace
+from marlenv.models import Space
 from .rlenv_wrapper import RLEnvWrapper, MARLEnv
 # from ..models.rl_env import MOMARLEnv
 
 from typing_extensions import TypeVar
 
 A = TypeVar("A", default=npt.NDArray)
-AS = TypeVar("AS", bound=ActionSpace, default=ActionSpace)
+AS = TypeVar("AS", bound=Space, default=Space)
 
 
 @dataclass

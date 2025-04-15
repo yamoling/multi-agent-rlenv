@@ -5,10 +5,10 @@ from typing_extensions import TypeVar
 import random
 
 from marlenv import RLEnvWrapper, MARLEnv
-from marlenv.models import ActionSpace
+from marlenv.models import Space
 
 ActionType = TypeVar("ActionType", default=npt.NDArray)
-ActionSpaceType = TypeVar("ActionSpaceType", bound=ActionSpace, default=ActionSpace)
+ActionSpaceType = TypeVar("ActionSpaceType", bound=Space, default=Space)
 
 
 @dataclass

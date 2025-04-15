@@ -3,11 +3,11 @@ from typing_extensions import TypeVar
 from dataclasses import dataclass
 from abc import ABC
 import numpy.typing as npt
-from marlenv.models import MARLEnv, ActionSpace, DiscreteSpace, State
+from marlenv.models import MARLEnv, Space, DiscreteSpace, State
 
 
 A = TypeVar("A", default=npt.NDArray)
-AS = TypeVar("AS", bound=ActionSpace, default=ActionSpace)
+AS = TypeVar("AS", bound=Space, default=Space)
 
 
 @dataclass
@@ -21,6 +21,8 @@ class RLEnvWrapper(MARLEnv[A, AS], ABC):
     def __init__(
         self,
         env: MARLEnv[A, AS],
+        *,
+        n_agents: Optional[int] = None,
         observation_shape: Optional[tuple[int, ...]] = None,
         state_shape: Optional[tuple[int, ...]] = None,
         extra_shape: Optional[tuple[int, ...]] = None,
@@ -35,6 +37,7 @@ class RLEnvWrapper(MARLEnv[A, AS], ABC):
             if len(extra_meanings) != extra_shape[0]:
                 raise ValueError(f"There are {len(extra_meanings)} extra_meanings but the announced extra_shape is {extra_shape} !")
         super().__init__(
+            n_agents=n_agents or env.n_agents,
             action_space=action_space or env.action_space,
             observation_shape=observation_shape or env.observation_shape,
             state_shape=state_shape or env.state_shape,

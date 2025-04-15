@@ -1,12 +1,10 @@
 import math
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Any, Generic, Optional, TypeVar
+from typing import Optional
 
 import numpy as np
 import numpy.typing as npt
-
-S = TypeVar("S", bound="Space")
 
 
 @dataclass
@@ -23,7 +21,7 @@ class Space(ABC):
         self.labels = labels
 
     @abstractmethod
-    def sample(self, mask: Optional[npt.NDArray[np.bool_]] = None) -> Any:
+    def sample(self, mask: Optional[npt.NDArray[np.bool_]] = None) -> npt.NDArray[np.float32]:
         """Sample a value from the space."""
 
     def __eq__(self, value: object) -> bool:
@@ -45,8 +43,8 @@ class DiscreteSpace(Space):
         self.size = size
         self.space = np.arange(size)
 
-    def sample(self, mask: Optional[npt.NDArray[np.bool_]] = None) -> int:
-        space = self.space
+    def sample(self, mask: Optional[npt.NDArray[np.bool]] = None):
+        space = self.space.copy()
         if mask is not None:
             space = space[mask]
         return int(np.random.choice(space))
@@ -57,6 +55,21 @@ class DiscreteSpace(Space):
         if self.size != value.size:
             return False
         return super().__eq__(value)
+
+    @staticmethod
+    def action(size, labels: Optional[list[str]] = None):
+        """
+        Create a discrete action space where the default labels are set to "Action-n".
+        """
+        if labels is None:
+            labels = [f"Action {i}" for i in range(size)]
+        return DiscreteSpace(size, labels)
+
+    def repeat(self, n: int):
+        """
+        Repeat the discrete space n times.
+        """
+        return MultiDiscreteSpace(*([self] * n), labels=self.labels)
 
 
 @dataclass
@@ -75,10 +88,10 @@ class MultiDiscreteSpace(Space):
     def from_sizes(cls, *sizes: int):
         return cls(*(DiscreteSpace(size) for size in sizes))
 
-    def sample(self, masks: Optional[npt.NDArray[np.bool_] | list[npt.NDArray[np.bool_]]] = None):
-        if masks is None:
+    def sample(self, mask: Optional[npt.NDArray[np.bool] | list[npt.NDArray[np.bool]]] = None):
+        if mask is None:
             return np.array([space.sample() for space in self.spaces], dtype=np.int32)
-        return np.array([space.sample(mask) for mask, space in zip(masks, self.spaces)], dtype=np.int32)
+        return np.array([space.sample(mask=mask) for mask, space in zip(mask, self.spaces)], dtype=np.int32)
 
     def __eq__(self, value: object) -> bool:
         if not isinstance(value, MultiDiscreteSpace):
@@ -100,23 +113,35 @@ class ContinuousSpace(Space):
     high: npt.NDArray[np.float32]
     """Upper bound of the space for each dimension."""
 
-    @staticmethod
-    def from_bounds(
-        low: int | float | list | npt.NDArray[np.float32],
-        high: int | float | list | npt.NDArray[np.float32],
+    def __init__(
+        self,
+        low: int | float | list | npt.NDArray[np.float32] | None,
+        high: int | float | list | npt.NDArray[np.float32] | None,
         labels: Optional[list[str]] = None,
     ):
         match low:
+            case None:
+                assert high is not None, "If low is None, high must be set to infer the shape."
+                shape = ContinuousSpace.get_shape(high)
+                low = np.full(shape, -np.inf, dtype=np.float32)
             case list():
                 low = np.array(low, dtype=np.float32)
             case float() | int():
                 low = np.array([low], dtype=np.float32)
         match high:
+            case None:
+                assert low is not None, "If high is None, low must be set to infer the shape."
+                shape = ContinuousSpace.get_shape(low)
+                high = np.full(shape, np.inf, dtype=np.float32)
             case list():
                 high = np.array(high, dtype=np.float32)
             case float() | int():
                 high = np.array([high], dtype=np.float32)
-        return ContinuousSpace(low, high, labels)
+        assert low.shape == high.shape, f"Low and high must have the same shape. Low shape: {low.shape}, high shape: {high.shape}"
+        assert np.all(low <= high), "All elements in low must be less than the corresponding elements in high."
+        Space.__init__(self, low.shape, labels)
+        self.low = low
+        self.high = high
 
     @staticmethod
     def from_shape(
@@ -143,20 +168,24 @@ class ContinuousSpace(Space):
                 high = np.array(high, dtype=np.float32)
         return ContinuousSpace(low, high, labels)
 
-    def __init__(
-        self,
-        low: npt.NDArray[np.float32],
-        high: npt.NDArray[np.float32],
-        labels: Optional[list[str]] = None,
-    ):
-        assert low.shape == high.shape, "Low and high must have the same shape."
-        assert np.all(low <= high), "All elements in low must be less than the corresponding elements in high."
-        Space.__init__(self, low.shape, labels)
-        self.low = low
-        self.high = high
+    def clamp(self, action: np.ndarray | list):
+        """Clamp the action to the bounds of the space."""
+        if isinstance(action, list):
+            action = np.array(action)
+        return np.clip(action, self.low, self.high)
 
-    def sample(self, *_):
-        return np.random.random(self.shape) * (self.high - self.low) + self.low
+    def sample(self) -> npt.NDArray[np.float32]:
+        r = np.random.random(self.shape) * (self.high - self.low) + self.low
+        return r.astype(np.float32)
+
+    @staticmethod
+    def get_shape(item: float | int | list | npt.NDArray[np.float32]) -> tuple[int, ...]:
+        """Get the shape of the item."""
+        if isinstance(item, list):
+            item = np.array(item)
+        if isinstance(item, np.ndarray):
+            return item.shape
+        return (1,)
 
     def __eq__(self, value: object) -> bool:
         if not isinstance(value, ContinuousSpace):
@@ -167,59 +196,15 @@ class ContinuousSpace(Space):
             return False
         return super().__eq__(value)
 
-
-@dataclass
-class ActionSpace(Space, Generic[S]):
-    n_agents: int
-    """Number of agents."""
-    action_names: list[str]
-    """The meaning of each action."""
-    n_actions: int
-    individual_action_space: S
-
-    def __init__(self, n_agents: int, individual_action_space: S, action_names: Optional[list] = None):
-        Space.__init__(self, (n_agents, *individual_action_space.shape), action_names)
-        self.n_agents = n_agents
-        self.individual_action_space = individual_action_space
-        self.n_actions = math.prod(individual_action_space.shape)
-        self.action_names = action_names or [f"Action {i}" for i in range(self.n_actions)]
-
-    def sample(self, mask: np.ndarray | None = None):
-        res = []
-        for i in range(self.n_agents):
-            if mask is not None:
-                m = mask[i]
-            else:
-                m = None
-            res.append(self.individual_action_space.sample(m))
-        return np.array(res)
-
-    def __eq__(self, value: object) -> bool:
-        if not isinstance(value, ActionSpace):
-            return False
-        if self.n_agents != value.n_agents:
-            return False
-        if self.n_actions != value.n_actions:
-            return False
-        if self.individual_action_space != value.individual_action_space:
-            return False
-        return super().__eq__(value)
-
-
-@dataclass
-class DiscreteActionSpace(ActionSpace[DiscreteSpace]):
-    def __init__(self, n_agents: int, n_actions: int, action_names: Optional[list[str]] = None):
-        individual_action_space = DiscreteSpace(n_actions, action_names)
-        super().__init__(n_agents, individual_action_space, action_names)
-
-
-@dataclass
-class MultiDiscreteActionSpace(ActionSpace[MultiDiscreteSpace]):
-    pass
-
-
-@dataclass
-class ContinuousActionSpace(ActionSpace[ContinuousSpace]):
-    def __init__(self, n_agents: int, low: np.ndarray | list, high: np.ndarray | list, action_names: list | None = None):
-        space = ContinuousSpace.from_bounds(low, high, action_names)
-        super().__init__(n_agents, space, action_names)
+    def repeat(self, n: int):
+        """
+        Repeat the continuous space n times to become of shape (n, *shape).
+        """
+        low = np.tile(self.low, (n, 1))
+        high = np.tile(self.high, (n, 1))
+        return ContinuousSpace.from_shape(
+            (n, *self.shape),
+            low=low,
+            high=high,
+            labels=self.labels,
+        )

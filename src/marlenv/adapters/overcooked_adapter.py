@@ -7,7 +7,7 @@ import cv2
 import numpy as np
 import numpy.typing as npt
 import pygame
-from marlenv.models import ContinuousSpace, DiscreteActionSpace, MARLEnv, Observation, State, Step
+from marlenv.models import ContinuousSpace, DiscreteSpace, MARLEnv, Observation, State, Step, MultiDiscreteSpace
 from marlenv.utils import Schedule
 
 from overcooked_ai_py.mdp.overcooked_env import OvercookedEnv
@@ -16,7 +16,7 @@ from overcooked_ai_py.visualization.state_visualizer import StateVisualizer
 
 
 @dataclass
-class Overcooked(MARLEnv[Sequence[int] | npt.NDArray, DiscreteActionSpace]):
+class Overcooked(MARLEnv[Sequence[int] | npt.NDArray, MultiDiscreteSpace]):
     horizon: int
     shaping_factor: Schedule
 
@@ -37,10 +37,9 @@ class Overcooked(MARLEnv[Sequence[int] | npt.NDArray, DiscreteActionSpace]):
         # -1 because we extract the "urgent" layer to the extras
         shape = (int(layers - 1), int(width), int(height))
         super().__init__(
-            action_space=DiscreteActionSpace(
-                n_agents=self._mdp.num_players,
-                n_actions=Action.NUM_ACTIONS,
-                action_names=[Action.ACTION_TO_CHAR[a] for a in Action.ALL_ACTIONS],
+            n_agents=self._mdp.num_players,
+            action_space=DiscreteSpace(Action.NUM_ACTIONS, labels=[Action.ACTION_TO_CHAR[a] for a in Action.ALL_ACTIONS]).repeat(
+                self._mdp.num_players
             ),
             observation_shape=shape,
             extras_shape=(2,),
