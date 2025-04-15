@@ -1,21 +1,19 @@
 from typing import Sequence
 from dataclasses import dataclass
-import numpy.typing as npt
 from typing_extensions import TypeVar
 import random
 
 from marlenv import RLEnvWrapper, MARLEnv
 from marlenv.models import Space
 
-ActionType = TypeVar("ActionType", default=npt.NDArray)
 ActionSpaceType = TypeVar("ActionSpaceType", bound=Space, default=Space)
 
 
 @dataclass
-class EnvPool(RLEnvWrapper[ActionType, ActionSpaceType]):
-    envs: Sequence[MARLEnv[ActionType, ActionSpaceType]]
+class EnvPool(RLEnvWrapper[ActionSpaceType]):
+    envs: Sequence[MARLEnv[ActionSpaceType]]
 
-    def __init__(self, envs: Sequence[MARLEnv[ActionType, ActionSpaceType]]):
+    def __init__(self, envs: Sequence[MARLEnv[ActionSpaceType]]):
         assert len(envs) > 0, "EnvPool must contain at least one environment"
         self.envs = envs
         for env in envs[1:]:

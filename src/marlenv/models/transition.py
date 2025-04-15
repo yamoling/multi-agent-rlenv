@@ -1,6 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, Generic, Sequence
-from typing_extensions import TypeVar
+from typing import Any, Sequence
 
 import numpy as np
 import numpy.typing as npt
@@ -10,16 +9,13 @@ from .state import State
 from .step import Step
 
 
-A = TypeVar("A", default=np.ndarray)
-
-
 @dataclass
-class Transition(Generic[A]):
+class Transition:
     """Transition model"""
 
     obs: Observation
     state: State
-    action: A
+    action: np.ndarray
     reward: npt.NDArray[np.float32]
     done: bool
     info: dict[str, Any]
@@ -32,7 +28,7 @@ class Transition(Generic[A]):
         self,
         obs: Observation,
         state: State,
-        action: A,
+        action: np.ndarray | Sequence[float],
         reward: npt.NDArray[np.float32] | float | Sequence[float],
         done: bool,
         info: dict[str, Any],
@@ -65,14 +61,14 @@ class Transition(Generic[A]):
     def from_step(
         prev_obs: Observation,
         prev_state: State,
-        actions: A,
+        action: np.ndarray | Sequence[float],
         step: Step,
         **kwargs,
     ):
         return Transition(
             obs=prev_obs,
             state=prev_state,
-            action=actions,
+            action=action,
             reward=step.reward,
             done=step.done,
             info=step.info,

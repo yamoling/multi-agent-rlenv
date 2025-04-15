@@ -1,21 +1,18 @@
 from dataclasses import dataclass
 import numpy as np
-import numpy.typing as npt
 from marlenv.models import Space
 from .rlenv_wrapper import RLEnvWrapper, MARLEnv
-# from ..models.rl_env import MOMARLEnv
 
 from typing_extensions import TypeVar
 
-A = TypeVar("A", default=npt.NDArray)
 AS = TypeVar("AS", bound=Space, default=Space)
 
 
 @dataclass
-class TimePenalty(RLEnvWrapper[A, AS]):
+class TimePenalty(RLEnvWrapper[AS]):
     penalty: float | np.ndarray
 
-    def __init__(self, env: MARLEnv[A, AS], penalty: float | list[float]):
+    def __init__(self, env: MARLEnv[AS], penalty: float | list[float]):
         super().__init__(env)
 
         if env.is_multi_objective:
@@ -26,7 +23,7 @@ class TimePenalty(RLEnvWrapper[A, AS]):
             assert isinstance(penalty, (float, int))
             self.penalty = penalty
 
-    def step(self, action: A):
+    def step(self, action):
         step = self.wrapped.step(action)
         step.reward = step.reward - self.penalty
         return step

@@ -12,12 +12,11 @@ from .spaces import ContinuousSpace, Space, DiscreteSpace, MultiDiscreteSpace
 from .state import State
 from .step import Step
 
-ActionType = TypeVar("ActionType")
 ActionSpaceType = TypeVar("ActionSpaceType", bound=Space)
 
 
 @dataclass
-class MARLEnv(ABC, Generic[ActionType, ActionSpaceType]):
+class MARLEnv(ABC, Generic[ActionSpaceType]):
     """
     Multi-Agent Reinforcement Learning environment.
 
@@ -113,13 +112,15 @@ class MARLEnv(ABC, Generic[ActionType, ActionSpaceType]):
         """The number of objectives in the environment."""
         return self.reward_space.size
 
-    def sample_action(self) -> ActionType:
+    def sample_action(self):
         """Sample an available action from the action space."""
         match self.action_space:
-            case MultiDiscreteSpace() | DiscreteSpace() as aspace:
-                return aspace.sample(mask=self.available_actions())  # type: ignore
+            case MultiDiscreteSpace() as aspace:
+                return aspace.sample(mask=self.available_actions())
             case ContinuousSpace() as aspace:
-                return aspace.sample()  # type: ignore
+                return aspace.sample()
+            case DiscreteSpace() as aspace:
+                return np.array([aspace.sample(mask=self.available_actions())])
         raise NotImplementedError("Action space not supported")
 
     def available_actions(self) -> npt.NDArray[np.bool]:
@@ -152,7 +153,7 @@ class MARLEnv(ABC, Generic[ActionType, ActionSpaceType]):
         raise NotImplementedError("Method not implemented")
 
     @abstractmethod
-    def step(self, actions: ActionType) -> Step:
+    def step(self, action: Sequence | np.ndarray) -> Step:
         """Perform a step in the environment.
 
         Returns a Step object that can be unpacked as a 6-tuple containing:
@@ -185,7 +186,7 @@ class MARLEnv(ABC, Generic[ActionType, ActionSpaceType]):
         """Retrieve an image of the environment"""
         raise NotImplementedError("No image available for this environment")
 
-    def replay(self, actions: Sequence[ActionType], seed: Optional[int] = None):
+    def replay(self, actions: Sequence, seed: Optional[int] = None):
         """Replay a sequence of actions."""
         from .episode import Episode  # Avoid circular import
 

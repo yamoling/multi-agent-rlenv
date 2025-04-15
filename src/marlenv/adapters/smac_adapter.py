@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Sequence, overload
+from typing import overload
 
 import numpy as np
 import numpy.typing as npt
@@ -9,7 +9,7 @@ from marlenv.models import MARLEnv, Observation, State, Step, MultiDiscreteSpace
 
 
 @dataclass
-class SMAC(MARLEnv[Sequence[int] | npt.NDArray, MultiDiscreteSpace]):
+class SMAC(MARLEnv[MultiDiscreteSpace]):
     """Wrapper for the SMAC environment to work with this framework"""
 
     @overload

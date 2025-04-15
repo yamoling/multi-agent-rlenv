@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from functools import cached_property
-from typing import Any, Callable, Generic, Optional, Sequence, TypeVar, overload
+from typing import Any, Callable, Optional, Sequence, overload
 
 import numpy as np
 import numpy.typing as npt
@@ -14,11 +14,8 @@ from .env import MARLEnv
 from marlenv.exceptions import EnvironmentMismatchException, ReplayMismatchException
 
 
-A = TypeVar("A")
-
-
 @dataclass
-class Episode(Generic[A]):
+class Episode:
     """Episode model made of observations, actions, rewards, ..."""
 
     all_observations: list[npt.NDArray[np.float32]]
@@ -55,7 +52,7 @@ class Episode(Generic[A]):
         )
 
     @staticmethod
-    def from_transitions(transitions: Sequence[Transition[A]]) -> "Episode":
+    def from_transitions(transitions: Sequence[Transition]) -> "Episode":
         """Create an episode from a list of transitions"""
         episode = Episode.new(transitions[0].obs, transitions[0].state)
         for transition in transitions:
@@ -214,11 +211,11 @@ class Episode(Generic[A]):
 
     def replay(
         self,
-        env: MARLEnv[A, Any],
+        env: MARLEnv,
         seed: Optional[int] = None,
         *,
-        after_reset: Optional[Callable[[Observation, State, MARLEnv[A, Any]], None]] = None,
-        after_step: Optional[Callable[[int, Step, MARLEnv[A, Any]], None]] = None,
+        after_reset: Optional[Callable[[Observation, State, MARLEnv], None]] = None,
+        after_step: Optional[Callable[[int, Step, MARLEnv], None]] = None,
     ):
         """
         Replay the episode in the environment (i.e. perform the actions) and assert that the outcomes match.
@@ -248,7 +245,7 @@ class Episode(Generic[A]):
             if after_step is not None:
                 after_step(i, step, env)
 
-    def get_images(self, env: MARLEnv[A, Any], seed: Optional[int] = None) -> list[np.ndarray]:
+    def get_images(self, env: MARLEnv, seed: Optional[int] = None) -> list[np.ndarray]:
         images = []
 
         def collect_image(*_, **__):
@@ -257,7 +254,7 @@ class Episode(Generic[A]):
         self.replay(env, seed, after_reset=collect_image, after_step=collect_image)
         return images
 
-    def render(self, env: MARLEnv[A, Any], seed: Optional[int] = None, fps: int = 5):
+    def render(self, env: MARLEnv, seed: Optional[int] = None, fps: int = 5):
         def render_callback(*_, **__):
             env.render()
             cv2.waitKey(1000 // fps)
@@ -288,10 +285,10 @@ class Episode(Generic[A]):
         return returns
 
     @overload
-    def add(self, transition: Transition[A], /): ...
+    def add(self, transition: Transition, /): ...
 
     @overload
-    def add(self, step: Step, action: A, /): ...
+    def add(self, step: Step, action: np.ndarray, /): ...
 
     def add(self, *data):
         match data:
@@ -322,10 +319,10 @@ class Episode(Generic[A]):
 
     def add_data(
         self,
-        next_obs,
-        next_state,
-        action: A,
-        reward: np.ndarray,
+        next_obs: Observation,
+        next_state: State,
+        action: np.ndarray,
+        reward: npt.NDArray[np.float32],
         others: dict[str, Any],
         done: bool,
         truncated: bool,

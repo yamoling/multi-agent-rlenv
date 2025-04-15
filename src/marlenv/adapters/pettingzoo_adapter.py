@@ -10,7 +10,7 @@ from marlenv.models import MARLEnv, Observation, State, Step, DiscreteSpace, Con
 
 
 @dataclass
-class PettingZoo(MARLEnv[npt.NDArray, Space]):
+class PettingZoo(MARLEnv[Space]):
     def __init__(self, env: ParallelEnv):
         aspace = env.action_space(env.possible_agents[0])
         n_agents = len(env.possible_agents)

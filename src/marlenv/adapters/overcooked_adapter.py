@@ -16,7 +16,7 @@ from overcooked_ai_py.visualization.state_visualizer import StateVisualizer
 
 
 @dataclass
-class Overcooked(MARLEnv[Sequence[int] | npt.NDArray, MultiDiscreteSpace]):
+class Overcooked(MARLEnv[MultiDiscreteSpace]):
     horizon: int
     shaping_factor: Schedule
 
@@ -94,7 +94,7 @@ class Overcooked(MARLEnv[Sequence[int] | npt.NDArray, MultiDiscreteSpace]):
                 available_actions[agent_num, Action.ACTION_TO_INDEX[action]] = True
         return np.array(available_actions, dtype=np.bool)
 
-    def step(self, actions: Sequence[int] | npt.NDArray[np.int32 | np.int64]) -> Step:
+    def step(self, actions: Sequence[int] | np.ndarray) -> Step:
         self.shaping_factor.update()
         actions = [Action.ALL_ACTIONS[a] for a in actions]
         _, reward, done, info = self._oenv.step(actions, display_phi=True)

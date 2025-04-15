@@ -4,20 +4,17 @@ from typing import Sequence
 
 import numpy as np
 import numpy.typing as npt
-from typing_extensions import TypeVar
 
-from marlenv.models import DiscreteSpace, MARLEnv, Observation, MultiDiscreteSpace
+from marlenv.models import DiscreteSpace, MARLEnv, MultiDiscreteSpace, Observation
 
 from .rlenv_wrapper import RLEnvWrapper
 
-A = TypeVar("A", bound=npt.NDArray | Sequence[int] | Sequence[Sequence[float]])
-
 
 @dataclass
-class Centralized(RLEnvWrapper[A, MultiDiscreteSpace]):
+class Centralized(RLEnvWrapper[MultiDiscreteSpace]):
     joint_action_space: DiscreteSpace
 
-    def __init__(self, env: MARLEnv[A, MultiDiscreteSpace]):
+    def __init__(self, env: MARLEnv[MultiDiscreteSpace]):
         if not isinstance(env.action_space, MultiDiscreteSpace):
             raise NotImplementedError(f"Action space {env.action_space} not supported")
         joint_observation_shape = (env.observation_shape[0] * env.n_agents, *env.observation_shape[1:])
@@ -38,7 +35,7 @@ class Centralized(RLEnvWrapper[A, MultiDiscreteSpace]):
         obs = super().get_observation()
         return self._joint_observation(obs)
 
-    def _make_joint_action_space(self, env: MARLEnv[A, MultiDiscreteSpace]):
+    def _make_joint_action_space(self, env: MARLEnv[MultiDiscreteSpace]):
         agent_actions = list[list[str]]()
         for agent in range(env.n_agents):
             agent_actions.append([f"{agent}-{action}" for action in env.action_space.labels])

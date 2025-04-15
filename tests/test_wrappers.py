@@ -1,5 +1,4 @@
 import numpy as np
-from typing import Any
 from marlenv import Builder, DiscreteMOMockEnv, DiscreteMockEnv, MARLEnv
 from marlenv.wrappers import Centralized, AvailableActionsMask, TimeLimit, LastAction, DelayedReward
 import marlenv
@@ -330,7 +329,7 @@ def test_wrapper_extra_names():
     assert env.extras_meanings == ["Time ratio"] + ["Last action"] * env.n_actions
 
 
-def _test_delayed_rewards(env: MARLEnv[Any, Any]):
+def _test_delayed_rewards(env: MARLEnv):
     assert isinstance(env, DelayedReward)
     assert isinstance(env.wrapped, DiscreteMockEnv)
     expected = []

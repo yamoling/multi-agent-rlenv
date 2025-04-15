@@ -1,26 +1,26 @@
-from typing import Optional
+from typing import Optional, Sequence
 from typing_extensions import TypeVar
 from dataclasses import dataclass
 from abc import ABC
-import numpy.typing as npt
+import numpy as np
+
 from marlenv.models import MARLEnv, Space, DiscreteSpace, State
 
 
-A = TypeVar("A", default=npt.NDArray)
 AS = TypeVar("AS", bound=Space, default=Space)
 
 
 @dataclass
-class RLEnvWrapper(MARLEnv[A, AS], ABC):
+class RLEnvWrapper(MARLEnv[AS], ABC):
     """Parent class for all RLEnv wrappers"""
 
-    wrapped: MARLEnv[A, AS]
+    wrapped: MARLEnv[AS]
     full_name: str
     """The full name of the wrapped environment, excluding the name of the nested wrappers."""
 
     def __init__(
         self,
-        env: MARLEnv[A, AS],
+        env: MARLEnv[AS],
         *,
         n_agents: Optional[int] = None,
         observation_shape: Optional[tuple[int, ...]] = None,
@@ -63,7 +63,7 @@ class RLEnvWrapper(MARLEnv[A, AS], ABC):
     def agent_state_size(self):
         return self.wrapped.agent_state_size
 
-    def step(self, actions: A):
+    def step(self, actions: np.ndarray | Sequence):
         return self.wrapped.step(actions)
 
     def reset(self):

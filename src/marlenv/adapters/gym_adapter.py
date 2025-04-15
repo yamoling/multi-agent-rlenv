@@ -1,18 +1,16 @@
 import sys
-import cv2
 from dataclasses import dataclass
-from typing import Sequence
 
+import cv2
 import gymnasium as gym
 import numpy as np
-import numpy.typing as npt
 from gymnasium import Env, spaces
 
-from marlenv import Space, MARLEnv, Observation, State, Step, DiscreteSpace, ContinuousSpace
+from marlenv import ContinuousSpace, DiscreteSpace, MARLEnv, Observation, Space, State, Step
 
 
 @dataclass
-class Gym(MARLEnv[Sequence | npt.NDArray, Space]):
+class Gym(MARLEnv[Space]):
     """Wraps a gym envronment in an RLEnv"""
 
     def __init__(self, env: Env | str, **kwargs):
