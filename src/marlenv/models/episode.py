@@ -240,7 +240,7 @@ class Episode:
                 raise ReplayMismatchException("observation", step.obs.data, self.next_obs[i], time_step=i)
             if not np.array_equal(step.state.data, self.next_states[i]):
                 raise ReplayMismatchException("state", step.state.data, self.next_states[i], time_step=i)
-            if not np.array_equal(step.reward, self.rewards[i]):
+            if not np.isclose(step.reward, self.rewards[i]):
                 raise ReplayMismatchException("reward", step.reward, self.rewards[i], time_step=i)
             if after_step is not None:
                 after_step(i, step, env)

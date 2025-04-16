@@ -28,6 +28,28 @@ def test_continuous_action_space():
         assert np.all(actions[:, 2] >= 0) and np.all(actions[:, 2] < 2)
 
 
+def test_is_discrete():
+    s = DiscreteSpace(3)
+    assert s.is_discrete
+    s = MultiDiscreteSpace(DiscreteSpace(3), DiscreteSpace(4))
+    assert s.is_discrete
+    s = ContinuousSpace(low=[0.0, -1.0, 0.0], high=[1.0, 1.0, 2.0])
+    assert not s.is_discrete
+    s = ContinuousSpace(low=[[0.0, 0.5], [-1, -1]], high=[[1.0, 1.0], [1.0, 1.0]])
+    assert not s.is_discrete
+
+
+def test_is_continuous():
+    s = DiscreteSpace(3)
+    assert not s.is_continuous
+    s = MultiDiscreteSpace(DiscreteSpace(3), DiscreteSpace(4))
+    assert not s.is_continuous
+    s = ContinuousSpace(low=[0.0, -1.0, 0.0], high=[1.0, 1.0, 2.0])
+    assert s.is_continuous
+    s = ContinuousSpace(low=[[0.0, 0.5], [-1, -1]], high=[[1.0, 1.0], [1.0, 1.0]])
+    assert s.is_continuous
+
+
 def test_action_names():
     s = DiscreteSpace(3, ["a", "b", "c"])
     assert s.labels == ["a", "b", "c"]

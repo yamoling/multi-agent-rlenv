@@ -32,6 +32,16 @@ class Space(ABC):
     def __ne__(self, value: object) -> bool:
         return not self.__eq__(value)
 
+    @property
+    @abstractmethod
+    def is_discrete(self) -> bool:
+        """Whether the space is discrete."""
+
+    @property
+    def is_continuous(self) -> bool:
+        """Whether the space is continuous."""
+        return not self.is_discrete
+
 
 @dataclass
 class DiscreteSpace(Space):
@@ -55,6 +65,10 @@ class DiscreteSpace(Space):
         if self.size != value.size:
             return False
         return super().__eq__(value)
+
+    @property
+    def is_discrete(self) -> bool:
+        return True
 
     @staticmethod
     def action(size, labels: Optional[list[str]] = None):
@@ -102,6 +116,10 @@ class MultiDiscreteSpace(Space):
             if s1.size != s2.size:
                 return False
         return super().__eq__(value)
+
+    @property
+    def is_discrete(self) -> bool:
+        return True
 
 
 @dataclass
@@ -208,3 +226,7 @@ class ContinuousSpace(Space):
             high=high,
             labels=self.labels,
         )
+
+    @property
+    def is_discrete(self) -> bool:
+        return False
