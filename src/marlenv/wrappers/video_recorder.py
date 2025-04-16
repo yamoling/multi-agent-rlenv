@@ -4,24 +4,22 @@ from datetime import datetime
 from typing import Literal, Optional
 
 import cv2
-import numpy.typing as npt
 from typing_extensions import TypeVar
 
-from marlenv.models import ActionSpace
+from marlenv.models import Space
 
 from .rlenv_wrapper import MARLEnv, RLEnvWrapper
 
-A = TypeVar("A", default=npt.NDArray)
-AS = TypeVar("AS", bound=ActionSpace, default=ActionSpace)
+AS = TypeVar("AS", bound=Space, default=Space)
 
 
 @dataclass
-class VideoRecorder(RLEnvWrapper[A, AS]):
+class VideoRecorder(RLEnvWrapper[AS]):
     """Records a video of the run"""
 
     def __init__(
         self,
-        env: MARLEnv[A, AS],
+        env: MARLEnv[AS],
         video_folder: Optional[str] = None,
         video_encoding: Literal["mp4", "avi"] = "mp4",
         initial_pause_frames: int = 1,

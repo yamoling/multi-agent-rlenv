@@ -1,12 +1,10 @@
-from typing import Sequence
 import numpy as np
-import numpy.typing as npt
 from dataclasses import dataclass
-from marlenv import MARLEnv, Observation, DiscreteActionSpace, ContinuousSpace, Step, State
+from marlenv import MARLEnv, Observation, ContinuousSpace, Step, State, DiscreteSpace, MultiDiscreteSpace
 
 
 @dataclass
-class DiscreteMockEnv(MARLEnv[Sequence[int] | npt.NDArray, DiscreteActionSpace]):
+class DiscreteMockEnv(MARLEnv[MultiDiscreteSpace]):
     def __init__(
         self,
         n_agents: int = 4,
@@ -27,7 +25,8 @@ class DiscreteMockEnv(MARLEnv[Sequence[int] | npt.NDArray, DiscreteActionSpace])
             case _:
                 raise ValueError("reward_step must be an int, float or np.ndarray")
         super().__init__(
-            DiscreteActionSpace(n_agents, n_actions),
+            n_agents,
+            DiscreteSpace(n_actions).repeat(n_agents),
             (obs_size,),
             (n_agents * agent_state_size,),
             extras_shape=(extras_size,),
@@ -85,7 +84,7 @@ class DiscreteMockEnv(MARLEnv[Sequence[int] | npt.NDArray, DiscreteActionSpace])
         )
 
 
-class DiscreteMOMockEnv(MARLEnv[Sequence[int] | npt.NDArray, DiscreteActionSpace]):
+class DiscreteMOMockEnv(MARLEnv[DiscreteSpace]):
     """Multi-Objective Mock Environment"""
 
     def __init__(
@@ -100,7 +99,8 @@ class DiscreteMOMockEnv(MARLEnv[Sequence[int] | npt.NDArray, DiscreteActionSpace
         extras_size: int = 0,
     ) -> None:
         super().__init__(
-            DiscreteActionSpace(n_agents, n_actions),
+            n_agents,
+            DiscreteSpace(n_actions),
             (obs_size,),
             (n_agents * agent_state_size,),
             extras_shape=(extras_size,),

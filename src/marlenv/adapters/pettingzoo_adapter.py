@@ -6,17 +6,17 @@ import numpy.typing as npt
 from gymnasium import spaces  # pettingzoo uses gymnasium spaces
 from pettingzoo import ParallelEnv
 
-from marlenv.models import ActionSpace, ContinuousActionSpace, DiscreteActionSpace, MARLEnv, Observation, State, Step
+from marlenv.models import MARLEnv, Observation, State, Step, DiscreteSpace, ContinuousSpace, Space
 
 
 @dataclass
-class PettingZoo(MARLEnv[npt.NDArray, ActionSpace]):
+class PettingZoo(MARLEnv[Space]):
     def __init__(self, env: ParallelEnv):
         aspace = env.action_space(env.possible_agents[0])
         n_agents = len(env.possible_agents)
         match aspace:
             case spaces.Discrete() as s:
-                space = DiscreteActionSpace(n_agents, int(s.n))
+                space = DiscreteSpace.action(int(s.n)).repeat(n_agents)
 
             case spaces.Box() as s:
                 low = s.low.astype(np.float32)
@@ -25,7 +25,7 @@ class PettingZoo(MARLEnv[npt.NDArray, ActionSpace]):
                     low = np.full(s.shape, s.low, dtype=np.float32)
                 if not isinstance(high, np.ndarray):
                     high = np.full(s.shape, s.high, dtype=np.float32)
-                space = ContinuousActionSpace(n_agents, low, high=high)
+                space = ContinuousSpace(low, high=high).repeat(n_agents)
             case other:
                 raise NotImplementedError(f"Action space {other} not supported")
 
@@ -34,7 +34,7 @@ class PettingZoo(MARLEnv[npt.NDArray, ActionSpace]):
             raise NotImplementedError("Only discrete observation spaces are supported")
         self._pz_env = env
         env.reset()
-        super().__init__(space, obs_space.shape, self.get_state().shape)
+        super().__init__(n_agents, space, obs_space.shape, self.get_state().shape)
         self.agents = env.possible_agents
         self.last_observation = None
 

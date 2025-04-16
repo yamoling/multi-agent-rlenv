@@ -5,10 +5,9 @@ import numpy.typing as npt
 
 from . import wrappers
 from marlenv import adapters
-from .models import ActionSpace, MARLEnv
+from .models import Space, MARLEnv
 
-A = TypeVar("A")
-AS = TypeVar("AS", bound=ActionSpace)
+AS = TypeVar("AS", bound=Space)
 
 if adapters.HAS_PETTINGZOO:
     from .adapters import PettingZoo
@@ -71,12 +70,12 @@ def make(env, **kwargs):
 
 
 @dataclass
-class Builder(Generic[A, AS]):
+class Builder(Generic[AS]):
     """Builder for environments"""
 
-    _env: MARLEnv[A, AS]
+    _env: MARLEnv[AS]
 
-    def __init__(self, env: MARLEnv[A, AS]):
+    def __init__(self, env: MARLEnv[AS]):
         self._env = env
 
     def time_limit(self, n_steps: int, add_extra: bool = True, truncation_penalty: Optional[float] = None):
@@ -124,9 +123,9 @@ class Builder(Generic[A, AS]):
 
     def centralised(self):
         """Centralises the observations and actions"""
-        from marlenv.models import DiscreteActionSpace
+        from marlenv.models import MultiDiscreteSpace
 
-        assert isinstance(self._env.action_space, DiscreteActionSpace)
+        assert isinstance(self._env.action_space, MultiDiscreteSpace)
         self._env = wrappers.Centralized(self._env)  # type: ignore
         return self
 
@@ -159,6 +158,6 @@ class Builder(Generic[A, AS]):
         self._env = wrappers.TimePenalty(self._env, penalty)
         return self
 
-    def build(self) -> MARLEnv[A, AS]:
+    def build(self) -> MARLEnv[AS]:
         """Build and return the environment"""
         return self._env

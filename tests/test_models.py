@@ -1,4 +1,4 @@
-from marlenv import Observation, Transition, DiscreteMockEnv, DiscreteMOMockEnv, Builder, State, Episode, MARLEnv, DiscreteActionSpace
+from marlenv import Observation, Transition, DiscreteMockEnv, DiscreteMOMockEnv, Builder, State, Episode, MARLEnv, DiscreteSpace
 import numpy as np
 
 from .utils import generate_episode
@@ -403,7 +403,7 @@ def test_env_extras_meanings():
 def test_wrong_extras_meanings_length():
     class TestClass(MARLEnv):
         def __init__(self):
-            super().__init__(DiscreteActionSpace(4, 5), (10,), (10,), extras_shape=(5,), extras_meanings=["a", "b", "c"])
+            super().__init__(4, DiscreteSpace(5), (10,), (10,), extras_shape=(5,), extras_meanings=["a", "b", "c"])
 
         def get_observation(self):
             pass

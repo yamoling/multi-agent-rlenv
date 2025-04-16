@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 import marlenv
-from marlenv import ContinuousActionSpace, DiscreteActionSpace, DiscreteMockEnv, MARLEnv, Observation, State
+from marlenv import ContinuousSpace, DiscreteMockEnv, MARLEnv, Observation, State, MultiDiscreteSpace
 from marlenv.adapters import PymarlAdapter
 
 skip_gym = not marlenv.adapters.HAS_GYM
@@ -17,7 +17,7 @@ skip_overcooked = not marlenv.adapters.HAS_OVERCOOKED
 def test_gym_adapter_discrete():
     # Discrete action space
     env = marlenv.make("CartPole-v1")
-    assert isinstance(env.action_space, DiscreteActionSpace)
+    assert isinstance(env.action_space, MultiDiscreteSpace)
     obs, state = env.reset()
     assert isinstance(obs, Observation)
     assert isinstance(state, State)
@@ -37,7 +37,7 @@ def test_gym_adapter_discrete():
 @pytest.mark.skipif(skip_gym, reason="Gymnasium is not installed")
 def test_gym_adapter_continuous():
     env = marlenv.make("Pendulum-v1")
-    assert isinstance(env.action_space, ContinuousActionSpace)
+    assert isinstance(env.action_space, ContinuousSpace)
     obs, state = env.reset()
     assert isinstance(obs, Observation)
     assert isinstance(state, State)
@@ -75,7 +75,7 @@ def test_pettingzoo_adapter_discrete_action():
     assert isinstance(step.info, dict)
     assert env.n_agents == 8
     assert env.n_actions == 5
-    assert isinstance(env.action_space, marlenv.DiscreteActionSpace)
+    assert isinstance(env.action_space, MultiDiscreteSpace)
 
 
 @pytest.mark.skipif(skip_pettingzoo, reason="PettingZoo is not installed")
@@ -95,7 +95,7 @@ def test_pettingzoo_adapter_continuous_action():
     assert isinstance(step.info, dict)
     assert env.n_actions == 2
     assert env.n_agents == 2
-    assert isinstance(env.action_space, marlenv.ContinuousActionSpace)
+    assert isinstance(env.action_space, ContinuousSpace)
 
 
 def _check_env_3m(env):
@@ -105,9 +105,9 @@ def _check_env_3m(env):
     obs = env.reset()
     assert isinstance(obs, Observation)
     assert env.n_agents == 3
-    assert isinstance(env.action_space, DiscreteActionSpace)
+    assert isinstance(env.action_space, MultiDiscreteSpace)
 
-    step = env.step(env.action_space.sample(env.available_actions()))
+    step = env.random_step()
     assert isinstance(step.obs, Observation)
     assert isinstance(step.reward, np.ndarray)
     assert step.reward.shape == (1,)

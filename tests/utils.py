@@ -1,9 +1,9 @@
 from marlenv import MARLEnv, Episode, Transition
 import numpy as np
-from typing import Any, Optional
+from typing import Optional
 
 
-def generate_episode(env: MARLEnv[Any, Any], with_probs: bool = False, seed: Optional[int] = None) -> Episode:
+def generate_episode(env: MARLEnv, with_probs: bool = False, seed: Optional[int] = None) -> Episode:
     if seed is not None:
         env.seed(seed)
     obs, state = env.reset()

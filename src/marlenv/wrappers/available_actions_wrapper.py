@@ -1,21 +1,19 @@
 import numpy as np
-import numpy.typing as npt
 from typing_extensions import TypeVar
-from marlenv.models import ActionSpace, MARLEnv
+from marlenv.models import Space, MARLEnv
 from .rlenv_wrapper import RLEnvWrapper
 from dataclasses import dataclass
 
 
-A = TypeVar("A", default=npt.NDArray)
-AS = TypeVar("AS", bound=ActionSpace, default=ActionSpace)
+AS = TypeVar("AS", bound=Space, default=Space)
 
 
 @dataclass
-class AvailableActions(RLEnvWrapper[A, AS]):
+class AvailableActions(RLEnvWrapper[AS]):
     """Adds the available actions (one-hot) as an extra feature to the observation."""
 
-    def __init__(self, env: MARLEnv[A, AS]):
-        meanings = env.extras_meanings + [f"{a} available" for a in env.action_space.action_names]
+    def __init__(self, env: MARLEnv[AS]):
+        meanings = env.extras_meanings + [f"{a} available" for a in env.action_space.labels]
         super().__init__(env, extra_shape=(env.extras_shape[0] + env.n_actions,), extra_meanings=meanings)
 
     def reset(self):
@@ -23,7 +21,7 @@ class AvailableActions(RLEnvWrapper[A, AS]):
         obs.add_extra(self.available_actions().astype(np.float32))
         return obs, state
 
-    def step(self, actions: A):
-        step = self.wrapped.step(actions)
+    def step(self, action):
+        step = self.wrapped.step(action)
         step.obs.add_extra(self.available_actions().astype(np.float32))
         return step

@@ -1,4 +1,4 @@
-from .spaces import ActionSpace, DiscreteSpace, ContinuousSpace, MultiDiscreteSpace, DiscreteActionSpace, ContinuousActionSpace
+from .spaces import DiscreteSpace, ContinuousSpace, MultiDiscreteSpace, Space
 from .observation import Observation
 from .step import Step
 from .state import State
@@ -8,7 +8,6 @@ from .episode import Episode
 
 
 __all__ = [
-    "ActionSpace",
     "Step",
     "State",
     "DiscreteSpace",
@@ -18,6 +17,5 @@ __all__ = [
     "Transition",
     "Episode",
     "MultiDiscreteSpace",
-    "DiscreteActionSpace",
-    "ContinuousActionSpace",
+    "Space",
 ]
