@@ -9,6 +9,9 @@ from .state import State
 from .step import Step
 
 
+A = TypeVar("A", default=np.ndarray)
+
+
 @dataclass
 class Transition:
     """Transition model"""
@@ -22,6 +25,7 @@ class Transition:
     next_obs: Observation
     next_state: State
     truncated: bool
+    qvalues: npt.NDArray[np.float32]
     other: dict[str, Any]
 
     def __init__(
@@ -35,6 +39,7 @@ class Transition:
         next_obs: Observation,
         next_state: State,
         truncated: bool,
+        qvalues: Optional[npt.NDArray[np.float32]] = None,
         **kwargs,
     ):
         self.obs = obs
@@ -55,6 +60,7 @@ class Transition:
         self.truncated = truncated
         self.state = state
         self.next_state = next_state
+        self.qvalues = qvalues
         self.other = kwargs
 
     @staticmethod
@@ -63,20 +69,36 @@ class Transition:
         prev_state: State,
         action: np.ndarray | Sequence[float],
         step: Step,
+        qvalues: Optional[npt.NDArray[np.float32]] = None,
         **kwargs,
     ):
-        return Transition(
-            obs=prev_obs,
-            state=prev_state,
-            action=action,
-            reward=step.reward,
-            done=step.done,
-            info=step.info,
-            next_obs=step.obs,
-            next_state=step.state,
-            truncated=step.truncated,
-            **kwargs,
-        )
+        if qvalues is None:
+            return Transition(
+                obs=prev_obs,
+                state=prev_state,
+                action=action,
+                reward=step.reward,
+                done=step.done,
+                info=step.info,
+                next_obs=step.obs,
+                next_state=step.state,
+                truncated=step.truncated,
+                **kwargs,
+            )
+        else:
+            return Transition(
+                obs=prev_obs,
+                state=prev_state,
+                action=action,
+                reward=step.reward,
+                done=step.done,
+                info=step.info,
+                next_obs=step.obs,
+                next_state=step.state,
+                truncated=step.truncated,
+                qvalues=qvalues,
+                **kwargs,
+            )
 
     @property
     def is_terminal(self) -> bool:

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from functools import cached_property
-from typing import Any, Callable, Optional, Sequence, overload
+from typing import Any, Callable, Generic, Optional, Sequence, TypeVar, overload
 
 import numpy as np
 import numpy.typing as npt
@@ -21,11 +21,13 @@ class Episode:
     all_observations: list[npt.NDArray[np.float32]]
     all_extras: list[npt.NDArray[np.float32]]
     actions: list[npt.NDArray]
+    qvalues: list[npt.NDArray]
     rewards: list[npt.NDArray[np.float32]]
     all_available_actions: list[npt.NDArray[np.bool_]]
     all_states: list[npt.NDArray[np.float32]]
     all_states_extras: list[npt.NDArray[np.float32]]
     metrics: dict[str, float]
+    qvalues_met: dict[str, float]
     episode_len: int
     other: dict[str, list[Any]]
     is_done: bool = False
@@ -43,8 +45,10 @@ class Episode:
             all_states_extras=[state.extras],
             all_available_actions=[obs.available_actions],
             actions=[],
+            qvalues=[],
             rewards=[],
             metrics=metrics,
+            qvalues_met={},
             episode_len=0,
             is_done=False,
             is_truncated=False,
@@ -69,6 +73,7 @@ class Episode:
         obs = self.all_observations + [self.all_observations[0]] * padding_size
         extras = self.all_extras + [self.all_extras[0]] * padding_size
         actions = self.actions + [self.actions[0]] * padding_size
+        qvalues = self.qvalues + [self.qvalues[0]] * padding_size
         rewards = self.rewards + [self.rewards[0]] * padding_size
         availables = self.all_available_actions + [self.all_available_actions[0]] * padding_size
         states = self.all_states + [self.all_states[0]] * padding_size
@@ -81,8 +86,10 @@ class Episode:
             all_states_extras=states_extras,
             all_available_actions=availables,
             actions=actions,
+            qvalues=qvalues,
             rewards=rewards,
             metrics=self.metrics,
+            qvalues_met=self.qvalues_met,
             episode_len=self.episode_len,
             is_done=self.is_done,
             is_truncated=self.is_truncated,
@@ -297,17 +304,19 @@ class Episode:
                     transition.next_obs,
                     transition.next_state,
                     transition.action,
+                    transition.qvalues,
                     transition.reward,
                     transition.other,
                     transition.done,
                     transition.truncated,
                     transition.info,
                 )
-            case (Step() as step, action):
+            case (Step() as step, action, qvalues):
                 self.add_data(
                     step.obs,
                     step.state,
                     action,
+                    qvalues,
                     step.reward,
                     {},
                     step.done,
@@ -322,6 +331,7 @@ class Episode:
         next_obs: Observation,
         next_state: State,
         action: np.ndarray,
+        qvalues: np.ndarray,
         reward: npt.NDArray[np.float32],
         others: dict[str, Any],
         done: bool,
@@ -341,6 +351,7 @@ class Episode:
                 self.actions.append(action)
             case other:
                 self.actions.append(np.array(other))
+        if qvalues is not None: self.qvalues.append(qvalues)
         self.rewards.append(reward)
         for key, value in others.items():
             current = self.other.get(key, [])
@@ -362,6 +373,15 @@ class Episode:
             scores = np.sum(rewards, axis=0)
             for i, s in enumerate(scores):
                 self.metrics[f"score-{i}"] = float(s)
+
+            if qvalues is not None:
+                qvalues = np.array(self.qvalues)
+                avg_qvalues = np.average(qvalues, axis=0)
+                for ag_n, ag in enumerate(avg_qvalues):
+                    if reward.size > 1:
+                        for qv_n, qv in enumerate(ag.squeeze()):
+                            self.qvalues_met[f"agent{ag_n}-qvalue{qv_n}"] = float(qv)
+                    else: self.qvalues_met[f"agent{ag_n}-qvalue"] = float(ag)
 
     # def add_data(
     #     self,
