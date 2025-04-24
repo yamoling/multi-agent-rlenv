@@ -1,7 +1,6 @@
 from typing import Optional, Sequence
 from typing_extensions import TypeVar
 from dataclasses import dataclass
-from abc import ABC
 import numpy as np
 
 from marlenv.models import MARLEnv, Space, DiscreteSpace, State
@@ -11,7 +10,7 @@ AS = TypeVar("AS", bound=Space, default=Space)
 
 
 @dataclass
-class RLEnvWrapper(MARLEnv[AS], ABC):
+class RLEnvWrapper(MARLEnv[AS]):
     """Parent class for all RLEnv wrappers"""
 
     wrapped: MARLEnv[AS]
