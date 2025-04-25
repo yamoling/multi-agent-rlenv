@@ -199,7 +199,7 @@ class MARLEnv(ABC, Generic[ActionSpaceType]):
             episode.add(step, action)
         return episode
 
-    def has_same_inouts(self, other) -> bool:
+    def has_same_inouts(self, other: "MARLEnv[ActionSpaceType]") -> bool:
         """Alias for `have_same_inouts(self, other)`."""
         if not isinstance(other, MARLEnv):
             return False
