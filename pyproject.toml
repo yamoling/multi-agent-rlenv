@@ -20,6 +20,7 @@ gym = ["gymnasium>=0.29.1"]
 smac = ["smac", "pysc2"]
 pettingzoo = ["pettingzoo>=1.20", "pymunk>=6.0", "scipy>=1.10"]
 overcooked = ["overcooked-ai>=1.1.0", "scipy>=1.10"]
+torch = ["torch>=2.0"]
 all = [
     "gymnasium>0.29.1",
     "pettingzoo>=1.20",
@@ -28,6 +29,7 @@ all = [
     "pysc2",
     "pymunk>=6.0",
     "scipy>=1.10",
+    "torch>=2.0",
 ]
 
 [build-system]

@@ -1,7 +1,10 @@
 from marlenv import Observation, Transition, DiscreteMockEnv, DiscreteMOMockEnv, Builder, State, Episode, MARLEnv, DiscreteSpace
 import numpy as np
-
+import pytest
+from importlib.util import find_spec
 from .utils import generate_episode
+
+HAS_PYTORCH = find_spec("torch") is not None
 
 
 def test_obs_eq():
@@ -422,3 +425,33 @@ def test_wrong_extras_meanings_length():
         assert False, "This should raise a ValueError because the length of extras_meanings is different from the actual number of extras"
     except ValueError:
         pass
+
+
+@pytest.mark.skipif(not HAS_PYTORCH, reason="torch is not installed")
+def test_observation_as_tensor():
+    import torch
+
+    env = DiscreteMockEnv(4)
+    obs = env.reset()[0]
+    data, extras = obs.as_tensor()
+    assert isinstance(data, torch.Tensor)
+    assert data.shape == (1, env.n_agents, *env.observation_shape)
+    assert data.dtype == torch.float32
+    assert isinstance(extras, torch.Tensor)
+    assert extras.shape == (1, env.n_agents, *env.extras_shape)
+    assert extras.dtype == torch.float32
+
+
+@pytest.mark.skipif(not HAS_PYTORCH, reason="torch is not installed")
+def test_state_as_tensor():
+    import torch
+
+    env = DiscreteMockEnv(4)
+    state = env.reset()[1]
+    data, extras = state.as_tensor()
+    assert isinstance(data, torch.Tensor)
+    assert data.shape == (1, *env.state_shape)
+    assert data.dtype == torch.float32
+    assert isinstance(extras, torch.Tensor)
+    assert extras.shape == (1, *env.state_extra_shape)
+    assert extras.dtype == torch.float32
