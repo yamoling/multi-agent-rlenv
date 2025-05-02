@@ -88,10 +88,12 @@ class Observation:
                 return False
         return np.array_equal(self.extras, other.extras) and np.array_equal(self.available_actions, other.available_actions)
 
-    def as_tensor(self):
+    def as_tensor(self, device=None):
         """
         Convert the observation to a tuple of tensors of shape (1, n_agents, <dim>).
         """
         import torch
 
-        return torch.from_numpy(self.data).unsqueeze(0), torch.from_numpy(self.extras).unsqueeze(0)
+        data = torch.from_numpy(self.data).unsqueeze(0).to(device, non_blocking=True)
+        extras = torch.from_numpy(self.extras).unsqueeze(0).to(device, non_blocking=True)
+        return data, extras
