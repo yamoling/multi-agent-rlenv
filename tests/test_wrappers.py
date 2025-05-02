@@ -357,3 +357,36 @@ def test_delayed_rewards_from_builder():
         for end_game in range(delay + 1, delay * 2):
             env = Builder(DiscreteMockEnv(reward_step=10, end_game=end_game, n_agents=2)).delay_rewards(delay).build()
             _test_delayed_rewards(env)
+
+
+def test_potential_shaping():
+    from marlenv.wrappers.potential_shaping import PotentialShaping
+
+    class PS(PotentialShaping):
+        def __init__(self, env: MARLEnv):
+            self.phi = 10
+            super().__init__(env)
+
+        def reset(self):
+            self.phi = 10
+            return super().reset()
+
+        def compute_potential(self) -> float:
+            return self.phi
+
+        def step(self, actions):
+            self.phi = max(0, self.phi - 1)
+            return super().step(actions)
+
+    EP_LENGTH = 20
+    env = PS(DiscreteMockEnv(reward_step=0, end_game=EP_LENGTH))
+    env.reset()
+    step = None
+
+    for i in range(10):
+        step = env.random_step()
+        assert step.reward.item() == -1
+
+    for i in range(10):
+        step = env.random_step()
+        assert step.reward.item() == 0

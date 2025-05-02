@@ -10,6 +10,7 @@ from .blind_wrapper import Blind
 from .centralised import Centralized
 from .available_actions_mask import AvailableActionsMask
 from .delayed_rewards import DelayedReward
+from .potential_shaping import PotentialShaping
 
 __all__ = [
     "RLEnvWrapper",
@@ -26,4 +27,5 @@ __all__ = [
     "Blind",
     "Centralized",
     "DelayedReward",
+    "PotentialShaping",
 ]

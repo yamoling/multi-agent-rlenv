@@ -39,7 +39,7 @@ class Step:
             case int() | float():
                 self.reward = np.array([reward], dtype=np.float32)
             case np.ndarray():
-                self.reward = reward
+                self.reward = reward.astype(np.float32)
             case other:
                 # We assume this is a sequence of some sort
                 self.reward = np.array(other, dtype=np.float32)

@@ -66,13 +66,13 @@ class Episode:
         if target_len < self.episode_len:
             raise ValueError(f"Cannot pad episode to a smaller size: {target_len} < {self.episode_len}")
         padding_size = target_len - self.episode_len
-        obs = self.all_observations + [self.all_observations[0]] * padding_size
-        extras = self.all_extras + [self.all_extras[0]] * padding_size
-        actions = self.actions + [self.actions[0]] * padding_size
-        rewards = self.rewards + [self.rewards[0]] * padding_size
+        obs = self.all_observations + [np.zeros_like(self.all_observations[0])] * padding_size
+        extras = self.all_extras + [np.zeros_like(self.all_extras[0])] * padding_size
+        actions = self.actions + [np.zeros_like(self.actions[0])] * padding_size
+        rewards = self.rewards + [np.zeros_like(self.rewards[0])] * padding_size
         availables = self.all_available_actions + [self.all_available_actions[0]] * padding_size
-        states = self.all_states + [self.all_states[0]] * padding_size
-        states_extras = self.all_states_extras + [self.all_states_extras[0]] * padding_size
+        states = self.all_states + [np.zeros_like(self.all_states[0])] * padding_size
+        states_extras = self.all_states_extras + [np.zeros_like(self.all_states_extras[0])] * padding_size
         other = {key: value + [value[0]] * padding_size for key, value in self.other.items()}
         return Episode(
             all_observations=obs,
