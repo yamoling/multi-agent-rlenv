@@ -53,7 +53,7 @@ class State(Generic[StateType]):
             return False
         return True
 
-    def as_tensor(self, device=None):
+    def as_tensors(self, device=None):
         """Convert the state to a tuple of tensors of shape (1, <dim>)."""
         import torch
 

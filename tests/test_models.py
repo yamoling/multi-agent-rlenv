@@ -433,7 +433,7 @@ def test_observation_as_tensor():
 
     env = DiscreteMockEnv(4)
     obs = env.reset()[0]
-    data, extras = obs.as_tensor()
+    data, extras = obs.as_tensors()
     assert isinstance(data, torch.Tensor)
     assert data.shape == (1, env.n_agents, *env.observation_shape)
     assert data.dtype == torch.float32
@@ -448,7 +448,7 @@ def test_state_as_tensor():
 
     env = DiscreteMockEnv(4)
     state = env.reset()[1]
-    data, extras = state.as_tensor()
+    data, extras = state.as_tensors()
     assert isinstance(data, torch.Tensor)
     assert data.shape == (1, *env.state_shape)
     assert data.dtype == torch.float32

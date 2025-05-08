@@ -88,7 +88,7 @@ class Observation:
                 return False
         return np.array_equal(self.extras, other.extras) and np.array_equal(self.available_actions, other.available_actions)
 
-    def as_tensor(self, device=None):
+    def as_tensors(self, device=None):
         """
         Convert the observation to a tuple of tensors of shape (1, n_agents, <dim>).
         """
