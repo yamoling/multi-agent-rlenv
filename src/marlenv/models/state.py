@@ -52,3 +52,11 @@ class State(Generic[StateType]):
         if not np.array_equal(self.extras, value.extras):
             return False
         return True
+
+    def as_tensors(self, device=None):
+        """Convert the state to a tuple of tensors of shape (1, <dim>)."""
+        import torch
+
+        data = torch.from_numpy(self.data).unsqueeze(0).to(device, non_blocking=True)
+        extras = torch.from_numpy(self.extras).unsqueeze(0).to(device, non_blocking=True)
+        return data, extras
