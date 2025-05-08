@@ -22,10 +22,10 @@ class Episode:
     all_extras: list[npt.NDArray[np.float32]]
     actions: list[npt.NDArray]
     rewards: list[npt.NDArray[np.float32]]
-    all_available_actions: list[npt.NDArray[np.bool_]]
+    all_available_actions: list[npt.NDArray[np.bool]]
     all_states: list[npt.NDArray[np.float32]]
     all_states_extras: list[npt.NDArray[np.float32]]
-    metrics: dict[str, float]
+    metrics: dict[str, Any]
     episode_len: int
     other: dict[str, list[Any]]
     is_done: bool = False
@@ -33,7 +33,7 @@ class Episode:
     """Whether the episode did reach a terminal state (different from truncated)"""
 
     @staticmethod
-    def new(obs: Observation, state: State, metrics: Optional[dict[str, float]] = None) -> "Episode":
+    def new(obs: Observation, state: State, metrics: Optional[dict[str, Any]] = None) -> "Episode":
         if metrics is None:
             metrics = {}
         return Episode(
@@ -363,51 +363,6 @@ class Episode:
             for i, s in enumerate(scores):
                 self.metrics[f"score-{i}"] = float(s)
 
-    # def add_data(
-    #     self,
-    #     new_obs: Observation,
-    #     new_state: State,
-    #     action: A,
-    #     reward: np.ndarray,
-    #     done: bool,
-    #     truncated: bool,
-    #     info: dict[str, Any],
-    #     **kwargs,
-    # ):
-    #     """Add a new transition to the episode"""
-    #     self.episode_len += 1
-    #     self.all_observations.append(new_obs.data)
-    #     self.all_extras.append(new_obs.extras)
-    #     self.all_available_actions.append(new_obs.available_actions)
-    #     self.all_states.append(new_state.data)
-    #     self.all_states_extras.append(new_state.extras)
-    #     match action:
-    #         case np.ndarray() as action:
-    #             self.actions.append(action)
-    #         case other:
-    #             self.actions.append(np.array(other))
-    #     self.rewards.append(reward)
-    #     for key, value in kwargs.items():
-    #         current = self.other.get(key, [])
-    #         current.append(value)
-    #         self.other[key] = current
-
-    #     if done:
-    #         # Only set the truncated flag if the episode is not done (both could happen with a time limit)
-    #         self.is_truncated = truncated
-    #         self.is_done = done
-    #         # Add metrics that can be plotted
-    #         for key, value in info.items():
-    #             if isinstance(value, bool):
-    #                 value = int(value)
-    #             self.metrics[key] = value
-    #         self.metrics["episode_len"] = self.episode_len
-
-    #         rewards = np.array(self.rewards)
-    #         scores = np.sum(rewards, axis=0)
-    #         for i, s in enumerate(scores):
-    #             self.metrics[f"score-{i}"] = float(s)
-
-    def add_metrics(self, metrics: dict[str, float]):
+    def add_metrics(self, metrics: dict[str, Any]):
         """Add metrics to the episode"""
         self.metrics.update(metrics)
