@@ -46,7 +46,7 @@ jobs:
           uv-version: 0.6.4
       - name: Install dependencies and run pytest
         run: |
-          uv sync --extra overcooked --extra gym --extra pettingzoo
+          uv sync --extra overcooked --extra gym --extra pettingzoo --extra torch
           uv run pytest
 
   build:
