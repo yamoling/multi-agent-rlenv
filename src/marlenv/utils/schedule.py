@@ -63,6 +63,9 @@ class Schedule:
             n_steps = 0
         return ArbitrarySchedule(func, n_steps)
 
+    def chain(self, other: "Schedule"):
+        return MultiSchedule({0: self, self.n_steps: other})
+
     def rounded(self, n_digits: int = 0) -> "RoundedSchedule":
         return RoundedSchedule(self, n_digits)
 
@@ -269,6 +272,9 @@ class MultiSchedule(Schedule):
     @property
     def value(self):
         return self.current_schedule.value
+
+    def chain(self, other: Schedule):
+        raise NotImplementedError("TODO")
 
 
 @dataclass(eq=False)

@@ -153,3 +153,25 @@ def test_inequality_different_schedules():
     s3 = Schedule.linear(1, 2, 10)
     assert s1 != s2
     assert not s1 != s3
+
+
+def test_chain():
+    s1 = Schedule.linear(0, 1, 10)
+    s2 = Schedule.exp(1, 16, 5)
+    s3 = s1.chain(s2)
+    expected_values = [0.0] * 10 + [i / 10 for i in range(10)] + [2**i for i in range(5)]
+    for i in range(25):
+        assert is_close(s3.value, expected_values[i])
+        s3.update()
+
+
+def test_chain_3():
+    s1 = Schedule.linear(0, 1, 10)
+    s2 = Schedule.exp(1, 16, 5)
+    # This should fail for now because the chain method is not implemented for MultiSchedules
+    s3 = Schedule.constant(50)
+    s4 = s1.chain(s2).chain(s3)
+    expected_values = [0.0] * 10 + [i / 10 for i in range(10)] + [2**i for i in range(5)] + [50] * 10
+    for i in range(35):
+        assert is_close(s4.value, expected_values[i])
+        s4.update()
