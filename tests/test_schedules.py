@@ -1,4 +1,4 @@
-from marlenv.utils import Schedule, MultiSchedule
+from marlenv.utils import MultiSchedule, Schedule
 
 
 def is_close(a: float, b: float, tol: float = 1e-6) -> bool:

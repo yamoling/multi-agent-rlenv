@@ -1,5 +1,5 @@
-from .schedule import Schedule, MultiSchedule, RoundedSchedule, LinearSchedule, ExpSchedule
-
+from .cached_property_collector import CachedPropertyCollector, CachedPropertyInvalidator
+from .schedule import ExpSchedule, LinearSchedule, MultiSchedule, RoundedSchedule, Schedule
 
 __all__ = [
     "Schedule",
@@ -7,4 +7,6 @@ __all__ = [
     "ExpSchedule",
     "MultiSchedule",
     "RoundedSchedule",
+    "CachedPropertyCollector",
+    "CachedPropertyInvalidator",
 ]
