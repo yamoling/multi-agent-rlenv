@@ -11,6 +11,7 @@ from .centralised import Centralized
 from .available_actions_mask import AvailableActionsMask
 from .delayed_rewards import DelayedReward
 from .potential_shaping import PotentialShaping
+from .action_randomizer import ActionRandomizer
 
 __all__ = [
     "RLEnvWrapper",
@@ -28,4 +29,5 @@ __all__ = [
     "Centralized",
     "DelayedReward",
     "PotentialShaping",
+    "ActionRandomizer",
 ]

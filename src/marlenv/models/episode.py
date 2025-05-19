@@ -2,20 +2,22 @@ from dataclasses import dataclass
 from functools import cached_property
 from typing import Any, Callable, Optional, Sequence, overload
 
+import cv2
 import numpy as np
 import numpy.typing as npt
-import cv2
 
+from marlenv.exceptions import EnvironmentMismatchException, ReplayMismatchException
+from marlenv.utils import CachedPropertyInvalidator
+
+from .env import MARLEnv
 from .observation import Observation
 from .state import State
 from .step import Step
 from .transition import Transition
-from .env import MARLEnv
-from marlenv.exceptions import EnvironmentMismatchException, ReplayMismatchException
 
 
 @dataclass
-class Episode:
+class Episode(CachedPropertyInvalidator):
     """Episode model made of observations, actions, rewards, ..."""
 
     all_observations: list[npt.NDArray[np.float32]]
@@ -153,12 +155,12 @@ class Episode:
         """Get the next extra features"""
         return self.all_extras[1:]
 
-    @cached_property
+    @property
     def n_agents(self):
         """The number of agents in the episode"""
         return self.all_extras[0].shape[0]
 
-    @cached_property
+    @property
     def n_actions(self):
         """The number of actions"""
         return len(self.all_available_actions[0][0])
@@ -267,7 +269,7 @@ class Episode:
     def __len__(self):
         return self.episode_len
 
-    @cached_property
+    @property
     def score(self) -> list[float]:
         """The episode score (sum of all rewards across all objectives)"""
         score = []

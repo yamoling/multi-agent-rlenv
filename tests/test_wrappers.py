@@ -1,6 +1,6 @@
 import numpy as np
 from marlenv import Builder, DiscreteMOMockEnv, DiscreteMockEnv, MARLEnv
-from marlenv.wrappers import Centralized, AvailableActionsMask, TimeLimit, LastAction, DelayedReward
+from marlenv.wrappers import Centralized, AvailableActionsMask, TimeLimit, LastAction, DelayedReward, ActionRandomizer
 import marlenv
 
 
