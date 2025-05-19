@@ -1,7 +1,8 @@
 import numpy as np
-from marlenv.models import Transition, Episode
+
+from marlenv import DiscreteMockEnv, Episode, Transition, wrappers
 from marlenv.exceptions import EnvironmentMismatchException, ReplayMismatchException
-from marlenv import wrappers, DiscreteMockEnv
+
 from .utils import generate_episode
 
 
@@ -219,3 +220,31 @@ def test_get_images():
     images = episode.get_images(env, seed=0)
     # +1 because there is one image for the initial state (after reset)
     assert len(images) == len(episode) + 1
+
+
+def test_episode_invalidate_cached_properties():
+    env = DiscreteMockEnv(end_game=10)
+    obs, state = env.reset()
+    episode = Episode.new(obs, state)
+    for _ in range(5):
+        action = env.sample_action()
+        step = env.step(action)
+        episode.add(Transition.from_step(obs, state, action, step))
+        obs = step.obs
+        state = step.state
+
+    # Access the cached properties
+    assert len(episode.states) == 5
+    assert len(episode.obs) == 5
+
+    # Invalidate the cached properties
+    episode.invalidate_cached_properties()
+    for _ in range(3):
+        action = env.sample_action()
+        step = env.step(action)
+        episode.add(Transition.from_step(obs, state, action, step))
+        obs = step.obs
+        state = step.state
+
+    # Access the cached properties again
+    assert len(episode.obs) == 8
