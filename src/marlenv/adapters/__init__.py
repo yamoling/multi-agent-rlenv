@@ -1,11 +1,15 @@
 from importlib.util import find_spec
 from .pymarl_adapter import PymarlAdapter
+from marlenv.utils import DummyClass, dummy_function
 
 HAS_GYM = False
 if find_spec("gymnasium") is not None:
-    from .gym_adapter import Gym
+    from .gym_adapter import Gym, make
 
     HAS_GYM = True
+else:
+    Gym = DummyClass("gymnasium")
+    make = dummy_function("gymnasium")
 
 HAS_PETTINGZOO = False
 if find_spec("pettingzoo") is not None:
@@ -19,24 +23,13 @@ if find_spec("smac") is not None:
 
     HAS_SMAC = True
 
-HAS_OVERCOOKED = False
-if find_spec("overcooked_ai_py") is not None and find_spec("overcooked_ai_py.mdp") is not None:
-    import numpy
-
-    # Overcooked assumes a version of numpy <2.0 where np.Inf is available.
-    setattr(numpy, "Inf", numpy.inf)
-    from .overcooked_adapter import Overcooked
-
-    HAS_OVERCOOKED = True
-
 __all__ = [
     "PymarlAdapter",
     "Gym",
+    "make",
     "PettingZoo",
     "SMAC",
-    "Overcooked",
     "HAS_GYM",
     "HAS_PETTINGZOO",
     "HAS_SMAC",
-    "HAS_OVERCOOKED",
 ]

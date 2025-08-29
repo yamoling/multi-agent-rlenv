@@ -24,9 +24,24 @@ $ pip install marlenv[smac] # Install SMAC
 $ pip install marlenv[gym,smac]  # Install Gym & smac support
 ```
 
+## Using the `marlenv` environment catalog
+Some environments are registered in the `marlenv` and can be easily instantiated via its catalog. 
+
+```python
+from marlenv import catalog
+
+env1 = catalog.Overcooked.from_layout("scenario4")
+env2 = catalog.LLE.level(6)
+env3 = catalog.DeepSea(mex_depth=5)
+```
+Note that using the catalog requires the corresponding environment package to be installed. For instance you need to install the `laser-learning-environment` package to use `catalog.LLE`, which can be done by using the corresponding feature when at installation as shown below.
+```bash
+pip install multi-agent-rlenv[lle]
+```
+
 
 ## Using `marlenv` with existing libraries
-`marlenv` unifies multiple popular libraries under a single interface. Namely, `marlenv` supports `smac`, `gymnasium` and `pettingzoo`.
+`marlenv` provides adapters from most popular libraries to unify them under a single interface. Namely, `marlenv` supports `smac`, `gymnasium` and `pettingzoo`.
 
 ```python
 import marlenv
@@ -36,7 +51,7 @@ gym_env = marlenv.make("CartPole-v1", seed=25)
 
 # You can seemlessly instanciate a SMAC environment and directly pass your required arguments
 from marlenv.adapters import SMAC
-smac_env = env2 = SMAC("3m", debug=True, difficulty="9")
+smac_env = SMAC("3m", debug=True, difficulty="9")
 
 # pettingzoo is also supported
 from pettingzoo.sisl import pursuit_v4

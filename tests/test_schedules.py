@@ -153,3 +153,18 @@ def test_inequality_different_schedules():
     s3 = Schedule.linear(1, 2, 10)
     assert s1 != s2
     assert not s1 != s3
+
+
+def test_from_json():
+    json_data = {"name": "LinearSchedule", "start_value": 0, "end_value": 1, "n_steps": 10}
+    s = Schedule.from_json(json_data)
+    assert isinstance(s, Schedule)
+    assert is_close(s.value, 0)
+    s.update()
+    assert is_close(s.value, 0.1)
+    s.update(5)
+    assert is_close(s.value, 0.5)
+    s.update(10)
+    assert is_close(s.value, 1.0)
+    s.update(15)
+    assert is_close(s.value, 1.0)

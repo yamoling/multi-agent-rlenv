@@ -1,9 +1,8 @@
 import pickle
+
 import numpy as np
 import orjson
 import pytest
-import os
-from copy import deepcopy
 
 import marlenv
 from marlenv import DiscreteMockEnv, wrappers
@@ -191,87 +190,6 @@ def test_serialize_episode():
         episode.add(transition)
 
     _ = orjson.dumps(episode, option=orjson.OPT_SERIALIZE_NUMPY)
-
-
-@pytest.mark.skipif(not marlenv.adapters.HAS_OVERCOOKED, reason="Overcooked is not installed")
-def test_deepcopy_overcooked():
-    env = marlenv.adapters.Overcooked.from_layout("scenario4")
-    env2 = deepcopy(env)
-    assert env == env2
-
-
-@pytest.mark.skipif(not marlenv.adapters.HAS_OVERCOOKED, reason="Overcooked is not installed")
-def test_deepcopy_overcooked_schedule():
-    env = marlenv.adapters.Overcooked.from_layout("scenario4", reward_shaping_factor=Schedule.linear(1, 0, 10))
-    env2 = deepcopy(env)
-    assert env == env2
-
-    env.random_step()
-    assert not env == env2, "The reward shaping factor should be different"
-
-
-@pytest.mark.skipif(not marlenv.adapters.HAS_OVERCOOKED, reason="Overcooked is not installed")
-def test_pickle_overcooked():
-    env = marlenv.adapters.Overcooked.from_layout("scenario1_s", horizon=60)
-    serialized = pickle.dumps(env)
-    restored = pickle.loads(serialized)
-    assert env == restored
-
-    env.reset()
-    restored.reset()
-
-    for _ in range(50):
-        actions = env.sample_action()
-        step = env.step(actions)
-        step_restored = restored.step(actions)
-        assert step == step_restored
-
-
-@pytest.mark.skipif(not marlenv.adapters.HAS_OVERCOOKED, reason="Overcooked is not installed")
-def test_unpickling_from_blank_process():
-    from marlenv.adapters import Overcooked
-    import pickle
-    import subprocess
-    import tempfile
-
-    env = Overcooked.from_layout("large_room")
-    env_file = tempfile.NamedTemporaryFile("wb", delete=False)
-    pickle.dump(env, env_file)
-    env_file.close()
-
-    # Write the python file
-
-    f = tempfile.NamedTemporaryFile("w", delete=False)
-    f.write("""
-import pickle
-import sys
-
-with open(sys.argv[1], "rb") as f:
-    env = pickle.load(f)
-
-env.reset()""")
-    f.close()
-    try:
-        output = subprocess.run(f"python {f.name} {env_file.name}", shell=True, capture_output=True)
-        assert output.returncode == 0, output.stderr.decode("utf-8")
-    finally:
-        os.remove(f.name)
-        os.remove(env_file.name)
-
-
-@pytest.mark.skipif(not marlenv.adapters.HAS_OVERCOOKED, reason="Overcooked is not installed")
-def test_serialize_json_overcooked():
-    env = marlenv.adapters.Overcooked.from_layout("scenario1_s", horizon=60)
-    res = orjson.dumps(env, option=orjson.OPT_SERIALIZE_NUMPY)
-    deserialized = orjson.loads(res)
-
-    assert deserialized["n_agents"] == env.n_agents
-    assert tuple(deserialized["observation_shape"]) == env.observation_shape
-    assert tuple(deserialized["state_shape"]) == env.state_shape
-    assert tuple(deserialized["extras_shape"]) == env.extras_shape
-    assert deserialized["n_actions"] == env.n_actions
-    assert deserialized["name"] == env.name
-    assert deserialized["extras_meanings"] == env.extras_meanings
 
 
 @pytest.mark.skipif(not marlenv.adapters.HAS_GYM, reason="Gymnasium is not installed")

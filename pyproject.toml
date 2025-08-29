@@ -1,6 +1,6 @@
 [project]
 name = "multi-agent-rlenv"
-dynamic = ["version"]
+version = "3.6.0"
 description = "A strongly typed Multi-Agent Reinforcement Learning framework"
 authors = [
     { "name" = "Yannick Molinghen", "email" = "yannick.molinghen@ulb.be" },
@@ -19,14 +19,16 @@ dependencies = ["numpy>=2.0.0", "opencv-python>=4.0", "typing_extensions>=4.0"]
 gym = ["gymnasium>=0.29.1"]
 smac = ["smac", "pysc2"]
 pettingzoo = ["pettingzoo>=1.20", "pymunk>=6.0", "scipy>=1.10"]
-overcooked = ["overcooked-ai>=1.1.0", "scipy>=1.10"]
+overcooked = ["overcooked>=0.1.0"]
+lle = ["laser-learning-environment>=2.6.1"]
 torch = ["torch>=2.0"]
 all = [
     "gymnasium>0.29.1",
     "pettingzoo>=1.20",
-    "overcooked-ai",
+    "overcooked>=0.1.0",
     "smac",
     "pysc2",
+    "laser-learning-environment>=2.6.1",
     "pymunk>=6.0",
     "scipy>=1.10",
     "torch>=2.0",
@@ -41,9 +43,6 @@ line-length = 140
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/marlenv"]
-
-[tool.hatch]
-version = { "path" = "src/marlenv/__init__.py", "attr" = "__version__" }
 
 
 [tool.pytest.ini_options]

@@ -78,3 +78,9 @@ class Gym(MARLEnv[Space]):
 
     def seed(self, seed_value: int):
         self._gym_env.reset(seed=seed_value)
+
+
+def make(env_id: str, **kwargs):
+    """Make an RLEnv from str (Gym) or PettingZoo"""
+    gym_env = gym.make(env_id, render_mode="rgb_array", **kwargs)
+    return Gym(gym_env)
