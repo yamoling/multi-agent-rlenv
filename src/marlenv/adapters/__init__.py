@@ -1,42 +1,33 @@
 from importlib.util import find_spec
 from .pymarl_adapter import PymarlAdapter
+from marlenv.utils import DummyClass, dummy_function
 
-HAS_GYM = False
-if find_spec("gymnasium") is not None:
-    from .gym_adapter import Gym
+HAS_GYM = find_spec("gymnasium") is not None
+if HAS_GYM:
+    from .gym_adapter import Gym, make
+else:
+    Gym = DummyClass("gymnasium")
+    make = dummy_function("gymnasium")
 
-    HAS_GYM = True
-
-HAS_PETTINGZOO = False
-if find_spec("pettingzoo") is not None:
+HAS_PETTINGZOO = find_spec("pettingzoo") is not None
+if HAS_PETTINGZOO:
     from .pettingzoo_adapter import PettingZoo
+else:
+    PettingZoo = DummyClass("pettingzoo")
 
-    HAS_PETTINGZOO = True
-
-HAS_SMAC = False
-if find_spec("smac") is not None:
+HAS_SMAC = find_spec("smac") is not None
+if HAS_SMAC:
     from .smac_adapter import SMAC
-
-    HAS_SMAC = True
-
-HAS_OVERCOOKED = False
-if find_spec("overcooked_ai_py") is not None and find_spec("overcooked_ai_py.mdp") is not None:
-    import numpy
-
-    # Overcooked assumes a version of numpy <2.0 where np.Inf is available.
-    setattr(numpy, "Inf", numpy.inf)
-    from .overcooked_adapter import Overcooked
-
-    HAS_OVERCOOKED = True
+else:
+    SMAC = DummyClass("smac", "https://github.com/oxwhirl/smac.git")
 
 __all__ = [
     "PymarlAdapter",
     "Gym",
+    "make",
     "PettingZoo",
     "SMAC",
-    "Overcooked",
     "HAS_GYM",
     "HAS_PETTINGZOO",
     "HAS_SMAC",
-    "HAS_OVERCOOKED",
 ]

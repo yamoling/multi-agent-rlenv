@@ -105,7 +105,7 @@ class MultiDiscreteSpace(Space):
     def sample(self, mask: Optional[npt.NDArray[np.bool] | list[npt.NDArray[np.bool]]] = None):
         if mask is None:
             return np.array([space.sample() for space in self.spaces], dtype=np.int32)
-        return np.array([space.sample(mask=mask) for mask, space in zip(mask, self.spaces)], dtype=np.int32)
+        return np.array([space.sample(mask=mask) for mask, space in zip(mask, self.spaces)], dtype=np.int32)  # type: ignore
 
     def __eq__(self, value: object) -> bool:
         if not isinstance(value, MultiDiscreteSpace):

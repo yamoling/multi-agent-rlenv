@@ -62,7 +62,13 @@ print(env.extras_shape) # (1, )
 If you want to create a new environment, you can simply create a class that inherits from `MARLEnv`. If you want to create a wrapper around an existing `MARLEnv`, you probably want to subclass `RLEnvWrapper` which implements a default behaviour for every method.
 """
 
-__version__ = "3.5.5"
+from importlib.metadata import version, PackageNotFoundError
+
+try:
+    __version__ = version("overcooked")
+except PackageNotFoundError:
+    __version__ = "0.0.0"  # fallback pratique en dev/CI
+
 
 from . import models
 from .models import (
@@ -82,16 +88,19 @@ from .models import (
 
 from . import wrappers
 from . import adapters
-from .env_builder import make, Builder
+from .env_builder import Builder
 from .wrappers import RLEnvWrapper
 from .mock_env import DiscreteMockEnv, DiscreteMOMockEnv
+from . import catalog
+from .adapters import make
 
 __all__ = [
     "models",
+    "make",
+    "catalog",
     "wrappers",
     "adapters",
     "spaces",
-    "make",
     "Builder",
     "MARLEnv",
     "Step",

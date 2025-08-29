@@ -1,6 +1,6 @@
 from abc import abstractmethod
 from dataclasses import dataclass
-from typing import Callable, Optional, TypeVar
+from typing import Any, Callable, Optional, TypeVar
 
 T = TypeVar("T")
 
@@ -141,6 +141,21 @@ class Schedule:
 
     def __int__(self) -> int:
         return int(self.value)
+
+    @staticmethod
+    def from_json(data: dict[str, Any]):
+        """Create a Schedule from a JSON-like dictionary."""
+        classname = data.get("name")
+        if classname == "LinearSchedule":
+            return LinearSchedule(data["start_value"], data["end_value"], data["n_steps"])
+        elif classname == "ExpSchedule":
+            return ExpSchedule(data["start_value"], data["end_value"], data["n_steps"])
+        elif classname == "ConstantSchedule":
+            return ConstantSchedule(data["value"])
+        elif classname == "ArbitrarySchedule":
+            raise NotImplementedError("ArbitrarySchedule cannot be deserialized from JSON")
+        else:
+            raise ValueError(f"Unknown schedule type: {classname}")
 
 
 @dataclass(eq=False)
