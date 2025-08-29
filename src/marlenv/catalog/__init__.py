@@ -4,16 +4,23 @@ from marlenv.adapters import SMAC
 from .deepsea import DeepSea
 
 
-spec = find_spec("lle")
-if spec is not None:
+HAS_LLE = find_spec("lle") is not None
+if HAS_LLE:
     from lle import LLE  # pyright: ignore[reportMissingImports]
 else:
     LLE = DummyClass("lle", "laser-learning-environment")
 
-spec = find_spec("overcooked")
-if spec is not None:
+HAS_OVERCOOKED = find_spec("overcooked") is not None
+if HAS_OVERCOOKED:
     from overcooked import Overcooked  # pyright: ignore[reportMissingImports]
 else:
     Overcooked = DummyClass("overcooked", "overcooked")
 
-__all__ = ["Overcooked", "SMAC", "LLE", "DeepSea"]
+__all__ = [
+    "Overcooked",
+    "SMAC",
+    "LLE",
+    "DeepSea",
+    "HAS_LLE",
+    "HAS_OVERCOOKED",
+]
