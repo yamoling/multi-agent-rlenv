@@ -1,9 +1,9 @@
 import pytest
 from marlenv import catalog
-from marlenv.utils import DummyClass, dummy_function
+from marlenv.utils import dummy_type, dummy_function
 
-skip_lle = isinstance(catalog.LLE, DummyClass)
-skip_overcooked = isinstance(catalog.Overcooked, DummyClass)
+skip_lle = not catalog.HAS_LLE
+skip_overcooked = not catalog.HAS_OVERCOOKED
 
 
 @pytest.mark.skipif(skip_lle, reason="LLE is not installed")
@@ -16,18 +16,18 @@ def test_overcooked():
     catalog.Overcooked.from_layout("scenario4")
 
 
-def test_dummy_class():
+def test_dummy_type():
     try:
-        x = DummyClass("")
+        x = dummy_type("")
         x.abc
-        assert False, "Expected ImportError upon usage because DummyClass is not installed"
+        assert False, "Expected ImportError upon usage because dummy_type is not installed"
     except ImportError:
         pass
 
     try:
-        x = DummyClass("")
-        x.abc()
-        assert False, "Expected ImportError upon usage because DummyClass is not installed"
+        x = dummy_type("")
+        x.abc()  # type: ignore
+        assert False, "Expected ImportError upon usage because dummy_type is not installed"
     except ImportError:
         pass
 
