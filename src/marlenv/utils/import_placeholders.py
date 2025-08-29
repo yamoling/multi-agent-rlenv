@@ -1,30 +1,30 @@
 from typing import Optional, Any
+from types import SimpleNamespace
 
 
-class DummyClass:
-    def __init__(self, module_name: str, package_name: Optional[str] = None):
-        self.module_name = module_name
-        if package_name is None:
-            self.package_name = module_name
-        else:
-            self.package_name = package_name
+def _raise_error(module_name: str, package_name: Optional[str] = None):
+    raise ImportError(
+        f"The optional dependency `{module_name}` is not installed.\nInstall the `{package_name}` package (e.g. pip install {package_name})."
+    )
 
-    def _raise_error(self):
-        raise ImportError(
-            f"The optional dependency `{self.module_name}` is not installed.\nInstall the `{self.package_name}` package (e.g. pip install {self.package_name})."
-        )
 
-    def __getattr__(self, _):
-        self._raise_error()
+def dummy_type(module_name: str, package_name: Optional[str] = None):
+    class DummyType(type):
+        def __getattr__(cls, _) -> Any:
+            _raise_error(module_name, package_name)
 
-    def __call__(self, *args, **kwargs):
-        self._raise_error()
+        def __call__(self, *args: Any, **kwds: Any) -> Any:
+            _raise_error(module_name, package_name)
+
+    class DummyClass(SimpleNamespace, metaclass=DummyType):
+        def __getattr__(self, _) -> Any:
+            _raise_error(module_name, package_name)
+
+    return DummyClass
 
 
 def dummy_function(module_name: str, package_name: Optional[str] = None):
-    dummy = DummyClass(module_name, package_name)
-
     def fail(*args, **kwargs) -> Any:
-        dummy()
+        _raise_error(module_name, package_name)
 
     return fail
