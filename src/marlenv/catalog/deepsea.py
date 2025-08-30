@@ -34,7 +34,7 @@ class DeepSea(MARLEnv[MultiDiscreteSpace]):
         self._step_right_penalty = -0.01 / self.max_depth
 
     def get_observation(self) -> Observation:
-        return Observation(np.array([self._row, self._col], dtype=np.float32), self.available_actions())
+        return Observation(np.array([[self._row, self._col]], dtype=np.float32), self.available_actions())
 
     def get_state(self) -> State:
         return State(np.array([self._row, self._col], dtype=np.float32))
