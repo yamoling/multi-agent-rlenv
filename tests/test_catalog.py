@@ -2,18 +2,27 @@ import pytest
 from marlenv import catalog
 from marlenv.utils import dummy_type, dummy_function
 
-skip_lle = not catalog.HAS_LLE
-skip_overcooked = not catalog.HAS_OVERCOOKED
+try:
+    catalog.lle()
+    skip_lle = False
+except ImportError:
+    skip_lle = True
+
+try:
+    catalog.overcooked()
+    skip_overcooked = False
+except ImportError:
+    skip_overcooked = True
 
 
 @pytest.mark.skipif(skip_lle, reason="LLE is not installed")
 def test_lle():
-    catalog.LLE.level(1)
+    catalog.lle().level(1)
 
 
 @pytest.mark.skipif(skip_overcooked, reason="Overcooked is not installed")
 def test_overcooked():
-    catalog.Overcooked.from_layout("scenario4")
+    catalog.overcooked().from_layout("scenario4")
 
 
 def test_dummy_type():
