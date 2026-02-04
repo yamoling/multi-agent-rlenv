@@ -45,7 +45,7 @@ class DeepSea(MARLEnv[MultiDiscreteSpace]):
         self._col = 0
         return self.get_observation(), self.get_state()
 
-    def step(self, action: Sequence[int]):
+    def step(self, action: Sequence[int] | np.ndarray):
         self._row += 1
         if action[0] == LEFT:
             self._col -= 1

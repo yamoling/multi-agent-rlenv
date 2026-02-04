@@ -24,8 +24,8 @@ class PadExtras(RLEnvWrapper[AS]):
         )
         self.n = n_added
 
-    def step(self, actions):
-        step = super().step(actions)
+    def step(self, action):
+        step = super().step(action)
         step.obs = self._add_extras(step.obs)
         return step
 
@@ -48,8 +48,8 @@ class PadObservations(RLEnvWrapper[AS]):
         super().__init__(env, observation_shape=(env.observation_shape[0] + n_added,))
         self.n = n_added
 
-    def step(self, actions):
-        step = super().step(actions)
+    def step(self, action):
+        step = super().step(action)
         step.obs = self._add_obs(step.obs)
         return step
 

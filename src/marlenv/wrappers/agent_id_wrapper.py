@@ -18,8 +18,8 @@ class AgentId(RLEnvWrapper[AS]):
         super().__init__(env, extra_shape=(env.n_agents + env.extras_shape[0],), extra_meanings=meanings)
         self._identity = np.identity(env.n_agents, dtype=np.float32)
 
-    def step(self, actions):
-        step = super().step(actions)
+    def step(self, action):
+        step = super().step(action)
         step.obs.add_extra(self._identity)
         return step
 

@@ -73,9 +73,9 @@ class DiscreteMockEnv(MARLEnv[MultiDiscreteSpace]):
     def render(self, mode: str = "human"):
         return
 
-    def step(self, actions):
+    def step(self, action):
         self.t += 1
-        self.actions_history.append(actions)
+        self.actions_history.append(action)
         return Step(
             self.get_observation(),
             self.get_state(),

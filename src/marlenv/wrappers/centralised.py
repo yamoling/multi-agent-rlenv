@@ -42,9 +42,9 @@ class Centralized(RLEnvWrapper[MultiDiscreteSpace]):
         action_names = [str(a) for a in product(*agent_actions)]
         return DiscreteSpace(env.n_actions**env.n_agents, action_names).repeat(1)
 
-    def step(self, actions: npt.NDArray | Sequence):
-        action = actions[0]
-        individual_actions = self._individual_actions(action)
+    def step(self, action: npt.NDArray | Sequence):
+        action1 = action[0]
+        individual_actions = self._individual_actions(action1)
         individual_actions = np.array(individual_actions)
         step = self.wrapped.step(individual_actions)  # type: ignore
         step.obs = self._joint_observation(step.obs)

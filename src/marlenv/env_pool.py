@@ -20,10 +20,10 @@ class EnvPool(RLEnvWrapper[ActionSpaceType]):
             assert env.has_same_inouts(self.envs[0]), "All environments must have the same inputs and outputs"
         super().__init__(self.envs[0])
 
-    def seed(self, seed: int):
-        random.seed(seed)
+    def seed(self, seed_value: int):
+        random.seed(seed_value)
         for env in self.envs:
-            env.seed(seed)
+            env.seed(seed_value)
 
     def reset(self):
         self.wrapped = random.choice(self.envs)

@@ -27,8 +27,8 @@ class DelayedReward(RLEnvWrapper[AS]):
             self.reward_queue.append(np.zeros(self.reward_space.shape, dtype=np.float32))
         return super().reset()
 
-    def step(self, actions):
-        step = super().step(actions)
+    def step(self, action):
+        step = super().step(action)
         self.reward_queue.append(step.reward)
         # If the step is terminal, we sum all the remaining rewards
         if step.is_terminal:

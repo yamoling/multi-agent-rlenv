@@ -44,10 +44,10 @@ class VideoRecorder(RLEnvWrapper[AS]):
             case other:
                 raise ValueError(f"Unsupported file video encoding: {other}")
 
-    def step(self, actions):
+    def step(self, action):
         if self._recorder is None:
             raise RuntimeError("VideoRecorder not initialized")
-        step = super().step(actions)
+        step = super().step(action)
         img = self.get_image()
         self._recorder.write(img)
         if step.is_terminal:

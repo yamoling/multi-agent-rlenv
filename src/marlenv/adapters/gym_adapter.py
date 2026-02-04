@@ -44,8 +44,8 @@ class Gym(MARLEnv[Space]):
             raise ValueError("No observation available. Call reset() first.")
         return self._last_obs
 
-    def step(self, actions):
-        obs, reward, done, truncated, info = self._gym_env.step(list(actions)[0])
+    def step(self, action):
+        obs, reward, done, truncated, info = self._gym_env.step(list(action)[0])
         self._last_obs = Observation(
             np.array([obs], dtype=np.float32),
             self.available_actions(),
@@ -74,7 +74,7 @@ class Gym(MARLEnv[Space]):
         image = np.array(self._gym_env.render())
         if sys.platform in ("linux", "linux2"):
             image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-        return image
+        return np.array(image, dtype=np.uint8)
 
     def seed(self, seed_value: int):
         self._gym_env.reset(seed=seed_value)

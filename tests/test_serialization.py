@@ -241,7 +241,7 @@ def test_serialize_schedule():
     try:
         pickle.dumps(s)
         assert False, "Should not be able to pickle arbitrary schedules because of the callable lambda"
-    except AttributeError:
+    except (pickle.PicklingError, AttributeError):
         pass
 
     s = Schedule.arbitrary(C())

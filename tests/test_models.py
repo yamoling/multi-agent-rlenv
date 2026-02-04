@@ -380,8 +380,8 @@ def test_env_replay():
                 available[(agent + self._seed) % self.n_actions] = True
             return availables
 
-        def step(self, actions):
-            return super().step(actions)
+        def step(self, action):
+            return super().step(action)
 
         def seed(self, seed_value: int):
             np.random.seed(seed_value)
@@ -409,16 +409,16 @@ def test_wrong_extras_meanings_length():
             super().__init__(4, DiscreteSpace(5), (10,), (10,), extras_shape=(5,), extras_meanings=["a", "b", "c"])
 
         def get_observation(self):
-            pass
+            raise NotImplementedError()
 
         def get_state(self):
-            pass
+            raise NotImplementedError()
 
-        def step(self, actions):
-            pass
+        def step(self, action):
+            raise NotImplementedError()
 
         def reset(self):
-            pass
+            raise NotImplementedError()
 
     try:
         TestClass()

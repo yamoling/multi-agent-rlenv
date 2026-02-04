@@ -145,17 +145,15 @@ class Schedule:
     @staticmethod
     def from_json(data: dict[str, Any]):
         """Create a Schedule from a JSON-like dictionary."""
-        classname = data.get("name")
-        if classname == "LinearSchedule":
-            return LinearSchedule(data["start_value"], data["end_value"], data["n_steps"])
-        elif classname == "ExpSchedule":
-            return ExpSchedule(data["start_value"], data["end_value"], data["n_steps"])
-        elif classname == "ConstantSchedule":
-            return ConstantSchedule(data["value"])
-        elif classname == "ArbitrarySchedule":
+        candidates = [LinearSchedule, ExpSchedule, ConstantSchedule]
+        data = data.copy()
+        classname = data.pop("name")
+        for cls in candidates:
+            if cls.__name__ == classname:
+                return cls(**data)
+        if classname == "ArbitrarySchedule":
             raise NotImplementedError("ArbitrarySchedule cannot be deserialized from JSON")
-        else:
-            raise ValueError(f"Unknown schedule type: {classname}")
+        raise ValueError(f"Unknown schedule type: {classname}")
 
 
 @dataclass(eq=False)
