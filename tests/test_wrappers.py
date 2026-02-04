@@ -1,6 +1,6 @@
 import numpy as np
 from marlenv import Builder, DiscreteMOMockEnv, DiscreteMockEnv, MARLEnv
-from marlenv.wrappers import Centralized, AvailableActionsMask, TimeLimit, LastAction, DelayedReward, ActionRandomizer
+from marlenv.wrappers import Centralized, AvailableActionsMask, TimeLimit, LastAction, DelayedReward
 import marlenv
 
 
@@ -55,13 +55,12 @@ def test_time_limit_wrapper():
     env = Builder(DiscreteMockEnv(1)).time_limit(MAX_T).build()
     assert env.extras_shape == (1,)
     assert env.state_extra_shape == (1,)
-    done = False
-    t = 0
-    while not done:
-        step = env.step(np.array([0]))
+    t = 1
+    step = env.step(np.array([0]))
+    while not step.done:
         assert step.obs.extras.shape == (env.n_agents, 1)
         assert step.state.extras_shape == (1,)
-        done = step.done
+        step = env.step(np.array([0]))
         t += 1
     assert t == MAX_T
     assert step.truncated
@@ -73,12 +72,15 @@ def test_truncated_and_done():
     env = marlenv.wrappers.TimeLimit(DiscreteMockEnv(2, end_game=END_GAME), END_GAME)
     obs, state = env.reset()
     episode = marlenv.Episode.new(obs, state)
+    action = env.action_space.sample()
+    step = env.step(action)
     while not episode.is_finished:
-        action = env.action_space.sample()
-        step = env.step(action)
         episode.add(marlenv.Transition.from_step(obs, state, action, step))
         obs = step.obs
         state = step.state
+        action = env.action_space.sample()
+        step = env.step(action)
+
     assert step.done
     assert not step.truncated, (
         "The episode is done, so it does not have to be truncated even though the time limit is reached at the same time."
@@ -97,11 +99,10 @@ def test_time_limit_wrapper_with_extra():
     assert env.extras_shape == (1,)
     obs, _ = env.reset()
     assert obs.extras.shape == (5, 1)
-    stop = False
-    t = 0
-    while not stop:
+    t = 1
+    step = env.step(np.array([0]))
+    while not step.is_terminal:
         step = env.step(np.array([0]))
-        stop = step.done or step.truncated
         t += 1
     assert t == MAX_T
     assert np.all(step.obs.extras == 1.0)
@@ -129,11 +130,10 @@ def test_time_limit_wrapper_with_truncation_penalty():
     assert env.extras_shape == (1,)
     obs, _ = env.reset()
     assert obs.extras.shape == (5, 1)
-    stop = False
-    t = 0
-    while not stop:
+    t = 1
+    step = env.step(np.array([0]))
+    while not step.is_terminal:
         step = env.step(np.array([0]))
-        stop = step.done or step.truncated
         t += 1
     assert t == MAX_T
     assert np.all(step.obs.extras[:] == 1)
@@ -374,9 +374,9 @@ def test_potential_shaping():
         def compute_potential(self) -> float:
             return self.phi
 
-        def step(self, actions):
+        def step(self, action):
             self.phi = max(0, self.phi - 1)
-            return super().step(actions)
+            return super().step(action)
 
     EP_LENGTH = 20
     env = PS(DiscreteMockEnv(reward_step=0, end_game=EP_LENGTH))
