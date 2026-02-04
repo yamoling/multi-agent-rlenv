@@ -29,7 +29,6 @@ jobs:
         python-version: 
           - '3.12'
           - '3.13'
-          - '3.14'
     runs-on: ${{ matrix.os }}
     steps:
       # Checkout the repository
@@ -43,12 +42,6 @@ jobs:
         uses: yezz123/setup-uv@v4
         with:
           uv-version: 0.9.24
-      - name: (Linux) Install SDL dependency
-        if: runner.os == 'Linux'
-        run: sudo apt-get install libsdl2-dev
-      - name: (MacOS) Install SDL dependency
-        if: runner.os == 'macOS'
-        run: brew install sdl2
       - name: Install dependencies and run pytest
         run: |
           uv sync --extra overcooked --extra gym --extra pettingzoo --extra torch
