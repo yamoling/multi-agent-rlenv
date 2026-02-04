@@ -44,10 +44,10 @@ jobs:
         with:
           uv-version: 0.9.24
       - name: (Linux) Install SDL dependency
-        if: runner.os == 'ubuntu-latest'
+        if: runner.os == 'Linux'
         run: sudo apt-get install libsdl2-dev
       - name: (MacOS) Install SDL dependency
-        if: runner.os == 'macOS-latest'
+        if: runner.os == 'macOS'
         run: brew install sdl2
       - name: Install dependencies and run pytest
         run: |
