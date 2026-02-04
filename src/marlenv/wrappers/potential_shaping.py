@@ -39,9 +39,9 @@ class PotentialShaping(RLEnvWrapper[A], ABC):
         self._current_potential = self.compute_potential()
         return self.add_extras(obs), state
 
-    def step(self, actions):
+    def step(self, action):
         prev_potential = self._current_potential
-        step = super().step(actions)
+        step = super().step(action)
 
         self._current_potential = self.compute_potential()
         shaped_reward = self.gamma * self._current_potential - prev_potential

@@ -33,39 +33,39 @@ class PettingZoo(MARLEnv[Space]):
         if obs_space.shape is None:
             raise NotImplementedError("Only discrete observation spaces are supported")
         self._pz_env = env
-        env.reset()
-        super().__init__(n_agents, space, obs_space.shape, self.get_state().shape)
+        self.n_agents = n_agents
+        self.n_actions = space.shape[-1]
+        self.last_observation, state = self.reset()
+        super().__init__(n_agents, space, obs_space.shape, state.shape)
         self.agents = env.possible_agents
-        self.last_observation = None
 
     def get_state(self):
         try:
-            return self._pz_env.state()
+            return State(self._pz_env.state())
         except NotImplementedError:
-            return np.array([0])
+            assert self.last_observation is not None, "Cannot get the state unless there is a previous observation"
+            return State(self.last_observation.data)
 
-    def step(self, actions: npt.NDArray | Sequence):
-        action_dict = dict(zip(self.agents, actions))
+    def step(self, action: npt.NDArray | Sequence):
+        action_dict = dict(zip(self.agents, action))
         obs, reward, term, trunc, info = self._pz_env.step(action_dict)
         obs_data = np.array([v for v in obs.values()])
         reward = np.sum([r for r in reward.values()], keepdims=True)
         self.last_observation = Observation(obs_data, self.available_actions())
-        state = State(self.get_state())
+        state = self.get_state()
         return Step(self.last_observation, state, reward, any(term.values()), any(trunc.values()), info)
 
     def reset(self):
         obs = self._pz_env.reset()[0]
         obs_data = np.array([v for v in obs.values()])
-        self.last_observation = Observation(obs_data, self.available_actions(), self.get_state())
-        return self.last_observation
+        self.last_observation = Observation(obs_data, self.available_actions())
+        return self.last_observation, self.get_state()
 
     def get_observation(self):
-        if self.last_observation is None:
-            raise ValueError("No observation available. Call reset() first.")
         return self.last_observation
 
     def seed(self, seed_value: int):
         self._pz_env.reset(seed=seed_value)
 
-    def render(self, *_):
-        return self._pz_env.render()
+    def render(self):
+        self._pz_env.render()

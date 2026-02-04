@@ -18,8 +18,8 @@ class Blind(RLEnvWrapper[AS]):
         super().__init__(env)
         self.p = float(p)
 
-    def step(self, actions):
-        step = super().step(actions)
+    def step(self, action):
+        step = super().step(action)
         if random.random() < self.p:
             step.obs.data = np.zeros_like(step.obs.data)
         return step

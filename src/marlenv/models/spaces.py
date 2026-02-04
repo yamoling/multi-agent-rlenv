@@ -8,7 +8,7 @@ import numpy.typing as npt
 
 
 @dataclass
-class Space(ABC):
+class Space[T](ABC):
     shape: tuple[int, ...]
     size: int
     labels: list[str]
@@ -21,7 +21,7 @@ class Space(ABC):
         self.labels = labels
 
     @abstractmethod
-    def sample(self, mask: Optional[npt.NDArray[np.bool_]] = None) -> npt.NDArray[np.float32]:
+    def sample(self, mask: npt.NDArray[np.bool] | None = None) -> T:
         """Sample a value from the space."""
 
     def __eq__(self, value: object) -> bool:
@@ -44,7 +44,7 @@ class Space(ABC):
 
 
 @dataclass
-class DiscreteSpace(Space):
+class DiscreteSpace(Space[int]):
     size: int
     """Number of categories"""
 
@@ -53,7 +53,7 @@ class DiscreteSpace(Space):
         self.size = size
         self.space = np.arange(size)
 
-    def sample(self, mask: Optional[npt.NDArray[np.bool]] = None):
+    def sample(self, mask: npt.NDArray[np.bool] | None = None):
         space = self.space.copy()
         if mask is not None:
             space = space[mask]
@@ -87,7 +87,7 @@ class DiscreteSpace(Space):
 
 
 @dataclass
-class MultiDiscreteSpace(Space):
+class MultiDiscreteSpace(Space[npt.NDArray[np.int32]]):
     n_dims: int
     spaces: tuple[DiscreteSpace, ...]
 
@@ -123,7 +123,7 @@ class MultiDiscreteSpace(Space):
 
 
 @dataclass
-class ContinuousSpace(Space):
+class ContinuousSpace(Space[npt.NDArray[np.float32]]):
     """A continuous space (box) in R^n."""
 
     low: npt.NDArray[np.float32]
@@ -192,7 +192,7 @@ class ContinuousSpace(Space):
             action = np.array(action)
         return np.clip(action, self.low, self.high)
 
-    def sample(self) -> npt.NDArray[np.float32]:
+    def sample(self, *args, **kwargs):
         r = np.random.random(self.shape) * (self.high - self.low) + self.low
         return r.astype(np.float32)
 

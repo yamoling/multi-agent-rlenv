@@ -33,13 +33,13 @@ class LastAction(RLEnvWrapper[AS]):
         state.add_extra(self.last_one_hot_actions.flatten())
         return obs, state
 
-    def step(self, actions):
-        step = super().step(actions)
+    def step(self, action):
+        step = super().step(action)
         match self.wrapped.action_space:
             case ContinuousSpace():
-                self.last_actions = actions
+                self.last_actions = action
             case DiscreteSpace() | MultiDiscreteSpace():
-                self.last_one_hot_actions = self.compute_one_hot_actions(actions)
+                self.last_one_hot_actions = self.compute_one_hot_actions(action)
             case other:
                 raise NotImplementedError(f"Action space {other} not supported")
         step.obs.add_extra(self.last_one_hot_actions)

@@ -62,8 +62,8 @@ class RLEnvWrapper(MARLEnv[AS]):
     def agent_state_size(self):
         return self.wrapped.agent_state_size
 
-    def step(self, actions: np.ndarray | Sequence):
-        return self.wrapped.step(actions)
+    def step(self, action: np.ndarray | Sequence):
+        return self.wrapped.step(action)
 
     def reset(self):
         return self.wrapped.reset()

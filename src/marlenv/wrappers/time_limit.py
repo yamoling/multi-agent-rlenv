@@ -64,9 +64,9 @@ class TimeLimit(RLEnvWrapper[AS]):
             self.add_time_extra(obs, state)
         return obs, state
 
-    def step(self, actions):
+    def step(self, action):
         self._current_step += 1
-        step = super().step(actions)
+        step = super().step(action)
         if self.add_extra:
             self.add_time_extra(step.obs, step.state)
         # If we reach the time limit

@@ -169,17 +169,18 @@ class SMAC(MARLEnv[MultiDiscreteSpace]):
 
     def reset(self):
         obs, state = self._env.reset()
-        obs = Observation(np.array(obs), self.available_actions(), state)
-        return obs
+        obs = Observation(np.array(obs), self.available_actions())
+        state = State(state)
+        return obs, state
 
     def get_observation(self):
-        return self._env.get_obs()
+        return Observation(np.array(self._env.get_obs()), self.available_actions())
 
     def get_state(self):
         return State(self._env.get_state())
 
-    def step(self, actions):
-        reward, done, info = self._env.step(actions)
+    def step(self, action):
+        reward, done, info = self._env.step(action)
         obs = Observation(
             self._env.get_obs(),  # type: ignore
             self.available_actions(),
@@ -199,7 +200,9 @@ class SMAC(MARLEnv[MultiDiscreteSpace]):
         return np.array(self._env.get_avail_actions()) == 1
 
     def get_image(self):
-        return self._env.render(mode="rgb_array")
+        img = self._env.render(mode="rgb_array")
+        assert img is not None
+        return img
 
     def seed(self, seed_value: int):
         self._env = StarCraft2Env(map_name=self._env.map_name, seed=seed_value)
