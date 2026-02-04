@@ -43,6 +43,12 @@ jobs:
         uses: yezz123/setup-uv@v4
         with:
           uv-version: 0.9.24
+      - name: (Linux) Install SDL dependency
+        if: runner.os == 'ubuntu-latest'
+        run: sudo apt-get install libsdl2-dev
+      - name: (MacOS) Install SDL dependency
+        if: runner.os == 'macOS-latest'
+        run: brew install sdl2
       - name: Install dependencies and run pytest
         run: |
           uv sync --extra overcooked --extra gym --extra pettingzoo --extra torch
