@@ -130,6 +130,29 @@ def test_smac_render():
     env.render()
 
 
+@pytest.mark.skipif(skip_smac, reason="SMAC is not installed")
+def test_smac_obs():
+    from marlenv.adapters import SMAC
+
+    def check(obs: Observation, state: State):
+        assert isinstance(obs.data, np.ndarray)
+        assert isinstance(obs.extras, np.ndarray)
+        assert isinstance(obs.available_actions, np.ndarray)
+
+        assert isinstance(state.data, np.ndarray)
+        assert isinstance(state.extras, np.ndarray)
+
+    env = SMAC("3m")
+    obs, state = env.reset()
+    check(obs, state)
+
+    done = False
+    while not done:
+        step = env.random_step()
+        check(step.obs, step.state)
+        done = step.is_terminal
+
+
 def test_pymarl():
     LIMIT = 20
     N_AGENTS = 2

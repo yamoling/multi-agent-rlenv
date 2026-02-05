@@ -3,7 +3,7 @@ from typing import Sequence
 
 import numpy as np
 import numpy.typing as npt
-from gymnasium import spaces  # pettingzoo uses gymnasium spaces
+from gymnasium import spaces
 from pettingzoo import ParallelEnv
 
 from marlenv.models import MARLEnv, Observation, State, Step, DiscreteSpace, ContinuousSpace, Space

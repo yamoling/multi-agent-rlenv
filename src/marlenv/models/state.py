@@ -55,7 +55,7 @@ class State(Generic[StateType]):
 
     def as_tensors(self, device=None):
         """Convert the state to a tuple of tensors of shape (1, <dim>)."""
-        import torch
+        import torch  # pyright: ignore[reportMissingImports]
 
         data = torch.from_numpy(self.data).unsqueeze(0).to(device, non_blocking=True)
         extras = torch.from_numpy(self.extras).unsqueeze(0).to(device, non_blocking=True)

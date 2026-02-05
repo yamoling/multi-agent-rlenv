@@ -1,10 +1,15 @@
-from marlenv.adapters import SMAC
 from .deepsea import DeepSea
 from .matrix_game import MatrixGame
 from .coordinated_grid import CoordinatedGrid
 
 
-__all__ = ["SMAC", "DeepSea", "lle", "overcooked", "MatrixGame", "connect_n", "CoordinatedGrid"]
+__all__ = ["smac", "DeepSea", "lle", "overcooked", "MatrixGame", "connect_n", "CoordinatedGrid"]
+
+
+def smac():
+    from marlenv.adapters import SMAC
+
+    return SMAC
 
 
 def lle():
