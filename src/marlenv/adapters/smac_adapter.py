@@ -3,7 +3,7 @@ from typing import overload
 
 import numpy as np
 import numpy.typing as npt
-from smac.env import StarCraft2Env  # type:ignore[import]
+from smac.env import StarCraft2Env  # pyright: ignore[reportMissingImports]
 
 from marlenv.models import MARLEnv, Observation, State, Step, MultiDiscreteSpace, DiscreteSpace
 
