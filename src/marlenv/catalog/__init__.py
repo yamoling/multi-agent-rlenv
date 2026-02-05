@@ -28,24 +28,57 @@ __all__ = ["smac", "DeepSea", "lle", "overcooked", "MatrixGame", "connect_n", "C
 
 
 def smac():
+    """
+    Quick loading of the SMAC adapter, if smacv2 is instaleld.
+
+    **Example:**
+    ```python
+    env = marlenv.catalog.smac()("3m")
+    obs, state = env.reset()
+    ```
+    """
     from marlenv.adapters import SMAC
 
     return SMAC
 
 
 def lle():
+    """
+    If installed, returns the LLE class that implements the `MARLEnv` class.
+    Refer to the LLE's documentation for further information.
+
+    **Example:**
+    ```python
+    env = marlenv.catalog.lle().level(6).build()
+    obs, state = env.reset()
+    ```
+    """
     from lle import LLE  # pyright: ignore[reportMissingImports]
 
     return LLE
 
 
 def overcooked():
+    """
+    If installed, returns the Overcooked class that implements the `MARLEnv` class.
+    Refer to Overcooked's documentation for further information.
+
+    **Example:**
+    ```python
+    env = marlenv.catalog.overcooked().from_layout("asymmetric_advantages")
+    obs, state = env.reset()
+    ```
+    """
     from overcooked import Overcooked  # pyright: ignore[reportMissingImports]
 
     return Overcooked
 
 
 def connect_n():
+    """
+    Returs the `ConnectN` class if `pygame` is installed.
+    """
+
     from .connectn import ConnectN
 
     return ConnectN
