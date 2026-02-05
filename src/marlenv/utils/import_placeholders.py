@@ -3,6 +3,8 @@ from types import SimpleNamespace
 
 
 def _raise_error(module_name: str, package_name: Optional[str] = None):
+    if package_name is None:
+        package_name = module_name
     raise ImportError(
         f"The optional dependency `{module_name}` is not installed.\nInstall the `{package_name}` package (e.g. pip install {package_name})."
     )

@@ -9,6 +9,15 @@ from .state import State
 
 @dataclass
 class Step:
+    """
+    The result of performing a step in the environment:
+        - the new observation
+        - the new state
+        - the reward received for the step performed
+        - whether the episode is done or truncated
+        - some info (mainly for logging purposes)
+    """
+
     obs: Observation
     """The new observation (1 per agent) of the environment resulting from the agent's action."""
     state: State
