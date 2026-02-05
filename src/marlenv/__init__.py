@@ -1,65 +1,114 @@
 """
 `marlenv` is a strongly typed library for multi-agent and multi-objective reinforcement learning.
 
+Install the library with
+```sh
+$ pip install multi-agent-rlenv      # Basics
+$ pip install multi-agent-rlenv[all] # With all optional dependecies
+$ pip install multi-agent-rlenv[smac,overcooked] # Only SMACv2 & Overcooked
+```
+
 It aims to provide a simple and consistent interface for reinforcement learning environments by providing abstraction models such as `Observation`s or `Episode`s. `marlenv` provides adapters for popular libraries such as `gym` or `pettingzoo` and provides utility wrappers to add functionalities such as video recording or limiting the number of steps.
 
-Almost every class is a dataclassto enable seemless serialiation with the `orjson` library.
+Almost every class is a dataclass to enable seemless serialiation with the `orjson` library.
 
-# Existing environments
-The `MARLEnv` class represents a multi-agent RL environment and is at the center of this library, and `marlenv` provides an adapted implementation of multiple common MARL environments (gym, pettingzoo, smac and overcooked) in `marlenv.adapters`. Note that these adapters will only work if you have the corresponding library installed.
+# Fundamentals
+## States & Observations
+`MARLEnv.reset()` returns a pair of `(Observation, State)` and `MARLEnv.step()` returns a `Step`.
+
+- `Observation` contains:
+  - `data`: shape `[n_agents, *observation_shape]`
+  - `available_actions`: boolean mask `[n_agents, n_actions]`
+  - `extras`: extra features per agent (default shape `(n_agents, 0)`)
+- `State` represents the environment state and can also carry `extras`.
+- `Step` bundles `obs`, `state`, `reward`, `done`, `truncated`, and `info`.
+
+Rewards are stored as `np.float32` arrays. Multi-objective envs use reward vectors with `reward_space.size > 1`.
+
+## Extras
+Extras are auxiliary features appended by wrappers (agent id, last action, time ratio, available actions, ...).
+Wrappers that add extras must update both `extras_shape` and `extras_meanings` so downstream users can interpret them.
+`State` extras should stay in sync with `Observation` extras when applicable.
+
+# Environment catalog
+`marlenv.catalog` exposes curated environments and lazily imports optional dependencies.
 
 ```python
-from marlenv.adapters import Gym, PettingZoo, SMAC, Overcooked
-import marlenv
+from marlenv import catalog
 
-env1 = Gym("CartPole-v1")
-env2 = marlenv.make("CartPole-v1")
-env3 = PettingZoo("prospector_v4")
-env4 = SMAC("3m")
-env5 = Overcooked.from_layout("cramped_room")
+env1 = catalog.overcooked().from_layout("scenario4")
+env2 = catalog.lle().level(6)
+env3 = catalog.DeepSea(mex_depth=5)
 ```
 
-# Wrappers & Builder
-To facilitate the create of an environment with common wrappers, `marlenv` provides a `Builder` class that can be used to chain the creation of multiple wrappers.
+Catalog entries require their corresponding extras at install time (e.g., `marlenv[overcooked]`, `marlenv[lle]`).
+
+# Wrappers & builders
+Wrappers are composable through `RLEnvWrapper` and can be chained via `Builder` for fluent configuration.
 
 ```python
-from marlenv import make, Builder
+from marlenv import Builder
+from marlenv.adapters import SMAC
 
-env = <your env>
-env = Builder(env).agent_id().time_limit(50).record("videos").build()
+env = (
+    Builder(SMAC("3m"))
+    .agent_id()
+    .time_limit(20)
+    .available_actions()
+    .build()
+)
 ```
+
+Common wrappers include time limits, delayed rewards, masking available actions, and video recording.
 
 # Using the library
-A typical environment loop would look like this:
+## Adapters for existing libraries
+Adapters normalize external APIs into `MARLEnv`:
 
 ```python
-from marlenv import DiscreteMockEnv, Builder, Episode
+import marlenv
 
-env = Builder(DicreteMockEnv()).agent_id().build()
-obs, state = env.reset()
-terminated = False
-episode = Episode.new(obs, state)
-while not episode.is_finished:
-    action = env.sample_action() # a valid random action
-    step = env.step(action) # Step data `step.obs`, `step.reward`, ...
-    episode.add(step, action) # Progressively build the episode
+gym_env = marlenv.make("CartPole-v1", seed=25)
+
+from marlenv.adapters import SMAC
+smac_env = SMAC("3m", debug=True, difficulty="9")
+
+from pettingzoo.sisl import pursuit_v4
+from marlenv.adapters import PettingZoo
+env = PettingZoo(pursuit_v4.parallel_env())
 ```
 
-# Extras
-To cope with complex observation spaces, `marlenv` distinguishes the "main" observation data from the "extra" observation data. A typical example would be the observation of a gridworld environment with a time limit. In that case, the main observation has shape (height, width), i.e. the content of the grid, but the current time is an extra observation data of shape (1, ).
+## Designing a custom environment
+Create a custom environment by inheriting from `MARLEnv` and implementing `reset`, `step`, `get_observation`, and `get_state`.
 
 ```python
-env = GridWorldEnv()
-print(env.observation_shape) # (height, width)
-print(env.extras_shape) # (0, )
+import numpy as np
+from marlenv import MARLEnv, DiscreteSpace, Observation, State, Step
 
-env = Builder(env).time_limit(25).build()
-print(env.observation_shape) # (height, width)
-print(env.extras_shape) # (1, )
+class CustomEnv(MARLEnv[DiscreteSpace]):
+    def __init__(self):
+        super().__init__(
+            n_agents=3,
+            action_space=DiscreteSpace.action(5).repeat(3),
+            observation_shape=(4,),
+            state_shape=(2,),
+        )
+        self.t = 0
+
+    def reset(self):
+        self.t = 0
+        return self.get_observation(), self.get_state()
+
+    def step(self, action):
+        self.t += 1
+        return Step(self.get_observation(), self.get_state(), reward=0.0, done=False)
+
+    def get_observation(self):
+        return Observation(np.zeros((3, 4), dtype=np.float32), self.available_actions())
+
+    def get_state(self):
+        return State(np.array([self.t, 0], dtype=np.float32))
 ```
-
-# Creating a new environment
-If you want to create a new environment, you can simply create a class that inherits from `MARLEnv`. If you want to create a wrapper around an existing `MARLEnv`, you probably want to subclass `RLEnvWrapper` which implements a default behaviour for every method.
 """
 
 from importlib.metadata import version, PackageNotFoundError
