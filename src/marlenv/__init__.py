@@ -65,9 +65,9 @@ If you want to create a new environment, you can simply create a class that inhe
 from importlib.metadata import version, PackageNotFoundError
 
 try:
-    __version__ = version("overcooked")
+    __version__ = version("multi-agent-rlenv")
 except PackageNotFoundError:
-    __version__ = "0.0.0"  # fallback pratique en dev/CI
+    __version__ = "0.0.0"  # fallback for CI
 
 
 from . import models
