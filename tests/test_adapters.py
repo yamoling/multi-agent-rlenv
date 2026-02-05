@@ -114,7 +114,7 @@ def _check_env_3m(env):
 
 @pytest.mark.skipif(skip_smac, reason="SMAC is not installed")
 def test_smac_from_class():
-    from smac.env import StarCraft2Env  # pyright: ignore[reportMissingImports]
+    from smacv2.env import StarCraft2Env  # pyright: ignore[reportMissingImports]
     from marlenv.adapters import SMAC
 
     env = SMAC(StarCraft2Env("3m"))

@@ -1,6 +1,6 @@
 [project]
 name = "multi-agent-rlenv"
-version = "3.7.2"
+version = "3.7.3"
 description = "A strongly typed Multi-Agent Reinforcement Learning framework"
 authors = [
     { "name" = "Yannick Molinghen", "email" = "yannick.molinghen@ulb.be" },
@@ -17,7 +17,7 @@ dependencies = ["numpy>=2.0.0", "opencv-python>=4.0", "typing_extensions>=4.0"]
 
 [project.optional-dependencies]
 gym = ["gymnasium>=0.29.1"]
-smac = ["smac", "pysc2"]
+smac = ["smacv2", "pysc2"]
 pettingzoo = ["pettingzoo>=1.20", "pymunk>=6.0", "scipy>=1.10"]
 overcooked = ["overcooked>=0.1.0"]
 lle = ["laser-learning-environment>=2.6.1"]
@@ -26,8 +26,7 @@ all = [
     "gymnasium>0.29.1",
     "pettingzoo>=1.20",
     "overcooked>=0.1.0",
-    "smac",
-    "pysc2",
+    "smacv2",
     "laser-learning-environment>=2.6.1",
     "pymunk>=6.0",
     "scipy>=1.10",
@@ -52,8 +51,8 @@ pythonpath = "src"
 filterwarnings = "ignore::DeprecationWarning"
 
 [tool.uv.sources]
-smac = { git = "https://github.com/oxwhirl/smac.git" }
-pysc2 = { git = "https://github.com/google-deepmind/pysc2.git" }
+smacv2 = { git = "https://github.com/oxwhirl/smacv2.git", rev = "577ab5a" }
+pysc2 = { git = "https://github.com/google-deepmind/pysc2.git", rev = "0df53d3" }
 
 
 [dependency-groups]
