@@ -8,6 +8,7 @@ from marlenv.adapters import PymarlAdapter
 skip_gym = not marlenv.adapters.HAS_GYM
 skip_pettingzoo = not marlenv.adapters.HAS_PETTINGZOO
 skip_smac = not marlenv.adapters.HAS_SMAC
+skip_smacv2 = not marlenv.adapters.HAS_SMACv2
 
 
 @pytest.mark.skipif(skip_gym, reason="Gymnasium is not installed")
@@ -114,7 +115,7 @@ def _check_env_3m(env):
 
 @pytest.mark.skipif(skip_smac, reason="SMAC is not installed")
 def test_smac_from_class():
-    from smacv2.env import StarCraft2Env  # pyright: ignore[reportMissingImports]
+    from smac.env import StarCraft2Env  # pyright: ignore[reportMissingImports]
     from marlenv.adapters import SMAC
 
     env = SMAC(StarCraft2Env("3m"))
@@ -128,6 +129,22 @@ def test_smac_render():
     env = SMAC("3m")
     env.reset()
     env.render()
+
+
+@pytest.mark.skipif(skip_smac, reason="SMAC is not installed")
+def test_smac_two_resets():
+    from marlenv.adapters import SMAC
+
+    def run_episode(env: SMAC):
+        env.reset()
+        done = False
+        while not done:
+            step = env.random_step()
+            done = step.is_terminal
+
+    env = SMAC("3m")
+    run_episode(env)
+    run_episode(env)
 
 
 @pytest.mark.skipif(skip_smac, reason="SMAC is not installed")
@@ -151,6 +168,47 @@ def test_smac_obs():
         step = env.random_step()
         check(step.obs, step.state)
         done = step.is_terminal
+
+
+@pytest.mark.skipif(skip_smacv2, reason="SMACv2 is not installed")
+def test_smacv2():
+    from smacv2.env.starcraft2.wrapper import StarCraftCapabilityEnvWrapper
+    from marlenv.adapters import SMACv2
+
+    smac_env = StarCraftCapabilityEnvWrapper(
+        capability_config={
+            "n_units": 5,
+            "n_enemies": 5,
+            "team_gen": {
+                "dist_type": "weighted_teams",
+                "unit_types": ["marine", "marauder", "medivac"],
+                "exception_unit_types": ["medivac"],
+                "weights": [0.45, 0.45, 0.1],
+                "observe": True,
+            },
+            "start_positions": {
+                "dist_type": "surrounded_and_reflect",
+                "p": 0.5,
+                "n_enemies": 5,
+                "map_x": 32,
+                "map_y": 32,
+            },
+        },
+        map_name="10gen_terran",
+        debug=True,
+        conic_fov=False,
+        obs_own_pos=True,
+        use_unit_ranges=True,
+        min_attack_range=2,
+    )
+    env = SMACv2(smac_env)
+    n_episodes = 2
+    for _ in range(n_episodes):
+        env.reset()
+        stop = False
+        while not stop:
+            step = env.random_step()
+            stop = step.is_terminal
 
 
 def test_pymarl():

@@ -29,7 +29,7 @@ __all__ = ["smac", "DeepSea", "lle", "overcooked", "MatrixGame", "connect_n", "C
 
 def smac():
     """
-    Quick loading of the SMAC adapter, if smacv2 is instaleld.
+    Quick loading of the SMAC adapter, if smac is instaleld.
 
     **Example:**
     ```python
