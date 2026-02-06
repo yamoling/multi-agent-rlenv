@@ -3,14 +3,14 @@ from typing import overload
 
 import numpy as np
 import numpy.typing as npt
-from smac.env import StarCraft2Env
+from smacv2.env import StarCraft2Env, StarCraftCapabilityEnvWrapper
 
 from marlenv.models import MARLEnv, Observation, State, Step, MultiDiscreteSpace, DiscreteSpace
 
 
 @dataclass
-class SMAC(MARLEnv[MultiDiscreteSpace]):
-    """Wrapper for the SMAC environment to work with this framework"""
+class SMACv2(MARLEnv[MultiDiscreteSpace]):
+    """Wrapper for the SMACv2 environment to work with this framework"""
 
     @overload
     def __init__(
@@ -29,6 +29,10 @@ class SMAC(MARLEnv[MultiDiscreteSpace]):
         obs_terrain_height=False,
         obs_instead_of_state=False,
         obs_timestep_number=False,
+        obs_own_pos=False,
+        obs_starcraft=True,
+        conic_fov=False,
+        num_fov_actions=12,
         state_last_action=True,
         state_timestep_number=False,
         reward_sparse=False,
@@ -39,6 +43,11 @@ class SMAC(MARLEnv[MultiDiscreteSpace]):
         reward_negative_scale=0.5,
         reward_scale=True,
         reward_scale_rate=20,
+        use_unit_ranges=False,
+        min_attack_range=2,
+        kill_unit_step_mul=2,
+        fully_observable=False,
+        capability_config={},
         replay_dir="",
         replay_prefix="",
         window_size_x=1920,
@@ -46,7 +55,8 @@ class SMAC(MARLEnv[MultiDiscreteSpace]):
         heuristic_ai=False,
         heuristic_rest=False,
         debug=False,
-        **kwargs,
+        prob_obs_enemy=1.0,
+        action_mask=True,
     ):
         """
         Parameters
@@ -144,18 +154,21 @@ class SMAC(MARLEnv[MultiDiscreteSpace]):
         """
 
     @overload
-    def __init__(self, env: StarCraft2Env): ...
+    def __init__(self, env: StarCraft2Env | StarCraftCapabilityEnvWrapper): ...
 
     def __init__(self, env_or_map_name, **kwargs):  # type: ignore
         match env_or_map_name:
             case StarCraft2Env():
                 self._env = env_or_map_name
                 map_name = env_or_map_name.map_name
-            case str() as map_name:
+            case StarCraftCapabilityEnvWrapper() as env:
+                self._env = env
+                map_name = env.env.map_name
+            case str():
+                map_name = env_or_map_name
                 self._env = StarCraft2Env(map_name=map_name, **kwargs)
             case other:
                 raise ValueError(f"Invalid argument type: {type(other)}")
-        self._env = StarCraft2Env(map_name=map_name)
         self._env_info = self._env.get_env_info()
         super().__init__(
             self._env.n_agents,
@@ -163,11 +176,10 @@ class SMAC(MARLEnv[MultiDiscreteSpace]):
             observation_shape=(self._env_info["obs_shape"],),
             state_shape=(self._env_info["state_shape"],),
         )
-        self._seed = self._env.seed()
-        self.name = f"smac-{self._env.map_name}"
+        self.name = f"SMACv2-{self._env.map_name}"
 
     def reset(self):
-        obs, state = self._env.reset()
+        obs, state = self._env.reset()  # pyright: ignore[reportGeneralTypeIssues]
         obs = Observation(np.array(obs), self.available_actions())
         state = State(state)
         return obs, state
@@ -191,4 +203,4 @@ class SMAC(MARLEnv[MultiDiscreteSpace]):
         return img
 
     def seed(self, seed_value: int):
-        self._env = StarCraft2Env(map_name=self._env.map_name, seed=seed_value)
+        raise NotImplementedError("SMACv2 only supports random seed at __init__ time.")

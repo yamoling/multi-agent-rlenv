@@ -1,6 +1,6 @@
 [project]
 name = "multi-agent-rlenv"
-version = "3.7.4"
+version = "3.7.5"
 description = "A strongly typed Multi-Agent Reinforcement Learning framework"
 authors = [
     { "name" = "Yannick Molinghen", "email" = "yannick.molinghen@ulb.be" },
@@ -17,7 +17,8 @@ dependencies = ["numpy>=2.0.0", "opencv-python>=4.0", "typing_extensions>=4.0"]
 
 [project.optional-dependencies]
 gym = ["gymnasium>=0.29.1"]
-smac = ["smacv2", "pysc2"]
+smac = ["smac", "pysc2"]
+smacv2 = ["smacv2", "pysc2"]
 pettingzoo = ["pettingzoo>=1.20", "pymunk>=6.0", "scipy>=1.10"]
 overcooked = ["overcooked>=0.1.0"]
 lle = ["laser-learning-environment>=2.6.1"]
@@ -26,7 +27,7 @@ all = [
     "gymnasium>0.29.1",
     "pettingzoo>=1.20",
     "overcooked>=0.1.0",
-    "smacv2",
+    "smac",
     "laser-learning-environment>=2.6.1",
     "pymunk>=6.0",
     "scipy>=1.10",
@@ -51,9 +52,12 @@ pythonpath = "src"
 filterwarnings = "ignore::DeprecationWarning"
 
 [tool.uv.sources]
-smacv2 = { git = "https://github.com/oxwhirl/smacv2.git", rev = "577ab5a" }
+smac = { git = "https://github.com/oxwhirl/smac.git", rev = "d6aab33" }
+smacv2 = { git = "https://github.com/oxwhirl/smacv2", rev = "577ab5a" }
 pysc2 = { git = "https://github.com/google-deepmind/pysc2.git", rev = "0df53d3" }
 
+[tool.uv]
+conflicts = [[{ extra = "smac" }, { extra = "smacv2" }]]
 
 [dependency-groups]
 dev = ["orjson>=3.10.12", "pdoc>=15.0.1", "pytest>=8.3.2"]

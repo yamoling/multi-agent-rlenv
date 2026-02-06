@@ -11,6 +11,7 @@ Install extras to enable adapters with `uv` or `pip`:
 - `multi-agent-rlenv[gym]` for Gymnasium
 - `multi-agent-rlenv[pettingzoo]` for PettingZoo
 - `multi-agent-rlenv[smac]` for SMAC
+- `multi-agent-rlenv[smacv2]` for SMAC
 """
 
 from .pymarl_adapter import PymarlAdapter
@@ -39,13 +40,23 @@ except ImportError:
     HAS_SMAC = False
 
 
+try:
+    from .smacv2_adapter import SMACv2
+
+    HAS_SMACv2 = True
+except ImportError:
+    HAS_SMACv2 = False
+
+
 __all__ = [
     "PymarlAdapter",
     "Gym",
     "make",
     "PettingZoo",
     "SMAC",
+    "SMACv2",
     "HAS_GYM",
     "HAS_PETTINGZOO",
     "HAS_SMAC",
+    "HAS_SMACv2",
 ]

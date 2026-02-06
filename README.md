@@ -7,7 +7,7 @@ Install the library with
 ```sh
 $ pip install multi-agent-rlenv      # Basics
 $ pip install multi-agent-rlenv[all] # With all optional dependecies
-$ pip install multi-agent-rlenv[smac,overcooked] # Only SMACv2 & Overcooked
+$ pip install multi-agent-rlenv[smac,overcooked] # Only SMAC & Overcooked
 ```
 
 It aims to provide a simple and consistent interface for reinforcement learning environments by providing abstraction models such as `Observation`s or `Episode`s. `marlenv` provides adapters for popular libraries such as `gym` or `pettingzoo` and provides utility wrappers to add functionalities such as video recording or limiting the number of steps.
