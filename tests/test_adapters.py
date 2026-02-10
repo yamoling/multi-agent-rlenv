@@ -211,6 +211,29 @@ def test_smacv2():
             stop = step.is_terminal
 
 
+@pytest.mark.skipif(skip_smac, reason="SMAC is not installed")
+def test_smac_action_space_labels():
+    from marlenv.adapters import SMAC
+
+    env = SMAC()
+    for label in env.action_space.labels:
+        assert not label.startswith("Dim")
+
+
+@pytest.mark.skipif(skip_smac, reason="SMAC is not installed")
+def test_smac_blank_init():
+    from marlenv.adapters import SMAC
+
+    SMAC()
+
+
+@pytest.mark.skipif(skip_smacv2, reason="SMAC is not installed")
+def test_smacv2_blank_init():
+    from marlenv.adapters import SMACv2
+
+    SMACv2()
+
+
 def test_pymarl():
     LIMIT = 20
     N_AGENTS = 2

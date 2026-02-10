@@ -1,6 +1,6 @@
 [project]
 name = "multi-agent-rlenv"
-version = "3.7.5"
+version = "3.7.6"
 description = "A strongly typed Multi-Agent Reinforcement Learning framework"
 authors = [
     { "name" = "Yannick Molinghen", "email" = "yannick.molinghen@ulb.be" },

@@ -20,7 +20,7 @@ class Gym(MARLEnv[Space]):
             raise NotImplementedError("Observation space must have a shape")
         match env.action_space:
             case spaces.Discrete() as s:
-                space = DiscreteSpace(int(s.n), labels=[f"Action {i}" for i in range(s.n)]).repeat(1)
+                space = DiscreteSpace.action(int(s.n)).repeat(1)
             case spaces.Box() as s:
                 low = s.low.astype(np.float32)
                 high = s.high.astype(np.float32)
