@@ -435,10 +435,10 @@ def test_observation_as_tensor():
     obs = env.reset()[0]
     data, extras = obs.as_tensors()
     assert isinstance(data, torch.Tensor)
-    assert data.shape == (1, env.n_agents, *env.observation_shape)
+    assert data.shape == (env.n_agents, *env.observation_shape)
     assert data.dtype == torch.float32
     assert isinstance(extras, torch.Tensor)
-    assert extras.shape == (1, env.n_agents, *env.extras_shape)
+    assert extras.shape == (env.n_agents, *env.extras_shape)
     assert extras.dtype == torch.float32
 
 
@@ -450,8 +450,8 @@ def test_state_as_tensor():
     state = env.reset()[1]
     data, extras = state.as_tensors()
     assert isinstance(data, torch.Tensor)
-    assert data.shape == (1, *env.state_shape)
+    assert data.shape == env.state_shape
     assert data.dtype == torch.float32
     assert isinstance(extras, torch.Tensor)
-    assert extras.shape == (1, *env.state_extra_shape)
+    assert extras.shape == env.state_extra_shape
     assert extras.dtype == torch.float32
