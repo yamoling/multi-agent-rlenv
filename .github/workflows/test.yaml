@@ -1,0 +1,49 @@
+name: Test
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - dev
+  pull_request:
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: 🧪 Test
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+          - macOS-latest
+          - windows-latest
+        target:
+          - x86_64
+          - aarch64
+        python-version: 
+          - '3.12'
+          - '3.13'
+    runs-on: ${{ matrix.os }}
+    steps:
+      # Checkout the repository
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Python setup
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install uv
+        uses: yezz123/setup-uv@v4
+        with:
+          uv-version: 0.9.24
+      - name: Install dependencies and run pytest
+        run: |
+          uv sync --extra overcooked --extra gym --extra pettingzoo --extra torch
+          uv run pytest
+
+
