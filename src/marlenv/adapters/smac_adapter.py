@@ -46,7 +46,6 @@ class SMAC(MARLEnv[MultiDiscreteSpace]):
         heuristic_ai=False,
         heuristic_rest=False,
         debug=False,
-        **kwargs,
     ):
         """
         Parameters
@@ -146,7 +145,7 @@ class SMAC(MARLEnv[MultiDiscreteSpace]):
     @overload
     def __init__(self, env: StarCraft2Env): ...
 
-    def __init__(self, env_or_map_name, **kwargs):  # type: ignore
+    def __init__(self, env_or_map_name="8m", **kwargs):  # type: ignore
         match env_or_map_name:
             case StarCraft2Env():
                 self._env = env_or_map_name
@@ -159,7 +158,7 @@ class SMAC(MARLEnv[MultiDiscreteSpace]):
         self._env_info = self._env.get_env_info()
         super().__init__(
             self._env.n_agents,
-            action_space=DiscreteSpace(self._env.n_actions).repeat(self._env.n_agents),
+            action_space=DiscreteSpace.action(self._env.n_actions).repeat(self._env.n_agents),
             observation_shape=(self._env_info["obs_shape"],),
             state_shape=(self._env_info["state_shape"],),
         )

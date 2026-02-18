@@ -90,10 +90,10 @@ class Observation:
 
     def as_tensors(self, device=None):
         """
-        Convert the observation to a tuple of tensors of shape (1, n_agents, <dim>).
+        Convert the observation to a tuple of tensors of shape `(n_agents, *self.shape)` and `(n_agents, *self.extras_shape)`.
         """
         import torch  # pyright: ignore[reportMissingImports]
 
-        data = torch.from_numpy(self.data).unsqueeze(0).to(device, non_blocking=True)
-        extras = torch.from_numpy(self.extras).unsqueeze(0).to(device, non_blocking=True)
+        data = torch.from_numpy(self.data).to(device, non_blocking=True)
+        extras = torch.from_numpy(self.extras).to(device, non_blocking=True)
         return data, extras

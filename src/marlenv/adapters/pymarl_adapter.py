@@ -1,17 +1,22 @@
 from dataclasses import dataclass
-from typing import Any
-
 import numpy as np
 
 from marlenv.models import MARLEnv, MultiDiscreteSpace
 from marlenv.wrappers import TimeLimit
 
+try:
+    from smac.env import MultiAgentEnv  # pyright: ignore[reportMissingImports]
+except ImportError:
+    try:
+        from smacv2.env import MultiAgentEnv  # pyright: ignore[reportMissingImports]
+    except ImportError:
+        MultiAgentEnv = object
+
 
 @dataclass
-class PymarlAdapter:
+class PymarlAdapter(MultiAgentEnv):  # pyright: ignore[reportGeneralTypeIssues]
     """
-    There is no official interface for PyMARL but aims at complying
-    with the pymarl-qplex code base.
+    Adapter from MARLEnv to pymarl MultiAgentEnv.
     """
 
     def __init__(self, env: MARLEnv[MultiDiscreteSpace], episode_limit: int):
@@ -24,11 +29,11 @@ class PymarlAdapter:
         self.n_agents = self.env.n_agents
         self.n_actions = self.env.n_actions
 
-    def step(self, actions) -> tuple[float, bool, dict[str, Any]]:
+    def step(self, actions):
         """Returns reward, terminated, info"""
         step = self.env.step(actions)
         self.current_observation = step.obs
-        return float(step.reward[0]), step.is_terminal, step.info
+        return step.reward.item(), step.is_terminal, step.info
 
     def get_obs(self):
         """Returns all agent observations in a list"""
