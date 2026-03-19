@@ -11,7 +11,7 @@ Install extras to enable adapters with `uv` or `pip`:
 - `multi-agent-rlenv[gym]` for Gymnasium
 - `multi-agent-rlenv[pettingzoo]` for PettingZoo
 - `multi-agent-rlenv[smac]` for SMAC
-- `multi-agent-rlenv[smacv2]` for SMAC
+- `multi-agent-rlenv[smacv2]` for SMACv2
 """
 
 from .pymarl_adapter import PymarlAdapter

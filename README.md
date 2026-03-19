@@ -1,18 +1,18 @@
-# `marlenv` - A unified framework for muti-agent reinforcement learning
+# `marlenv` - A unified framework for multi-agent reinforcement learning
 **Documentation: [https://yamoling.github.io/multi-agent-rlenv](https://yamoling.github.io/multi-agent-rlenv)**
 
 `marlenv` is a strongly typed library for multi-agent and multi-objective reinforcement learning.
 
-Install the library with
+Install the library with:
 ```sh
 $ pip install multi-agent-rlenv      # Basics
-$ pip install multi-agent-rlenv[all] # With all optional dependecies
+$ pip install multi-agent-rlenv[all] # With all optional dependencies
 $ pip install multi-agent-rlenv[smac,overcooked] # Only SMAC & Overcooked
 ```
 
 It aims to provide a simple and consistent interface for reinforcement learning environments by providing abstraction models such as `Observation`s or `Episode`s. `marlenv` provides adapters for popular libraries such as `gym` or `pettingzoo` and provides utility wrappers to add functionalities such as video recording or limiting the number of steps.
 
-Almost every class is a dataclass to enable seemless serialiation with the `orjson` library.
+Most classes are dataclasses, which makes serialization straightforward (for example with `orjson`).
 
 # Fundamentals
 ## States & Observations
@@ -40,10 +40,11 @@ from marlenv import catalog
 
 env1 = catalog.overcooked().from_layout("scenario4")
 env2 = catalog.lle().level(6)
-env3 = catalog.DeepSea(mex_depth=5)
+env3 = catalog.DeepSea(max_depth=5)
+env4 = catalog.connect_n()(width=7, height=6, n=4)
 ```
 
-Catalog entries require their corresponding extras at install time (e.g., `marlenv[overcooked]`, `marlenv[lle]`).
+Catalog entries require their corresponding extras at install time (e.g., `multi-agent-rlenv[overcooked]`, `multi-agent-rlenv[lle]`).
 
 # Wrappers & builders
 Wrappers are composable through `RLEnvWrapper` and can be chained via `Builder` for fluent configuration.
@@ -80,14 +81,21 @@ from marlenv.adapters import PettingZoo
 env = PettingZoo(pursuit_v4.parallel_env())
 ```
 
+For deterministic behavior, seed the environment:
+
+```python
+env.seed(123)
+obs, state = env.reset()
+```
+
 ## Designing a custom environment
 Create a custom environment by inheriting from `MARLEnv` and implementing `reset`, `step`, `get_observation`, and `get_state`.
 
 ```python
 import numpy as np
-from marlenv import MARLEnv, DiscreteSpace, Observation, State, Step
+from marlenv import MARLEnv, DiscreteSpace, MultiDiscreteSpace, Observation, State, Step
 
-class CustomEnv(MARLEnv[DiscreteSpace]):
+class CustomEnv(MARLEnv[MultiDiscreteSpace]):
     def __init__(self):
         super().__init__(
             n_agents=3,

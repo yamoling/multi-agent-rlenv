@@ -9,14 +9,14 @@ Examples:
 ```python
 from marlenv import catalog
 
-env1 = catalog.DeepSea(mex_depth=5)
+env1 = catalog.DeepSea(max_depth=5)
 env2 = catalog.CoordinatedGrid()
-env3 = catalog.connect_n()(width=7, height=6, n_to_connect=4)
+env3 = catalog.connect_n()(width=7, height=6, n=4)
 env4 = catalog.smac()("3m")
 ```
 
 Optional entries such as `smac`, `lle`, and `overcooked` require installing their
-corresponding extras (e.g., `marlenv[smac]`, `marlenv[lle]`, `marlenv[overcooked]`).
+corresponding extras (e.g., `multi-agent-rlenv[smac]`, `multi-agent-rlenv[lle]`, `multi-agent-rlenv[overcooked]`).
 """
 
 from .deepsea import DeepSea
@@ -29,7 +29,7 @@ __all__ = ["smac", "DeepSea", "lle", "overcooked", "MatrixGame", "connect_n", "C
 
 def smac():
     """
-    Quick loading of the SMAC adapter, if smac is instaleld.
+    Quick loading of the SMAC adapter, if SMAC is installed.
 
     **Example:**
     ```python
@@ -76,7 +76,7 @@ def overcooked():
 
 def connect_n():
     """
-    Returs the `ConnectN` class if `pygame` is installed.
+    Returns the `ConnectN` environment class.
     """
 
     from .connectn import ConnectN
