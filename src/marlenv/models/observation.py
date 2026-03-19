@@ -15,7 +15,7 @@ class Observation:
     """The actual environment observation. The shape is [n_agents, *obs_shape]"""
     extras: npt.NDArray[np.float32]
     """The extra information to provide to the dqn alongisde the features (agent ID, last action, ...)"""
-    available_actions: npt.NDArray[np.bool_]
+    available_actions: npt.NDArray[np.bool]
     """The available actions at the time of the observation"""
     n_agents: int
 
@@ -29,7 +29,7 @@ class Observation:
         if not isinstance(available_actions, np.ndarray):
             available_actions = np.array(available_actions)
         self.available_actions = available_actions
-        self.n_agents = len(available_actions)
+        self.n_agents = available_actions.shape[0]
         if extras is not None:
             self.extras = extras
         else:
@@ -57,6 +57,11 @@ class Observation:
             extras=self.extras[agent_id],
             available_actions=self.available_actions[agent_id],
         )
+
+    @property
+    def forbidden_actions(self):
+        """Actions that are not available (i.e.: `~self.available_actions`)"""
+        return ~self.available_actions
 
     @property
     def shape(self) -> tuple[int, ...]:
