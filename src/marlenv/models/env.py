@@ -18,38 +18,42 @@ ActionSpaceType = TypeVar("ActionSpaceType", bound=Space)
 @dataclass
 class MARLEnv(ABC, Generic[ActionSpaceType]):
     """
-    Multi-Agent Reinforcement Learning environment.
+    Multi-agent reinforcement learning environment interface.
 
-    This type is generic on
-        - the action type
-        - the action space
-
-    You can inherit from this class to create your own environemnt:
+    You can inherit from this class to create your own environment:
     ```
     import numpy as np
-    from marlenv import MARLEnv, DiscreteActionSpace, Observation
+    from marlenv import MARLEnv, DiscreteSpace, MultiDiscreteSpace, Observation, State, Step
 
     N_AGENTS = 3
     N_ACTIONS = 5
 
-    class CustomEnv(MARLEnv[DiscreteActionSpace]):
+    class CustomEnv(MARLEnv[MultiDiscreteSpace]):
         def __init__(self, width: int, height: int):
             super().__init__(
-                action_space=DiscreteActionSpace(N_AGENTS, N_ACTIONS),
+                n_agents=N_AGENTS,
+                action_space=DiscreteSpace.action(N_ACTIONS).repeat(N_AGENTS),
                 observation_shape=(height, width),
                 state_shape=(1,),
             )
             self.time = 0
 
-        def reset(self) -> Observation:
+        def reset(self) -> tuple[Observation, State]:
             self.time = 0
-            ...
-            return obs
+            return self.get_observation(), self.get_state()
 
-        def get_state(self):
-            return np.array([self.time])
+        def step(self, action) -> Step:
+            self.time += 1
+            return Step(self.get_observation(), self.get_state(), reward=0.0, done=False)
 
-        ...
+        def get_state(self) -> State:
+            return State(np.array([self.time], dtype=np.float32))
+
+        def get_observation(self) -> Observation:
+            return Observation(
+                np.zeros((N_AGENTS, height, width), dtype=np.float32),
+                self.available_actions(),
+            )
     ```
     """
 

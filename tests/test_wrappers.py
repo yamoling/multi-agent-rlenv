@@ -210,7 +210,7 @@ def test_centralised_available_actions():
     assert available.shape == (1, mock.n_actions**N_AGENTS)
     assert np.all(available == 1)
 
-    mask = np.zeros((N_AGENTS, mock.n_actions), dtype=np.bool_)
+    mask = np.zeros((N_AGENTS, mock.n_actions), dtype=np.bool)
     mask[0, 0] = True
     mask[1, 0] = True
     env = Centralized(AvailableActionsMask(mock, mask))

@@ -11,7 +11,7 @@ from marlenv import ContinuousSpace, DiscreteSpace, MARLEnv, Observation, Space,
 
 @dataclass
 class Gym(MARLEnv[Space]):
-    """Wraps a gym envronment in an RLEnv"""
+    """Wrap a Gymnasium environment in a `MARLEnv` interface."""
 
     def __init__(self, env: Env | str, **kwargs):
         if isinstance(env, str):
@@ -81,6 +81,6 @@ class Gym(MARLEnv[Space]):
 
 
 def make(env_id: str, **kwargs):
-    """Make an RLEnv from str (Gym) or PettingZoo"""
+    """Create a Gymnasium-based `MARLEnv` from an environment id."""
     gym_env = gym.make(env_id, render_mode="rgb_array", **kwargs)
     return Gym(gym_env)

@@ -12,9 +12,9 @@ AS = TypeVar("AS", bound=Space, default=Space)
 class AvailableActionsMask(RLEnvWrapper[AS]):
     """Permanently masks a subset of the available actions."""
 
-    action_mask: npt.NDArray[np.bool_]
+    action_mask: npt.NDArray[np.bool]
 
-    def __init__(self, env: MARLEnv[AS], action_mask: npt.NDArray[np.bool_]):
+    def __init__(self, env: MARLEnv[AS], action_mask: npt.NDArray[np.bool]):
         super().__init__(env)
         assert action_mask.shape == (env.n_agents, env.n_actions), "Action mask must have shape (n_agents, n_actions)."
         n_available_action_per_agent = action_mask.sum(axis=-1)
