@@ -1,10 +1,12 @@
 from dataclasses import dataclass
-from typing import Generic, Literal, Optional, TypeVar
+from typing import Generic, Literal, Optional, TypeVar, overload
+
 import numpy as np
 import numpy.typing as npt
+from typing_extensions import Self
 
 from . import wrappers
-from .models import Space, MARLEnv
+from .models import MARLEnv, Space
 
 AS = TypeVar("AS", bound=Space)
 
@@ -57,8 +59,34 @@ class Builder(Generic[AS]):
         self._env = wrappers.LastAction(self._env)  # type: ignore
         return self
 
-    def mask_actions(self, mask: npt.NDArray[np.bool]):
-        self._env = wrappers.AvailableActionsMask(self._env, mask)
+    @overload
+    def mask_actions(self, mask: npt.NDArray[np.bool] | list[bool]) -> Self:
+        """
+        Mask the actions whose indices are set to `False`. For instance, with [True, False, True, False, True], only actions 0, 2 and 4 are available.
+        """
+
+    @overload
+    def mask_actions(self, mask: int | list[int]) -> Self:
+        """Mask the actions whose index (indices) is (are) given as parameter. For instance, with `[1, 3]`, actions 1 and 3 are made unavailable for all agents. With `1`, then action `1` is made unavailable for all agents."""
+
+    def mask_actions(self, mask: npt.NDArray[np.bool] | list[bool] | int | list[int]):
+        mask_array = np.full((self._env.n_agents, self._env.n_actions), True, dtype=np.bool)
+        if isinstance(mask, int):
+            assert self._env.n_actions > mask, f"Action {mask} does not exist."
+            mask_array[:, mask] = False
+        elif isinstance(mask, list):
+            is_int = isinstance(mask[0], int)
+            for i, m in enumerate(mask):
+                if isinstance(m, int):
+                    assert is_int, f"Mask {mask} is a list of integers, but element {m} is not an integer."
+                    assert m < self._env.n_actions, f"Action {m} does not exist."
+                    mask_array[:, m] = False
+                else:
+                    assert not is_int, f"Mask {mask} is a list of booleans, but element {m} is not a boolean."
+                    mask_array[:, i] = m
+        else:
+            mask_array = mask
+        self._env = wrappers.AvailableActionsMask(self._env, mask_array)
         return self
 
     def centralised(self):

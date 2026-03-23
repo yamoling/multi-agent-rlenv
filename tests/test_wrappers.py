@@ -1,7 +1,8 @@
 import numpy as np
-from marlenv import Builder, DiscreteMOMockEnv, DiscreteMockEnv, MARLEnv
-from marlenv.wrappers import Centralized, AvailableActionsMask, TimeLimit, LastAction, DelayedReward
+
 import marlenv
+from marlenv import Builder, DiscreteMockEnv, DiscreteMOMockEnv, MARLEnv
+from marlenv.wrappers import AvailableActionsMask, Centralized, DelayedReward, LastAction, TimeLimit
 
 
 def test_padding():
@@ -245,6 +246,74 @@ def test_available_action_mask():
     assert np.array_equal(obs.available_actions, mask)
     step = env.step([0, 1])
     assert np.array_equal(step.obs.available_actions, mask)
+
+
+def test_mask_actions_builder_int():
+    N_AGENTS = 5
+    mock = DiscreteMockEnv(N_AGENTS)
+    for prevented_action in range(mock.n_actions):
+        env = Builder(mock).mask_actions(prevented_action).build()
+        obs, _ = env.reset()
+        for agent_available_actions in obs.available_actions:
+            assert not agent_available_actions[prevented_action].item()
+
+
+def test_mask_actions_builder_int_list():
+    mock = DiscreteMockEnv()
+    for prevented_actions in range(1, mock.n_actions - 1):
+        prevented_actions = list(range(prevented_actions))
+        env = Builder(mock).mask_actions(prevented_actions).build()
+        obs, _ = env.reset()
+        for agent_available_actions in obs.available_actions:
+            for prevented in prevented_actions:
+                assert not agent_available_actions[prevented].item()
+
+
+def test_mask_actions_builder_errors_too_many_actions_in_list():
+    mock = DiscreteMockEnv()
+    try:
+        Builder(mock).mask_actions(list(range(mock.n_actions + 1))).build()
+        raise Exception("It should not be possible to mask actions with more actions than the environment provides")
+    except AssertionError:
+        pass
+
+
+def test_mask_actions_builder_errors_action_index_out_of_bounds():
+    mock = DiscreteMockEnv()
+    try:
+        Builder(mock).mask_actions(mock.n_actions + 1).build()
+        raise Exception(
+            "It should not be possible to mask an action whose index is higher than the number of actions provided by the environment"
+        )
+    except AssertionError:
+        pass
+
+
+def test_mask_actions_builder_errors_invalid_shape_too_many_actions():
+    mock = DiscreteMockEnv()
+    try:
+        Builder(mock).mask_actions(np.full((mock.n_agents, mock.n_actions + 1), True)).build()
+        raise Exception("It should not be possible to mask actions with an invalid input shape")
+    except AssertionError:
+        pass
+
+
+def test_mask_actions_builder_errors_invalid_shape_too_many_agents():
+    mock = DiscreteMockEnv()
+    try:
+        Builder(mock).mask_actions(np.full((mock.n_agents + 1, mock.n_actions), True)).build()
+        raise Exception("It should not be possible to mask actions with an invalid input")
+    except AssertionError:
+        pass
+
+
+def test_mask_actions_builder_errors_all_actions_masked():
+    mock = DiscreteMockEnv()
+    try:
+        Builder(mock).mask_actions(np.full((mock.n_agents, mock.n_actions), False)).build()
+        raise Exception("At least one action should remain available for each agent.")
+    except AssertionError:
+        pass
 
 
 def test_wrapper_reward_shape():
