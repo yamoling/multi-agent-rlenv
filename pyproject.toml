@@ -1,38 +1,38 @@
 [project]
 name = "multi-agent-rlenv"
-version = "3.7.8"
+version = "3.7.9"
 description = "A strongly typed Multi-Agent Reinforcement Learning framework"
-authors = [
-    { "name" = "Yannick Molinghen", "email" = "yannick.molinghen@ulb.be" },
-]
 readme = "README.md"
 requires-python = ">=3.12, <4"
-urls = { "repository" = "https://github.com/yamoling/multi-agent-rlenv" }
-classifiers = [
-    "Programming Language :: Python :: 3",
-    "Operating System :: OS Independent",
+authors = [
+  { "name" = "Yannick Molinghen", "email" = "yannick.molinghen@ulb.be" },
 ]
+classifiers = [
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+]
+urls = { "repository" = "https://github.com/yamoling/multi-agent-rlenv" }
 
 dependencies = ["numpy>=2.0.0", "opencv-python>=4.0", "typing_extensions>=4.0"]
 
 [project.optional-dependencies]
+all = [
+  "gymnasium>0.29.1",
+  "pettingzoo>=1.20",
+  "overcooked>=0.1.0",
+  "smac",
+  "laser-learning-environment>=2.6.1",
+  "pymunk>=6.0",
+  "scipy>=1.10",
+  "torch>=2.0",
+]
 gym = ["gymnasium>=0.29.1"]
+lle = ["laser-learning-environment>=2.6.1"]
+overcooked = ["overcooked>=0.1.0"]
+pettingzoo = ["pettingzoo>=1.20", "pymunk>=6.0", "scipy>=1.10"]
 smac = ["smac", "pysc2"]
 smacv2 = ["smacv2", "pysc2"]
-pettingzoo = ["pettingzoo>=1.20", "pymunk>=6.0", "scipy>=1.10"]
-overcooked = ["overcooked>=0.1.0"]
-lle = ["laser-learning-environment>=2.6.1"]
 torch = ["torch>=2.0"]
-all = [
-    "gymnasium>0.29.1",
-    "pettingzoo>=1.20",
-    "overcooked>=0.1.0",
-    "smac",
-    "laser-learning-environment>=2.6.1",
-    "pymunk>=6.0",
-    "scipy>=1.10",
-    "torch>=2.0",
-]
 
 [build-system]
 requires = ["hatchling"]
@@ -43,7 +43,6 @@ line-length = 140
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/marlenv"]
-
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
