@@ -508,6 +508,21 @@ def test_observation_as_tensor():
 
 
 @pytest.mark.skipif(not HAS_PYTORCH, reason="torch is not installed")
+def test_observation_as_tensor_with_batch():
+    import torch
+
+    env = DiscreteMockEnv(4)
+    obs = env.reset()[0]
+    data, extras = obs.as_tensors(batch_dim=True)
+    assert isinstance(data, torch.Tensor)
+    assert data.shape == (1, env.n_agents, *env.observation_shape)
+    assert data.dtype == torch.float32
+    assert isinstance(extras, torch.Tensor)
+    assert extras.shape == (1, env.n_agents, *env.extras_shape)
+    assert extras.dtype == torch.float32
+
+
+@pytest.mark.skipif(not HAS_PYTORCH, reason="torch is not installed")
 def test_state_as_tensor():
     import torch
 
@@ -519,4 +534,19 @@ def test_state_as_tensor():
     assert data.dtype == torch.float32
     assert isinstance(extras, torch.Tensor)
     assert extras.shape == env.state_extra_shape
+    assert extras.dtype == torch.float32
+
+
+@pytest.mark.skipif(not HAS_PYTORCH, reason="torch is not installed")
+def test_state_as_tensor_with_batch():
+    import torch
+
+    env = DiscreteMockEnv(4)
+    state = env.reset()[1]
+    data, extras = state.as_tensors(batch_dim=True)
+    assert isinstance(data, torch.Tensor)
+    assert data.shape == (1, *env.state_shape)
+    assert data.dtype == torch.float32
+    assert isinstance(extras, torch.Tensor)
+    assert extras.shape == (1, *env.state_extra_shape)
     assert extras.dtype == torch.float32
