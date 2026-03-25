@@ -1,3 +1,4 @@
+import math
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from itertools import product
@@ -8,7 +9,7 @@ import numpy as np
 import numpy.typing as npt
 
 from .observation import Observation
-from .spaces import ContinuousSpace, Space, DiscreteSpace, MultiDiscreteSpace
+from .spaces import ContinuousSpace, DiscreteSpace, MultiDiscreteSpace, Space
 from .state import State
 from .step import Step
 
@@ -115,6 +116,16 @@ class MARLEnv(ABC, Generic[ActionSpaceType]):
     def n_objectives(self) -> int:
         """The number of objectives in the environment."""
         return self.reward_space.size
+
+    @property
+    def extras_size(self) -> int:
+        """The size of the flattened extras features for a single agent."""
+        return math.prod(self.extras_shape)
+
+    @property
+    def observation_size(self) -> int:
+        """The size of a flattened observation for a single agent."""
+        return math.prod(self.observation_shape)
 
     def sample_action(self):
         """Sample an available action from the action space."""

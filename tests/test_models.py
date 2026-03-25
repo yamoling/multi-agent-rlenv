@@ -1,7 +1,10 @@
-from marlenv import Observation, Transition, DiscreteMockEnv, DiscreteMOMockEnv, Builder, State, Episode, MARLEnv, DiscreteSpace
+from importlib.util import find_spec
+
 import numpy as np
 import pytest
-from importlib.util import find_spec
+
+from marlenv import Builder, DiscreteMockEnv, DiscreteMOMockEnv, DiscreteSpace, Episode, MARLEnv, Observation, State, Transition
+
 from .utils import generate_episode
 
 HAS_PYTORCH = find_spec("torch") is not None
@@ -401,6 +404,68 @@ def test_env_replay():
 def test_env_extras_meanings():
     env = DiscreteMockEnv(4, extras_size=4)
     assert len(env.extras_meanings) == 4
+
+
+def test_env_extras_size_from_1d_shape():
+    env = DiscreteMockEnv(4, extras_size=4)
+    assert env.extras_size == 4
+
+
+def test_env_extras_size_is_zero_by_default():
+    env = DiscreteMockEnv(4)
+    assert env.extras_size == 0
+
+
+def test_env_extras_size_from_multidim_shape():
+    class TestClass(MARLEnv):
+        def __init__(self):
+            super().__init__(4, DiscreteSpace(5), (10,), (10,), extras_shape=(2, 3))
+
+        def get_observation(self):
+            raise NotImplementedError()
+
+        def get_state(self):
+            raise NotImplementedError()
+
+        def step(self, action):
+            raise NotImplementedError()
+
+        def reset(self):
+            raise NotImplementedError()
+
+    env = TestClass()
+    assert env.extras_size == 6
+
+
+def test_env_observation_size_from_1d_shape():
+    env = DiscreteMockEnv(4, obs_size=7)
+    assert env.observation_size == 7
+
+
+def test_env_observation_size_from_multidim_shape():
+    class TestClass(MARLEnv):
+        def __init__(self):
+            super().__init__(4, DiscreteSpace(5), (2, 3, 4), (10,))
+
+        def get_observation(self):
+            raise NotImplementedError()
+
+        def get_state(self):
+            raise NotImplementedError()
+
+        def step(self, action):
+            raise NotImplementedError()
+
+        def reset(self):
+            raise NotImplementedError()
+
+    env = TestClass()
+    assert env.observation_size == 24
+
+
+def test_env_observation_size_default_mock_shape():
+    env = DiscreteMockEnv(4)
+    assert env.observation_size == env.observation_shape[0]
 
 
 def test_wrong_extras_meanings_length():
