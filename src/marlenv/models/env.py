@@ -175,8 +175,8 @@ class MARLEnv(ABC, Generic[ActionSpaceType]):
         - observations: The observation resulting from the action.
         - state: The new state of the environment.
         - reward: The team reward.
-        - done: Whether the episode is over
-        - truncated: Whether the episode is truncated
+        - done: Whether the episode has reached a terminal state
+        - truncated: Whether the episode is truncated (not a terminal state)
         - info: Extra information
         """
 

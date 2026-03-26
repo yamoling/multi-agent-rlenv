@@ -1,8 +1,8 @@
 import numpy as np
-
+import pytest
 import marlenv
 from marlenv import Builder, DiscreteMockEnv, DiscreteMOMockEnv, MARLEnv
-from marlenv.wrappers import AvailableActionsMask, Centralized, DelayedReward, LastAction, TimeLimit
+from marlenv.wrappers import AvailableActionsMask, Centralized, DelayedReward, LastAction, TimeLimit, ActionRandomizer
 
 
 def test_padding():
@@ -459,3 +459,75 @@ def test_potential_shaping():
     for i in range(10):
         step = env.random_step()
         assert step.reward.item() == 0
+
+
+def test_randomize_actions_full_randomization_replaces_with_valid_actions():
+
+    class RecordingEnv(DiscreteMockEnv):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.last_action = None
+
+        def step(self, action):
+            self.last_action = np.array(action, copy=True)
+            return super().step(action)
+
+    wrapped = RecordingEnv(4, n_actions=5)
+    env = ActionRandomizer(wrapped, p=1.0)
+    env.reset()
+
+    action = np.zeros(env.n_agents, dtype=np.int32)
+    env.step(action)
+
+    assert wrapped.last_action is not None
+    assert np.all(wrapped.last_action >= 0)
+    assert np.all(wrapped.last_action < env.n_actions)
+
+
+def test_randomize_actions_per_agent_probability():
+
+    class RecordingEnv(DiscreteMockEnv):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.last_action = None
+
+        def step(self, action):
+            self.last_action = np.array(action, copy=True)
+            return super().step(action)
+
+    wrapped = RecordingEnv(3, n_actions=4, end_game=100)
+    env = ActionRandomizer(wrapped, p=[0.0, 1.0, 0.0])
+    env.reset()
+
+    action = np.array([1, 1, 1], dtype=np.int32)
+    changed_second_agent = False
+    for _ in range(100):
+        env.step(action)
+        assert wrapped.last_action is not None
+        used = wrapped.last_action
+        assert used[0] == action[0]
+        assert used[2] == action[2]
+        if used[1] != action[1]:
+            changed_second_agent = True
+            break
+
+    assert changed_second_agent, "Agent with probability 1.0 should eventually get a different sampled action"
+
+
+def test_randomize_actions_invalid_probability_length_raises():
+    with pytest.raises(AssertionError):
+        ActionRandomizer(DiscreteMockEnv(3), p=[0.1, 0.2])
+
+
+def test_randomize_actions_invalid_probability_value_raises():
+    with pytest.raises(AssertionError):
+        ActionRandomizer(DiscreteMockEnv(2), p=[0.2, 1.2])
+
+
+def test_randomized_actions_from_builder():
+    Builder(DiscreteMockEnv(3)).randomize_actions(p=[0.0, 1.0, 0.0]).build()
+    with pytest.raises(AssertionError):
+        Builder(DiscreteMockEnv(3)).randomize_actions(p=[0.1, 0.2]).build()
+    with pytest.raises(AssertionError):
+        Builder(DiscreteMockEnv(2)).randomize_actions(p=[0.2, 1.2]).build()
+    

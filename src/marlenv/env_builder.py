@@ -122,6 +122,11 @@ class Builder(Generic[AS]):
         self._env = wrappers.Blind(self._env, p)  # type: ignore
         return self
 
+    def randomize_actions(self, p: list[float] | float | npt.NDArray[np.float32]):
+        """Randomizes the actions with probability 0 <= p <= 1. The length of p must be equal to the number of agents."""
+        self._env = wrappers.ActionRandomizer(self._env, p)  # type: ignore
+        return self
+
     def time_penalty(self, penalty: float):
         self._env = wrappers.TimePenalty(self._env, penalty)
         return self
