@@ -1,9 +1,13 @@
 from .rlenv_wrapper import RLEnvWrapper, AS, MARLEnv
 import numpy as np
 import numpy.typing as npt
+from dataclasses import dataclass
 
 
+@dataclass
 class ActionRandomizer(RLEnvWrapper[AS]):
+    p: npt.NDArray[np.float32]
+
     def __init__(self, env: MARLEnv[AS], p: float | list[float] | npt.NDArray[np.float32]):
         super().__init__(env)
         if isinstance(p, (float, int)):

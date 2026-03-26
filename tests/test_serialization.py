@@ -249,3 +249,48 @@ def test_serialize_schedule():
     b = pickle.dumps(s)
     s2 = pickle.loads(b)
     assert s == s2
+
+
+def test_serialize_all_wrappers_dynamic():
+    from dataclasses import is_dataclass
+
+    wrapper_factories = {
+        "AvailableActionsMask": lambda env: wrappers.AvailableActionsMask(
+            env,
+            np.array(
+                [
+                    [True, True, False, True, True],
+                    [True, False, True, True, True],
+                    [True, True, True, False, True],
+                    [False, True, True, True, True],
+                ],
+                dtype=bool,
+            ),
+        ),
+        "AgentId": lambda env: wrappers.AgentId(env),
+        "LastAction": lambda env: wrappers.LastAction(env),
+        "VideoRecorder": lambda env: wrappers.VideoRecorder(env),
+        "TimeLimit": lambda env: wrappers.TimeLimit(env, 10),
+        "PadObservations": lambda env: wrappers.PadObservations(env, 2),
+        "PadExtras": lambda env: wrappers.PadExtras(DiscreteMockEnv(4, extras_size=1), 2),
+        "TimePenalty": lambda env: wrappers.TimePenalty(env, 0.2),
+        "AvailableActions": lambda env: wrappers.AvailableActions(env),
+        "Blind": lambda env: wrappers.Blind(env, 0.2),
+        "Centralized": lambda env: wrappers.Centralized(DiscreteMockEnv(2)),
+        "DelayedReward": lambda env: wrappers.DelayedReward(env, 2),
+        "ActionRandomizer": lambda env: wrappers.ActionRandomizer(env, 0.2),
+    }
+
+    for wrapper_name in wrappers.__all__:
+        if wrapper_name in {"RLEnvWrapper", "MARLEnv"}:
+            continue
+        if wrapper_name == "PotentialShaping":
+            # We cannot test PotentialShaping serialization because it's an abstract class and we don't have any concrete implementation in the codebase yet
+            continue
+        if wrapper_name not in wrapper_factories:
+            raise AssertionError(f"Missing factory for wrapper '{wrapper_name}'")
+
+        env = DiscreteMockEnv(4, n_actions=5, extras_size=1, end_game=20)
+        wrapped = wrapper_factories[wrapper_name](env)
+        assert is_dataclass(wrapped), f"{wrapper_name} should be a dataclass for easier serialization"
+        _ = orjson.dumps(wrapped, option=orjson.OPT_SERIALIZE_NUMPY)
