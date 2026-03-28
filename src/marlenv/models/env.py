@@ -2,12 +2,13 @@ import math
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from itertools import product
-from typing import Generic, Optional, Sequence, TypeVar
+from typing import Callable, Generic, Optional, Sequence, TypeVar
 
 import cv2
 import numpy as np
 import numpy.typing as npt
 
+from .episode import Episode
 from .observation import Observation
 from .spaces import ContinuousSpace, DiscreteSpace, MultiDiscreteSpace, Space
 from .state import State
@@ -212,6 +213,18 @@ class MARLEnv(ABC, Generic[ActionSpaceType]):
         for action in actions:
             step = self.step(action)
             episode.add(step, action)
+        return episode
+
+    def rollout(self, agent: Callable[[Observation], np.ndarray | Sequence]):
+        obs, state = self.reset()
+        episode = Episode.new(obs, state)
+        action = agent(obs)
+        step = self.step(action)
+        while not step.is_terminal:
+            episode.add(step, action)
+            action = agent(step.obs)
+            step = self.step(action)
+        episode.add(step, action)
         return episode
 
     def has_same_inouts(self, other: "MARLEnv[ActionSpaceType]") -> bool:

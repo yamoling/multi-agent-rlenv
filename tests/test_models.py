@@ -492,6 +492,17 @@ def test_wrong_extras_meanings_length():
         pass
 
 
+def test_env_rollout():
+    EP_LENGTH = 50
+    env = DiscreteMockEnv(end_game=EP_LENGTH)
+    episode = env.rollout(lambda x: env.sample_action())
+    assert len(episode) == EP_LENGTH
+
+    env = DiscreteMOMockEnv(end_game=EP_LENGTH)
+    episode = env.rollout(lambda x: env.sample_action())
+    assert len(episode) == EP_LENGTH
+
+
 @pytest.mark.skipif(not HAS_PYTORCH, reason="torch is not installed")
 def test_observation_as_tensor():
     import torch

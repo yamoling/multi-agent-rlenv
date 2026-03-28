@@ -64,11 +64,11 @@ class PymarlAdapter(MultiAgentEnv):  # pyright: ignore[reportGeneralTypeIssues]
         return self.env.state_shape
 
     def get_avail_actions(self):
-        return self.env.available_actions()
+        return self.env.available_actions().astype(np.int64)
 
-    def get_avail_agent_actions(self, agent_id):
+    def get_avail_agent_actions(self, agent_id: int):
         """Returns the available actions for agent_id"""
-        return self.env.available_actions()
+        return self.env.available_actions()[agent_id].astype(np.int64)
 
     def get_total_actions(self):
         """Returns the total number of actions an agent could ever take"""

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from functools import cached_property
-from typing import Any, Callable, Optional, Sequence, overload
+from typing import TYPE_CHECKING, Any, Callable, Optional, Sequence, overload
 
 import cv2
 import numpy as np
@@ -9,11 +9,13 @@ import numpy.typing as npt
 from marlenv.exceptions import EnvironmentMismatchException, ReplayMismatchException
 from marlenv.utils import CachedPropertyInvalidator
 
-from .env import MARLEnv
 from .observation import Observation
 from .state import State
 from .step import Step
 from .transition import Transition
+
+if TYPE_CHECKING:
+    from .env import MARLEnv
 
 
 @dataclass
@@ -213,11 +215,11 @@ class Episode(CachedPropertyInvalidator):
 
     def replay(
         self,
-        env: MARLEnv,
+        env: "MARLEnv",
         seed: Optional[int] = None,
         *,
-        after_reset: Optional[Callable[[Observation, State, MARLEnv], None]] = None,
-        after_step: Optional[Callable[[int, Step, MARLEnv], None]] = None,
+        after_reset: "Optional[Callable[[Observation, State, MARLEnv], None]]" = None,
+        after_step: "Optional[Callable[[int, Step, MARLEnv], None]]" = None,
     ):
         """
         Replay the episode in the environment (i.e. perform the actions) and assert that the outcomes match.
@@ -247,7 +249,7 @@ class Episode(CachedPropertyInvalidator):
             if after_step is not None:
                 after_step(i, step, env)
 
-    def get_images(self, env: MARLEnv, seed: Optional[int] = None) -> list[np.ndarray]:
+    def get_images(self, env: "MARLEnv", seed: Optional[int] = None) -> list[np.ndarray]:
         images = []
 
         def collect_image(*_, **__):
@@ -256,7 +258,7 @@ class Episode(CachedPropertyInvalidator):
         self.replay(env, seed, after_reset=collect_image, after_step=collect_image)
         return images
 
-    def render(self, env: MARLEnv, seed: Optional[int] = None, fps: int = 5):
+    def render(self, env: "MARLEnv", seed: Optional[int] = None, fps: int = 5):
         def render_callback(*_, **__):
             env.render()
             cv2.waitKey(1000 // fps)
@@ -280,11 +282,10 @@ class Episode(CachedPropertyInvalidator):
 
     def compute_returns(self, discount: float = 1.0):
         """Compute the returns (discounted sum of future rewards) of the episode at each time step"""
-        returns = np.zeros_like(self.rewards)
-        returns[-1] = self.rewards[-1]
-        for t in range(len(self.rewards) - 2, -1, -1):
+        returns = [self.rewards[0]] * (self.episode_len - 1) + [self.rewards[-1]]
+        for t in range(self.episode_len - 2, -1, -1):
             returns[t] = self.rewards[t] + discount * returns[t + 1]
-        return returns
+        return np.array(returns)
 
     @overload
     def add(self, transition: Transition, /): ...

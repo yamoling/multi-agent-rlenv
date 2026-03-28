@@ -1,6 +1,8 @@
-import numpy as np
 from dataclasses import dataclass
-from marlenv import MARLEnv, Observation, ContinuousSpace, Step, State, DiscreteSpace, MultiDiscreteSpace
+
+import numpy as np
+
+from marlenv import ContinuousSpace, DiscreteSpace, MARLEnv, MultiDiscreteSpace, Observation, State, Step
 
 
 @dataclass
@@ -84,7 +86,7 @@ class DiscreteMockEnv(MARLEnv[MultiDiscreteSpace]):
         )
 
 
-class DiscreteMOMockEnv(MARLEnv[DiscreteSpace]):
+class DiscreteMOMockEnv(MARLEnv[MultiDiscreteSpace]):
     """Multi-Objective Mock Environment"""
 
     def __init__(
@@ -100,7 +102,7 @@ class DiscreteMOMockEnv(MARLEnv[DiscreteSpace]):
     ) -> None:
         super().__init__(
             n_agents,
-            DiscreteSpace(n_actions),
+            DiscreteSpace(n_actions).repeat(n_agents),
             (obs_size,),
             (n_agents * agent_state_size,),
             extras_shape=(extras_size,),
