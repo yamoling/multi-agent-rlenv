@@ -3,7 +3,7 @@ name = "multi-agent-rlenv"
 version = "4.0.0"
 description = "A strongly typed Multi-Agent Reinforcement Learning framework"
 readme = "README.md"
-requires-python = ">=3.12, <4"
+requires-python = ">=3.10, <4"
 authors = [
   { "name" = "Yannick Molinghen", "email" = "yannick.molinghen@ulb.be" },
 ]
@@ -21,7 +21,7 @@ all = [
   "pettingzoo>=1.20",
   "overcooked>=0.1.0",
   "smac",
-  "laser-learning-environment>=2.6.1",
+  "laser-learning-environment>=2.6.7",
   "pymunk>=6.0",
   "scipy>=1.10",
   "torch>=2.0",
