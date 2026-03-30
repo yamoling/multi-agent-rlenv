@@ -21,7 +21,7 @@ all = [
   "pettingzoo>=1.20",
   "overcooked>=0.1.0",
   "smac",
-  "laser-learning-environment>=2.6.7",
+  "laser-learning-environment>=2.6.5",
   "pymunk>=6.0",
   "scipy>=1.10",
   "torch>=2.0",
