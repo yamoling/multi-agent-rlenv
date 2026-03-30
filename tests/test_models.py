@@ -211,6 +211,34 @@ def test_transition_arbitrary_keys():
     assert t["other_key"] == [1, 2, 3]
 
 
+def test_transition_set_arbitrary_keys():
+    t = Transition(
+        obs=Observation(
+            data=np.arange(20, dtype=np.float32),
+            available_actions=np.full((5,), True),
+            extras=np.arange(5, dtype=np.float32),
+        ),
+        state=State(np.ones(10, dtype=np.float32)),
+        action=np.ones(5, dtype=np.int64),
+        reward=1.0,
+        done=False,
+        info={},
+        next_obs=Observation(
+            data=np.arange(20, dtype=np.float32),
+            available_actions=np.full((5,), True),
+            extras=np.arange(5, dtype=np.float32),
+        ),
+        next_state=State(np.ones(10, dtype=np.float32)),
+        truncated=False,
+    )
+
+    t["arbitrary_key"] = 17
+    t["other_key"] = [1, 2, 3]
+
+    assert t["arbitrary_key"] == 17
+    assert t["other_key"] == [1, 2, 3]
+
+
 def test_episode_arbitrary_keys():
     episode = Episode.new(
         Observation(np.ones(10, dtype=np.float32), np.full(5, True)),
