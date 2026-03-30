@@ -104,12 +104,19 @@ class Observation:
     def as_tensors(self, device=None, *, batch_dim: bool = False) -> "tuple[Tensor, Tensor]":
         """Convert the observation data and extras to a tuple of tensors of shape `(n_agents, *self.shape)` and `(n_agents, *self.extras_shape)` respectively."""
 
-    def as_tensors(self, device=None, *, batch_dim=False):
+    @overload
+    def as_tensors(self, device=None, *, batch_dim: Literal[True], actions: Literal[True]) -> "tuple[Tensor, Tensor, Tensor]":
+        """Convert the observation data, extras and available actions to a tuple of tensors of shape `(1, n_agents, *self.shape)`, `(1, n_agents, *self.extras_shape)` and `(1, n_agents, *self.available_actions_shape)` respectively."""
+
+    def as_tensors(self, device=None, *, batch_dim=False, actions=False):
         import torch  # pyright: ignore[reportMissingImports]
 
         data = torch.from_numpy(self.data).to(device, non_blocking=True)
         extras = torch.from_numpy(self.extras).to(device, non_blocking=True)
+        to_return = [data, extras]
+        if actions:
+            available_actions = torch.from_numpy(self.available_actions).to(device, non_blocking=True)
+            to_return.append(available_actions)
         if batch_dim:
-            data = data.unsqueeze(0)
-            extras = extras.unsqueeze(0)
-        return data, extras
+            to_return = (t.unsqueeze(0) for t in to_return)
+        return tuple(to_return)

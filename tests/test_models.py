@@ -535,6 +535,24 @@ def test_observation_as_tensor_with_batch():
 
 
 @pytest.mark.skipif(not HAS_PYTORCH, reason="torch is not installed")
+def test_observation_as_tensor_with_batch_with_available_actions():
+    import torch
+
+    env = DiscreteMockEnv(4)
+    obs = env.reset()[0]
+    data, extras, available_actions = obs.as_tensors(batch_dim=True, actions=True)
+    assert isinstance(data, torch.Tensor)
+    assert data.shape == (1, env.n_agents, *env.observation_shape)
+    assert data.dtype == torch.float32
+    assert isinstance(extras, torch.Tensor)
+    assert extras.shape == (1, env.n_agents, *env.extras_shape)
+    assert extras.dtype == torch.float32
+    assert isinstance(available_actions, torch.Tensor)
+    assert available_actions.shape == (1, env.n_agents, env.n_actions)
+    assert available_actions.dtype == torch.bool
+
+
+@pytest.mark.skipif(not HAS_PYTORCH, reason="torch is not installed")
 def test_state_as_tensor():
     import torch
 
