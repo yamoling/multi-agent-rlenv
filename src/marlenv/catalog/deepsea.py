@@ -60,6 +60,7 @@ class DeepSea(MARLEnv[MultiDiscreteSpace]):
         else:
             reward = 0.0
         return Step(
+            action,
             self.get_observation(),
             self.get_state(),
             reward,

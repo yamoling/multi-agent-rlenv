@@ -51,6 +51,7 @@ class Gym(MARLEnv[Space]):
             self.available_actions(),
         )
         return Step(
+            np.array(action),
             self._last_obs,
             self.get_state(),
             np.array([reward]),

@@ -118,7 +118,7 @@ class CoordinatedGrid(MARLEnv):
             env_info = {"battle_won": True}
         else:
             reward = 0
-        return Step(self.get_observation(), self.get_state(), reward, terminated, terminated, env_info)
+        return Step(action, self.get_observation(), self.get_state(), reward, terminated, terminated, env_info)
 
     def n_agents_arrived(self):
         n = 0

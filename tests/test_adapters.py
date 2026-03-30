@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 import marlenv
-from marlenv import ContinuousSpace, DiscreteMockEnv, MARLEnv, Observation, State, MultiDiscreteSpace
+from marlenv import ContinuousSpace, MARLEnv, Observation, State, MultiDiscreteSpace, catalog
 from marlenv.adapters import PymarlAdapter
 
 skip_gym = not marlenv.adapters.HAS_GYM
@@ -242,7 +242,7 @@ def test_pymarl():
     OBS_SIZE = 42
     REWARD_STEP = 1
     env = PymarlAdapter(
-        DiscreteMockEnv(
+        catalog.DiscreteMockEnv(
             N_AGENTS,
             n_actions=N_ACTIONS,
             agent_state_size=UNIT_STATE_SIZE,

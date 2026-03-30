@@ -1,20 +1,21 @@
 import numpy as np
 import pytest
 import marlenv
-from marlenv import Builder, DiscreteMockEnv, DiscreteMOMockEnv, MARLEnv
-from marlenv.wrappers import AvailableActionsMask, Centralized, DelayedReward, LastAction, TimeLimit, ActionRandomizer
+from marlenv import Builder, catalog, MARLEnv
+from marlenv.catalog import DiscreteMOMockEnv
+from marlenv.wrappers import AvailableActionsMask, Centralized, DelayedReward, LastAction, TimeLimit, ActionRandomizer, EnvPool
 
 
 def test_padding():
     PAD_SIZE = 2
-    mock = DiscreteMockEnv(5)
+    mock = catalog.DiscreteMockEnv(5)
     env = Builder(mock).pad("extra", PAD_SIZE).build()
     assert env.extras_shape == (PAD_SIZE + mock.extras_shape[0],)
     env.reset()
     for _ in range(10):
         env.step(env.action_space.sample())
 
-    mock = DiscreteMockEnv(5)
+    mock = catalog.DiscreteMockEnv(5)
     env = Builder(mock).pad("obs", PAD_SIZE).build()
     assert env.observation_shape == (mock.observation_shape[0] + PAD_SIZE,)
     env.reset()
@@ -24,7 +25,7 @@ def test_padding():
 
 def test_available_actions():
     N_AGENTS = 5
-    mock = DiscreteMockEnv(N_AGENTS)
+    mock = catalog.DiscreteMockEnv(N_AGENTS)
     env = Builder(mock).available_actions().build()
 
     assert env.extras_shape == (5 + mock.extras_shape[0],)
@@ -33,7 +34,7 @@ def test_available_actions():
 
 
 def test_agent_id():
-    env = Builder(DiscreteMockEnv(5)).agent_id().build()
+    env = Builder(catalog.DiscreteMockEnv(5)).agent_id().build()
     assert env.extras_shape == (5,)
     obs, _ = env.reset()
     assert np.array_equal(obs.extras, np.identity(5, dtype=np.float32))
@@ -53,7 +54,7 @@ def test_penalty_wrapper():
 
 def test_time_limit_wrapper():
     MAX_T = 5
-    env = Builder(DiscreteMockEnv(1)).time_limit(MAX_T).build()
+    env = Builder(catalog.DiscreteMockEnv(1)).time_limit(MAX_T).build()
     assert env.extras_shape == (1,)
     assert env.state_extra_shape == (1,)
     t = 1
@@ -70,7 +71,7 @@ def test_time_limit_wrapper():
 
 def test_truncated_and_done():
     END_GAME = 10
-    env = marlenv.wrappers.TimeLimit(DiscreteMockEnv(2, end_game=END_GAME), END_GAME)
+    env = marlenv.wrappers.TimeLimit(catalog.DiscreteMockEnv(2, end_game=END_GAME), END_GAME)
     obs, state = env.reset()
     episode = marlenv.Episode.new(obs, state)
     action = env.action_space.sample()
@@ -96,7 +97,7 @@ def test_time_limit_wrapper_with_extra():
     When an extra is given as input, the environment should be 'done' and 'truncated' when the time limit is reached.
     """
     MAX_T = 5
-    env = Builder(DiscreteMockEnv(5)).time_limit(MAX_T, add_extra=True).build()
+    env = Builder(catalog.DiscreteMockEnv(5)).time_limit(MAX_T, add_extra=True).build()
     assert env.extras_shape == (1,)
     obs, _ = env.reset()
     assert obs.extras.shape == (5, 1)
@@ -113,13 +114,13 @@ def test_time_limit_wrapper_with_extra():
 
 def test_wrong_truncation_penalty():
     try:
-        Builder(DiscreteMockEnv(1)).time_limit(5, add_extra=True, truncation_penalty=-0.1).build()
+        Builder(catalog.DiscreteMockEnv(1)).time_limit(5, add_extra=True, truncation_penalty=-0.1).build()
         assert False, "It should not be possible to set a negative truncation penalty"
     except AssertionError:
         pass
 
     try:
-        Builder(DiscreteMockEnv(1)).time_limit(5, add_extra=False, truncation_penalty=0.1).build()
+        Builder(catalog.DiscreteMockEnv(1)).time_limit(5, add_extra=False, truncation_penalty=0.1).build()
         assert False, "It should not be possible to set a truncation penalty without adding the extra feature"
     except AssertionError:
         pass
@@ -127,7 +128,7 @@ def test_wrong_truncation_penalty():
 
 def test_time_limit_wrapper_with_truncation_penalty():
     MAX_T = 5
-    env = Builder(DiscreteMockEnv(5)).time_limit(MAX_T, add_extra=True, truncation_penalty=0.1).build()
+    env = Builder(catalog.DiscreteMockEnv(5)).time_limit(MAX_T, add_extra=True, truncation_penalty=0.1).build()
     assert env.extras_shape == (1,)
     obs, _ = env.reset()
     assert obs.extras.shape == (5, 1)
@@ -149,14 +150,14 @@ def test_blind_wrapper():
         step = env.step(env.action_space.sample())
         assert np.all(step.obs.data == 0)
 
-    env = marlenv.Builder(DiscreteMockEnv(5)).blind(p=1).build()
+    env = marlenv.Builder(catalog.DiscreteMockEnv(5)).blind(p=1).build()
     test(env)
-    env = marlenv.wrappers.Blind(DiscreteMockEnv(5), p=1)
+    env = marlenv.wrappers.Blind(catalog.DiscreteMockEnv(5), p=1)
     test(env)
 
 
 def test_last_action():
-    env = Builder(DiscreteMockEnv(2)).last_action().build()
+    env = Builder(catalog.DiscreteMockEnv(2)).last_action().build()
     assert env.extras_shape == (env.n_actions,)
     obs, _ = env.reset()
     assert np.all(obs.extras == 0)
@@ -168,7 +169,7 @@ def test_last_action():
 
 
 def test_centralised_shape():
-    mock = DiscreteMockEnv(2)
+    mock = catalog.DiscreteMockEnv(2)
     env = Builder(mock).centralised().time_limit(50, True).build()
     assert env.observation_shape == (2 * mock.obs_size,)
     assert env.n_agents == 1
@@ -180,7 +181,7 @@ def test_centralised_shape():
 
 
 def test_centralised_action():
-    mock = DiscreteMockEnv(2)
+    mock = catalog.DiscreteMockEnv(2)
     env = Centralized(mock)
     for action1 in range(mock.n_actions):
         for action2 in range(mock.n_actions):
@@ -191,7 +192,7 @@ def test_centralised_action():
 
 
 def test_centralised_obs_and_state():
-    wrapped = DiscreteMockEnv(2)
+    wrapped = catalog.DiscreteMockEnv(2)
     env = Centralized(wrapped)
     assert env.observation_shape == (2 * wrapped.obs_size,)
     assert env.state_shape == (wrapped.agent_state_size * wrapped.n_agents,)
@@ -205,7 +206,7 @@ def test_centralised_obs_and_state():
 
 def test_centralised_available_actions():
     N_AGENTS = 2
-    mock = DiscreteMockEnv(N_AGENTS)
+    mock = catalog.DiscreteMockEnv(N_AGENTS)
     env = Builder(mock).centralised().build()
     available = env.available_actions()
     assert available.shape == (1, mock.n_actions**N_AGENTS)
@@ -226,7 +227,7 @@ def test_centralised_available_actions():
 def test_available_action_mask():
     N_AGENTS = 2
     N_ACTIONS = 5
-    wrapped = DiscreteMockEnv(N_AGENTS, n_actions=N_ACTIONS)
+    wrapped = catalog.DiscreteMockEnv(N_AGENTS, n_actions=N_ACTIONS)
 
     try:
         AvailableActionsMask(wrapped, np.zeros((N_AGENTS, N_ACTIONS), dtype=bool))
@@ -250,7 +251,7 @@ def test_available_action_mask():
 
 def test_mask_actions_builder_int():
     N_AGENTS = 5
-    mock = DiscreteMockEnv(N_AGENTS)
+    mock = catalog.DiscreteMockEnv(N_AGENTS)
     for prevented_action in range(mock.n_actions):
         env = Builder(mock).mask_actions(prevented_action).build()
         obs, _ = env.reset()
@@ -259,7 +260,7 @@ def test_mask_actions_builder_int():
 
 
 def test_mask_actions_builder_int_list():
-    mock = DiscreteMockEnv()
+    mock = catalog.DiscreteMockEnv()
     for prevented_actions in range(1, mock.n_actions - 1):
         prevented_actions = list(range(prevented_actions))
         env = Builder(mock).mask_actions(prevented_actions).build()
@@ -270,7 +271,7 @@ def test_mask_actions_builder_int_list():
 
 
 def test_mask_actions_builder_errors_too_many_actions_in_list():
-    mock = DiscreteMockEnv()
+    mock = catalog.DiscreteMockEnv()
     try:
         Builder(mock).mask_actions(list(range(mock.n_actions + 1))).build()
         raise Exception("It should not be possible to mask actions with more actions than the environment provides")
@@ -279,7 +280,7 @@ def test_mask_actions_builder_errors_too_many_actions_in_list():
 
 
 def test_mask_actions_builder_errors_action_index_out_of_bounds():
-    mock = DiscreteMockEnv()
+    mock = catalog.DiscreteMockEnv()
     try:
         Builder(mock).mask_actions(mock.n_actions + 1).build()
         raise Exception(
@@ -290,7 +291,7 @@ def test_mask_actions_builder_errors_action_index_out_of_bounds():
 
 
 def test_mask_actions_builder_errors_invalid_shape_too_many_actions():
-    mock = DiscreteMockEnv()
+    mock = catalog.DiscreteMockEnv()
     try:
         Builder(mock).mask_actions(np.full((mock.n_agents, mock.n_actions + 1), True)).build()
         raise Exception("It should not be possible to mask actions with an invalid input shape")
@@ -299,7 +300,7 @@ def test_mask_actions_builder_errors_invalid_shape_too_many_actions():
 
 
 def test_mask_actions_builder_errors_invalid_shape_too_many_agents():
-    mock = DiscreteMockEnv()
+    mock = catalog.DiscreteMockEnv()
     try:
         Builder(mock).mask_actions(np.full((mock.n_agents + 1, mock.n_actions), True)).build()
         raise Exception("It should not be possible to mask actions with an invalid input")
@@ -308,7 +309,7 @@ def test_mask_actions_builder_errors_invalid_shape_too_many_agents():
 
 
 def test_mask_actions_builder_errors_all_actions_masked():
-    mock = DiscreteMockEnv()
+    mock = catalog.DiscreteMockEnv()
     try:
         Builder(mock).mask_actions(np.full((mock.n_agents, mock.n_actions), False)).build()
         raise Exception("At least one action should remain available for each agent.")
@@ -325,7 +326,7 @@ def test_wrapper_reward_shape():
 
 
 def test_builder_action_mask():
-    env = DiscreteMockEnv()
+    env = catalog.DiscreteMockEnv()
     mask = np.full((env.n_agents, env.n_actions), True)
     mask[0, 0] = False
     mask[1, 1] = False
@@ -334,7 +335,7 @@ def test_builder_action_mask():
 
 
 def test_time_limit_set_state():
-    env = TimeLimit(DiscreteMockEnv(end_game=50), 100)
+    env = TimeLimit(catalog.DiscreteMockEnv(end_game=50), 100)
     env.reset()
 
     states = []
@@ -349,7 +350,7 @@ def test_time_limit_set_state():
 
 
 def test_last_action_set_state():
-    env = LastAction(DiscreteMockEnv())
+    env = LastAction(catalog.DiscreteMockEnv())
     env.reset()
 
     states = []
@@ -375,7 +376,7 @@ def test_wrong_extra_meanings():
     from marlenv.wrappers import RLEnvWrapper
 
     try:
-        RLEnvWrapper(DiscreteMockEnv(), extra_meanings=["a", "b"])
+        RLEnvWrapper(catalog.DiscreteMockEnv(), extra_meanings=["a", "b"])
         assert False, "It should not be possible to set extra meanings without setting the extra shape"
     except ValueError:
         pass
@@ -384,13 +385,13 @@ def test_wrong_extra_meanings():
 def test_extra_meanings():
     from marlenv.wrappers import RLEnvWrapper
 
-    env = RLEnvWrapper(DiscreteMockEnv(extras_size=0), extra_shape=(2,), extra_meanings=["added extra 1", "added extra 2"])
+    env = RLEnvWrapper(catalog.DiscreteMockEnv(extras_size=0), extra_shape=(2,), extra_meanings=["added extra 1", "added extra 2"])
     assert env.extras_shape == (2,)
     assert env.extras_meanings == ["added extra 1", "added extra 2"]
 
 
 def test_wrapper_extra_names():
-    env = DiscreteMockEnv(extras_size=0)
+    env = catalog.DiscreteMockEnv(extras_size=0)
     env = TimeLimit(env, 100, add_extra=True)
     assert env.extras_meanings[-1] == "Time ratio"
     env = LastAction(env)
@@ -400,7 +401,7 @@ def test_wrapper_extra_names():
 
 def _test_delayed_rewards(env: MARLEnv):
     assert isinstance(env, DelayedReward)
-    assert isinstance(env.wrapped, DiscreteMockEnv)
+    assert isinstance(env.wrapped, catalog.DiscreteMockEnv)
     expected = []
     for i in range(env.wrapped.end_game):
         if i < env.delay:
@@ -416,7 +417,7 @@ def _test_delayed_rewards(env: MARLEnv):
 
 
 def test_delayed_rewards():
-    env = DiscreteMockEnv(reward_step=[1, 2, 3], end_game=5, n_agents=2)
+    env = catalog.DiscreteMockEnv(reward_step=[1, 2, 3], end_game=5, n_agents=2)
     env = DelayedReward(env, 2)
     _test_delayed_rewards(env)
 
@@ -424,7 +425,7 @@ def test_delayed_rewards():
 def test_delayed_rewards_from_builder():
     for delay in range(0, 10):
         for end_game in range(delay + 1, delay * 2):
-            env = Builder(DiscreteMockEnv(reward_step=10, end_game=end_game, n_agents=2)).delay_rewards(delay).build()
+            env = Builder(catalog.DiscreteMockEnv(reward_step=10, end_game=end_game, n_agents=2)).delay_rewards(delay).build()
             _test_delayed_rewards(env)
 
 
@@ -448,7 +449,7 @@ def test_potential_shaping():
             return super().step(action)
 
     EP_LENGTH = 20
-    env = PS(DiscreteMockEnv(reward_step=0, end_game=EP_LENGTH))
+    env = PS(catalog.DiscreteMockEnv(reward_step=0, end_game=EP_LENGTH))
     env.reset()
     step = None
 
@@ -463,7 +464,7 @@ def test_potential_shaping():
 
 def test_randomize_actions_full_randomization_replaces_with_valid_actions():
 
-    class RecordingEnv(DiscreteMockEnv):
+    class RecordingEnv(catalog.DiscreteMockEnv):
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
             self.last_action = None
@@ -486,7 +487,7 @@ def test_randomize_actions_full_randomization_replaces_with_valid_actions():
 
 def test_randomize_actions_per_agent_probability():
 
-    class RecordingEnv(DiscreteMockEnv):
+    class RecordingEnv(catalog.DiscreteMockEnv):
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
             self.last_action = None
@@ -516,18 +517,43 @@ def test_randomize_actions_per_agent_probability():
 
 def test_randomize_actions_invalid_probability_length_raises():
     with pytest.raises(AssertionError):
-        ActionRandomizer(DiscreteMockEnv(3), p=[0.1, 0.2])
+        ActionRandomizer(catalog.DiscreteMockEnv(3), p=[0.1, 0.2])
 
 
 def test_randomize_actions_invalid_probability_value_raises():
     with pytest.raises(AssertionError):
-        ActionRandomizer(DiscreteMockEnv(2), p=[0.2, 1.2])
+        ActionRandomizer(catalog.DiscreteMockEnv(2), p=[0.2, 1.2])
 
 
 def test_randomized_actions_from_builder():
-    Builder(DiscreteMockEnv(3)).randomize_actions(p=[0.0, 1.0, 0.0]).build()
+    Builder(catalog.DiscreteMockEnv(3)).randomize_actions(p=[0.0, 1.0, 0.0]).build()
     with pytest.raises(AssertionError):
-        Builder(DiscreteMockEnv(3)).randomize_actions(p=[0.1, 0.2]).build()
+        Builder(catalog.DiscreteMockEnv(3)).randomize_actions(p=[0.1, 0.2]).build()
     with pytest.raises(AssertionError):
-        Builder(DiscreteMockEnv(2)).randomize_actions(p=[0.2, 1.2]).build()
-    
+        Builder(catalog.DiscreteMockEnv(2)).randomize_actions(p=[0.2, 1.2]).build()
+
+
+def test_env_pool():
+    envs = [
+        catalog.DiscreteMockEnv(n_agents=2, n_actions=2),
+        catalog.DiscreteMockEnv(n_agents=2, n_actions=2),
+    ]
+    env_pool = EnvPool(envs)
+    found = [False, False]
+    n_trials = 0
+    while n_trials < 1000 and not all(found):
+        n_trials += 1
+        env_pool.reset()
+        for i, env in enumerate(envs):
+            if env_pool.wrapped == env:
+                found[i] = True
+    assert found[0] and found[1]
+
+
+def test_incompatible_envs():
+    with pytest.raises(AssertionError):
+        EnvPool([catalog.DiscreteMockEnv(n_agents=2, n_actions=2), catalog.DiscreteMockEnv(n_agents=2, n_actions=3)])
+    with pytest.raises(AssertionError):
+        EnvPool([catalog.DiscreteMockEnv(n_agents=2, n_actions=2), catalog.DiscreteMockEnv(n_agents=3, n_actions=2)])
+    with pytest.raises(AssertionError):
+        EnvPool([catalog.DiscreteMockEnv(n_agents=2, n_actions=2, extras_size=10), catalog.DiscreteMockEnv(n_agents=2, n_actions=2, extras_size=1)])

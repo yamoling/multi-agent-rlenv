@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing_extensions import TypeVar
 import random
 
-from marlenv import RLEnvWrapper, MARLEnv
+from .rlenv_wrapper import RLEnvWrapper, MARLEnv
 from marlenv.models import Space
 
 ActionSpaceType = TypeVar("ActionSpaceType", bound=Space, default=Space)

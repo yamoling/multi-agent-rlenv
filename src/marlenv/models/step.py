@@ -1,5 +1,4 @@
 from typing import Any, Optional, Sequence
-from typing_extensions import deprecated
 import numpy.typing as npt
 import numpy as np
 from dataclasses import dataclass
@@ -10,7 +9,8 @@ from .state import State
 @dataclass
 class Step:
     """
-    The result of performing a step in the environment:
+    A step contains the action and the result of performing that action in the environment:
+        - the action
         - the new observation
         - the new state
         - the reward received for the step performed
@@ -18,6 +18,8 @@ class Step:
         - some info (mainly for logging purposes)
     """
 
+    action: npt.NDArray
+    """The action performed by the agents to obtain this step."""
     obs: Observation
     """The new observation (1 per agent) of the environment resulting from the agent's action."""
     state: State
@@ -33,6 +35,7 @@ class Step:
 
     def __init__(
         self,
+        action: npt.NDArray | Sequence,
         obs: Observation,
         state: State,
         reward: npt.NDArray[np.float32] | float | Sequence[float],
@@ -42,6 +45,9 @@ class Step:
     ):
         if info is None:
             info = {}
+        if not isinstance(action, np.ndarray):
+            action = np.array(action)
+        self.action = action
         self.obs = obs
         self.state = state
         match reward:
@@ -66,33 +72,4 @@ class Step:
         return self.truncated or self.done
 
     def __iter__(self):
-        yield self.obs
-        yield self.state
-        yield self.reward
-        yield self.done
-        yield self.truncated
-        yield self.info
-
-    @deprecated("Step is no longer a `NamedTuple` and should be modified by setting the attributes directly.")
-    def with_attrs(
-        self,
-        obs: Optional[Observation] = None,
-        state: Optional[State] = None,
-        reward: Optional[npt.NDArray[np.float32]] = None,
-        done: Optional[bool] = None,
-        truncated: Optional[bool] = None,
-        info: Optional[dict[str, Any]] = None,
-    ):
-        """
-        Return a new Step object with the given attributes replaced.
-
-        Note that the new object shares the same references as the original one for the attributes that are not replaced.
-        """
-        return Step(
-            obs if obs is not None else self.obs,
-            state if state is not None else self.state,
-            reward if reward is not None else self.reward,
-            done if done is not None else self.done,
-            truncated if truncated is not None else self.truncated,
-            info if info is not None else self.info,
-        )
+        return iter((self.obs, self.state, self.reward, self.done, self.truncated, self.info))

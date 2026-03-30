@@ -12,6 +12,7 @@ from .available_actions_mask import AvailableActionsMask
 from .delayed_rewards import DelayedReward
 from .potential_shaping import PotentialShaping
 from .action_randomizer import ActionRandomizer
+from .env_pool import EnvPool
 
 __all__ = [
     "RLEnvWrapper",
@@ -30,4 +31,5 @@ __all__ = [
     "DelayedReward",
     "PotentialShaping",
     "ActionRandomizer",
+    "EnvPool",
 ]

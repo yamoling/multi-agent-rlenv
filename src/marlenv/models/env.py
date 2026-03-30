@@ -212,7 +212,7 @@ class MARLEnv(ABC, Generic[ActionSpaceType]):
         episode = Episode.new(obs, state)
         for action in actions:
             step = self.step(action)
-            episode.add(step, action)
+            episode.add(step)
         return episode
 
     def rollout(self, agent: Callable[[Observation], np.ndarray | Sequence]):
@@ -221,14 +221,21 @@ class MARLEnv(ABC, Generic[ActionSpaceType]):
         action = agent(obs)
         step = self.step(action)
         while not step.is_terminal:
-            episode.add(step, action)
+            episode.add(step)
             action = agent(step.obs)
             step = self.step(action)
-        episode.add(step, action)
+        episode.add(step)
         return episode
 
     def has_same_inouts(self, other: "MARLEnv[ActionSpaceType]") -> bool:
-        """Alias for `have_same_inouts(self, other)`."""
+        """
+        Returns whether the environment has the same input and output shapes as another environment, which includes:
+            - action space
+            - observation shape
+            - state shape
+            - extras shape
+            - reward space
+        """
         if not isinstance(other, MARLEnv):
             return False
         if self.action_space != other.action_space:

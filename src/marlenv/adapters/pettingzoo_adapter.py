@@ -53,7 +53,15 @@ class PettingZoo(MARLEnv[Space]):
         reward = np.sum([r for r in reward.values()], keepdims=True)
         self.last_observation = Observation(obs_data, self.available_actions())
         state = self.get_state()
-        return Step(self.last_observation, state, reward, any(term.values()), any(trunc.values()), info)
+        return Step(
+            np.array(action),
+            self.last_observation,
+            state,
+            reward,
+            any(term.values()),
+            any(trunc.values()),
+            info,
+        )
 
     def reset(self):
         obs = self._pz_env.reset()[0]

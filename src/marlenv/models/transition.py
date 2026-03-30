@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, Sequence
+from typing import Any, Sequence, overload
 
 import numpy as np
 import numpy.typing as npt
@@ -57,18 +57,31 @@ class Transition:
         self.next_state = next_state
         self.other = kwargs
 
+    @overload
+    @staticmethod
+    def from_step(prev_obs: Observation, prev_state: State, step: Step, /, **kwargs) -> "Transition": ...
+
+    @overload
+    @staticmethod
+    def from_step(
+        prev_obs: Observation, prev_state: State, action: np.ndarray | Sequence[float], step: Step, /, **kwargs
+    ) -> "Transition": ...
+
     @staticmethod
     def from_step(
         prev_obs: Observation,
         prev_state: State,
-        action: np.ndarray | Sequence[float],
-        step: Step,
+        *action_step,
         **kwargs,
     ):
+        if len(action_step) == 1:
+            step: Step = action_step[0]
+        else:
+            step: Step = action_step[1]
         return Transition(
             obs=prev_obs,
             state=prev_state,
-            action=action,
+            action=step.action,
             reward=step.reward,
             done=step.done,
             info=step.info,

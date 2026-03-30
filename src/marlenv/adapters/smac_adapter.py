@@ -179,7 +179,15 @@ class SMAC(MARLEnv[MultiDiscreteSpace]):
 
     def step(self, action):
         reward, done, info = self._env.step(action)
-        return Step(self.get_observation(), self.get_state(), reward, done, False, info)
+        return Step(
+            np.array(action),
+            self.get_observation(),
+            self.get_state(),
+            reward,
+            done,
+            False,
+            info,
+        )
 
     def available_actions(self) -> npt.NDArray[np.bool]:
         return np.array(self._env.get_avail_actions()) == 1

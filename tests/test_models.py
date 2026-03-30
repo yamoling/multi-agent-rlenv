@@ -3,7 +3,8 @@ from importlib.util import find_spec
 import numpy as np
 import pytest
 
-from marlenv import Builder, DiscreteMockEnv, DiscreteMOMockEnv, DiscreteSpace, Episode, MARLEnv, Observation, State, Transition
+from marlenv import Builder, DiscreteSpace, Episode, MARLEnv, Observation, State, Transition
+from marlenv.catalog import DiscreteMockEnv, DiscreteMOMockEnv
 
 from .utils import generate_episode
 

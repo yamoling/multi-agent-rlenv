@@ -5,12 +5,12 @@ import orjson
 import pytest
 
 import marlenv
-from marlenv import DiscreteMockEnv, wrappers
+from marlenv import catalog, wrappers, adapters
 from marlenv.utils import Schedule
 
 
 def test_registry():
-    env = DiscreteMockEnv(4)
+    env = catalog.DiscreteMockEnv(4)
     serialized = pickle.dumps(env)
     restored_env = pickle.loads(serialized)
     assert restored_env.n_agents == env.n_agents
@@ -32,7 +32,7 @@ def test_registry_gym():
 
 
 def test_registry_wrapper():
-    env = marlenv.Builder(DiscreteMockEnv(4)).agent_id().time_limit(10).build()
+    env = marlenv.Builder(catalog.DiscreteMockEnv(4)).agent_id().time_limit(10).build()
     restored_env = pickle.loads(pickle.dumps(env))
     assert restored_env.n_agents == env.n_agents
     assert restored_env.observation_shape == env.observation_shape
@@ -42,12 +42,12 @@ def test_registry_wrapper():
 
 
 def test_env_json_serialization():
-    env = DiscreteMockEnv(4)
+    env = catalog.DiscreteMockEnv(4)
     _ = orjson.dumps(env, option=orjson.OPT_SERIALIZE_NUMPY)
 
 
 def test_serialize_episode_fields():
-    env = DiscreteMockEnv(4, end_game=10)
+    env = catalog.DiscreteMockEnv(4, end_game=10)
     obs, state = env.reset()
     episode = marlenv.Episode.new(obs, state)
     action = np.array([0, 1, 2, 3])
@@ -94,76 +94,76 @@ def serde_and_check_key_values(env: object):
 
 
 def test_serialize_blind():
-    env = DiscreteMockEnv(4)
+    env = catalog.DiscreteMockEnv(4)
     serde_and_check_key_values(wrappers.Blind(env, 0.2))
 
 
 def test_serialize_time_limit():
-    env = DiscreteMockEnv(4)
+    env = catalog.DiscreteMockEnv(4)
     serde_and_check_key_values(wrappers.TimeLimit(env, 10))
 
 
 def test_serialize_time_penalty():
-    env = DiscreteMockEnv(4)
+    env = catalog.DiscreteMockEnv(4)
     serde_and_check_key_values(wrappers.TimePenalty(env, 0.2))
 
 
 def test_serialize_agent_id():
-    env = DiscreteMockEnv(4)
+    env = catalog.DiscreteMockEnv(4)
     serde_and_check_key_values(wrappers.AgentId(env))
 
 
 def test_serialize_last_action():
-    env = DiscreteMockEnv(4)
+    env = catalog.DiscreteMockEnv(4)
     serde_and_check_key_values(wrappers.LastAction(env))
 
 
 def test_serialize_available_actions():
-    env = DiscreteMockEnv(4)
+    env = catalog.DiscreteMockEnv(4)
     serde_and_check_key_values(wrappers.AvailableActions(env))
 
 
 def test_serialize_video():
-    env = DiscreteMockEnv(4)
+    env = catalog.DiscreteMockEnv(4)
     serde_and_check_key_values(wrappers.VideoRecorder(env))
 
 
 def test_serialize_centralised():
-    env = DiscreteMockEnv(4)
+    env = catalog.DiscreteMockEnv(4)
     serde_and_check_key_values(wrappers.Centralized(env))
 
 
 def test_serialize_pad_extras():
-    env = DiscreteMockEnv(4)
+    env = catalog.DiscreteMockEnv(4)
     serde_and_check_key_values(wrappers.PadExtras(env, 5))
 
 
 def test_serialize_pad_observation():
-    env = DiscreteMockEnv(4)
+    env = catalog.DiscreteMockEnv(4)
     serde_and_check_key_values(wrappers.PadObservations(env, 5))
 
 
 def test_wrappers_serializable():
-    env = DiscreteMockEnv(4)
+    env = catalog.DiscreteMockEnv(4)
     env = marlenv.Builder(env).agent_id().available_actions().time_limit(10).last_action().time_penalty(5).blind(0.2).build()
 
     serde_and_check_key_values(env)
 
 
 def test_serialize_observation():
-    env = DiscreteMockEnv(4)
+    env = catalog.DiscreteMockEnv(4)
     obs = env.get_observation()
     _ = orjson.dumps(obs, option=orjson.OPT_SERIALIZE_NUMPY)
 
 
 def test_serialize_state():
-    env = DiscreteMockEnv(4)
+    env = catalog.DiscreteMockEnv(4)
     state = env.get_state()
     _ = orjson.dumps(state, option=orjson.OPT_SERIALIZE_NUMPY)
 
 
 def test_serialize_step():
-    env = DiscreteMockEnv(4)
+    env = catalog.DiscreteMockEnv(4)
     obs, state = env.reset()
     action = np.array([0, 1, 2, 3])
     step = env.step(action)
@@ -171,7 +171,7 @@ def test_serialize_step():
 
 
 def test_serialize_transition():
-    env = DiscreteMockEnv(4)
+    env = catalog.DiscreteMockEnv(4)
     obs, state = env.reset()
     action = np.array([0, 1, 2, 3])
     step = env.step(action)
@@ -180,7 +180,7 @@ def test_serialize_transition():
 
 
 def test_serialize_episode():
-    env = DiscreteMockEnv(4, end_game=10)
+    env = catalog.DiscreteMockEnv(4, end_game=10)
     obs, state = env.reset()
     episode = marlenv.Episode.new(obs, state)
     action = np.array([0, 1, 2, 3])
@@ -254,7 +254,7 @@ def test_serialize_schedule():
 def test_serialize_all_wrappers_dynamic():
     from dataclasses import is_dataclass
 
-    wrapper_factories = {
+    envs_factory = {
         "AvailableActionsMask": lambda env: wrappers.AvailableActionsMask(
             env,
             np.array(
@@ -272,25 +272,51 @@ def test_serialize_all_wrappers_dynamic():
         "VideoRecorder": lambda env: wrappers.VideoRecorder(env),
         "TimeLimit": lambda env: wrappers.TimeLimit(env, 10),
         "PadObservations": lambda env: wrappers.PadObservations(env, 2),
-        "PadExtras": lambda env: wrappers.PadExtras(DiscreteMockEnv(4, extras_size=1), 2),
+        "PadExtras": lambda env: wrappers.PadExtras(catalog.DiscreteMockEnv(4, extras_size=1), 2),
         "TimePenalty": lambda env: wrappers.TimePenalty(env, 0.2),
         "AvailableActions": lambda env: wrappers.AvailableActions(env),
         "Blind": lambda env: wrappers.Blind(env, 0.2),
-        "Centralized": lambda env: wrappers.Centralized(DiscreteMockEnv(2)),
+        "Centralized": lambda env: wrappers.Centralized(catalog.DiscreteMockEnv(2)),
         "DelayedReward": lambda env: wrappers.DelayedReward(env, 2),
         "ActionRandomizer": lambda env: wrappers.ActionRandomizer(env, 0.2),
+        "EnvPool": lambda env: wrappers.EnvPool([catalog.DiscreteMockEnv(2, n_actions=2), catalog.DiscreteMockEnv(2, n_actions=2)]),
     }
 
     for wrapper_name in wrappers.__all__:
-        if wrapper_name in {"RLEnvWrapper", "MARLEnv"}:
-            continue
-        if wrapper_name == "PotentialShaping":
+        if wrapper_name in {"RLEnvWrapper", "MARLEnv", "PotentialShaping"}:
             # We cannot test PotentialShaping serialization because it's an abstract class and we don't have any concrete implementation in the codebase yet
             continue
-        if wrapper_name not in wrapper_factories:
-            raise AssertionError(f"Missing factory for wrapper '{wrapper_name}'")
-
-        env = DiscreteMockEnv(4, n_actions=5, extras_size=1, end_game=20)
-        wrapped = wrapper_factories[wrapper_name](env)
+        env = catalog.DiscreteMockEnv(4, n_actions=5, extras_size=1, end_game=20)
+        wrapped = envs_factory[wrapper_name](env)
         assert is_dataclass(wrapped), f"{wrapper_name} should be a dataclass for easier serialization"
         _ = orjson.dumps(wrapped, option=orjson.OPT_SERIALIZE_NUMPY)
+
+
+def test_serialize_all_adapters_dynamic():
+    from dataclasses import is_dataclass
+
+    try:
+        from pettingzoo.sisl import pursuit_v4
+
+        pz_env = pursuit_v4.parallel_env()
+    except ImportError:
+        pz_env = None
+
+    envs_factory = {
+        "SMAC": lambda: adapters.SMAC("3m"),
+        "SMACv2": lambda: adapters.SMACv2(),
+        "PettingZoo": lambda: adapters.PettingZoo(pz_env),
+        "Gym": lambda: adapters.Gym("CartPole-v1"),
+        "PymarlAdapter": lambda: adapters.PymarlAdapter(catalog.DiscreteMockEnv(4), episode_limit=20),
+    }
+    for adapter in adapters.__all__:
+        if adapter == "make" or adapter.startswith("HAS_"):
+            continue
+        try:
+            env = envs_factory[adapter]()
+            assert is_dataclass(env), f"{adapter} should be a dataclass for easier serialization"
+            _ = orjson.dumps(env, option=orjson.OPT_SERIALIZE_NUMPY)
+        except AttributeError as e:
+            msg = str(e)
+            if not msg.startswith("module 'marlenv.adapters' has no attribute") or adapter not in msg:
+                raise

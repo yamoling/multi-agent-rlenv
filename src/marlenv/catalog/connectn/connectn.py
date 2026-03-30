@@ -29,7 +29,7 @@ class ConnectN(MARLEnv[MultiDiscreteSpace]):
             case StepResult.TIE:
                 done = True
                 reward = 0
-        return Step(self.get_observation(), self.get_state(), reward, done, False)
+        return Step(action, self.get_observation(), self.get_state(), reward, done, False)
 
     def available_actions(self):
         """Full columns are not available."""
