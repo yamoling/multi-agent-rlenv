@@ -1,7 +1,9 @@
-from typing import Sequence
+from typing import Optional, Sequence
+
 import numpy as np
 import numpy.typing as npt
-from marlenv import MARLEnv, MultiDiscreteSpace, Step, State, Observation, DiscreteSpace
+
+from marlenv import DiscreteSpace, MARLEnv, MultiDiscreteSpace, Observation, State, Step
 
 from .board import GameBoard, StepResult
 
@@ -14,7 +16,9 @@ class ConnectN(MARLEnv[MultiDiscreteSpace]):
         state_shape = observation_shape
         super().__init__(1, action_space, observation_shape, state_shape)
 
-    def reset(self):
+    def reset(self, *, seed: Optional[int] = None):
+        if seed is not None:
+            self.seed(seed)
         self.board.clear()
         return self.get_observation(), self.get_state()
 

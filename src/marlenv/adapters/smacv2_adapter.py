@@ -1,11 +1,12 @@
+import logging
 from dataclasses import dataclass
-from typing import overload
+from typing import Optional, overload
 
 import numpy as np
 import numpy.typing as npt
 from smacv2.env import StarCraft2Env, StarCraftCapabilityEnvWrapper
 
-from marlenv.models import MARLEnv, Observation, State, Step, MultiDiscreteSpace, DiscreteSpace
+from marlenv.models import DiscreteSpace, MARLEnv, MultiDiscreteSpace, Observation, State, Step
 
 
 @dataclass
@@ -178,7 +179,9 @@ class SMACv2(MARLEnv[MultiDiscreteSpace]):
         )
         self.name = f"SMACv2-{self._env.map_name}"
 
-    def reset(self):
+    def reset(self, *, seed: Optional[int] = None):
+        if seed is not None:
+            logging.warning("SMACv2 only supports random seed at __init__ time. Ignoring seed argument in reset().")
         obs, state = self._env.reset()  # pyright: ignore[reportGeneralTypeIssues]
         obs = Observation(np.array(obs), self.available_actions())
         state = State(state)

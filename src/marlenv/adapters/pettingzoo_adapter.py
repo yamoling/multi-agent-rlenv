@@ -1,12 +1,12 @@
 from dataclasses import dataclass
-from typing import Sequence
+from typing import Optional, Sequence
 
 import numpy as np
 import numpy.typing as npt
 from gymnasium import spaces
 from pettingzoo import ParallelEnv
 
-from marlenv.models import MARLEnv, Observation, State, Step, DiscreteSpace, ContinuousSpace, Space
+from marlenv.models import ContinuousSpace, DiscreteSpace, MARLEnv, Observation, Space, State, Step
 
 
 @dataclass
@@ -63,8 +63,8 @@ class PettingZoo(MARLEnv[Space]):
             info,
         )
 
-    def reset(self):
-        obs = self._pz_env.reset()[0]
+    def reset(self, *, seed: Optional[int] = None):
+        obs = self._pz_env.reset(seed=seed)[0]
         obs_data = np.array([v for v in obs.values()])
         self.last_observation = Observation(obs_data, self.available_actions())
         return self.last_observation, self.get_state()

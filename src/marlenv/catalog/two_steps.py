@@ -1,10 +1,12 @@
 from enum import IntEnum
+from typing import Optional, Sequence
+
 import cv2
-import marlenv
 import numpy as np
 import numpy.typing as npt
-from typing import Sequence
-from marlenv import Observation, State, DiscreteSpace, Step
+
+import marlenv
+from marlenv import DiscreteSpace, Observation, State, Step
 
 PAYOFF_INITIAL = [[0, 0], [0, 0]]
 PAYOFF_2A = [[7, 7], [7, 7]]
@@ -46,7 +48,9 @@ class TwoSteps(marlenv.MARLEnv):
             state_shape=self.state.one_hot().shape,
         )
 
-    def reset(self):
+    def reset(self, *, seed: Optional[int] = None):
+        if seed is not None:
+            self.seed(seed)
         self.state = TwoStepsState.INITIAL
         return self.observation(), self.get_state()
 

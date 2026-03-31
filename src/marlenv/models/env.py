@@ -186,7 +186,7 @@ class MARLEnv(ABC, Generic[ActionSpaceType]):
         return self.step(self.sample_action())
 
     @abstractmethod
-    def reset(self) -> tuple[Observation, State]:
+    def reset(self, *, seed: Optional[int] = None) -> tuple[Observation, State]:
         """Reset the environment and return the initial observation and state."""
 
     def render(self):

@@ -5,7 +5,7 @@ import orjson
 import pytest
 
 import marlenv
-from marlenv import catalog, wrappers, adapters
+from marlenv import adapters, catalog, wrappers
 from marlenv.utils import Schedule
 
 
@@ -308,6 +308,7 @@ def test_serialize_all_adapters_dynamic():
         "PettingZoo": lambda: adapters.PettingZoo(pz_env),
         "Gym": lambda: adapters.Gym("CartPole-v1"),
         "PymarlAdapter": lambda: adapters.PymarlAdapter(catalog.DiscreteMockEnv(4), episode_limit=20),
+        "ToGym": lambda: adapters.ToGym(catalog.DiscreteMockEnv(1)),
     }
     for adapter in adapters.__all__:
         if adapter == "make" or adapter.startswith("HAS_"):
@@ -315,6 +316,9 @@ def test_serialize_all_adapters_dynamic():
         try:
             env = envs_factory[adapter]()
             assert is_dataclass(env), f"{adapter} should be a dataclass for easier serialization"
+            if adapter == "ToGym":
+                # ToGym is not serializable as is, and it is written in the class documentation.
+                continue
             _ = orjson.dumps(env, option=orjson.OPT_SERIALIZE_NUMPY)
         except AttributeError as e:
             msg = str(e)

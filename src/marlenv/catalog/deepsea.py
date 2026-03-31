@@ -1,8 +1,9 @@
-from typing import Sequence
-import numpy as np
-from marlenv import MARLEnv, MultiDiscreteSpace, DiscreteSpace, Observation, State, Step
 from dataclasses import dataclass
+from typing import Optional, Sequence
 
+import numpy as np
+
+from marlenv import DiscreteSpace, MARLEnv, MultiDiscreteSpace, Observation, State, Step
 
 LEFT = 0
 RIGHT = 1
@@ -40,7 +41,9 @@ class DeepSea(MARLEnv[MultiDiscreteSpace]):
     def get_state(self) -> State:
         return State(np.array([self._row, self._col], dtype=np.float32))
 
-    def reset(self):
+    def reset(self, *, seed: Optional[int] = None):
+        if seed is not None:
+            self.seed(seed)
         self._row = 0
         self._col = 0
         return self.get_observation(), self.get_state()
