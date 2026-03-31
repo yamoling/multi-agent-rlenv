@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Generic, Literal, Optional, TypeVar, overload
+from typing import Generic, Literal, Optional, Sequence, TypeVar, overload
 
 import numpy as np
 import numpy.typing as npt
@@ -109,12 +109,6 @@ class Builder(Generic[AS]):
     def available_actions(self):
         """Adds the available actions to the observations extras"""
         self._env = wrappers.AvailableActions(self._env)
-        return self
-
-    def available_actions_mask(self, mask: npt.NDArray[np.bool]):
-        """Masks a subset of the available actions.
-        The mask must have shape (n_agents, n_actions), where any False value will be masked."""
-        self._env = wrappers.AvailableActionsMask(self._env, mask)
         return self
 
     def blind(self, p: float):

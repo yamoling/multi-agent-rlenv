@@ -337,3 +337,26 @@ def test_togym_multi():
 
     with pytest.raises(AssertionError):
         ToGym(catalog.DiscreteMockEnv(n_agents=3))
+
+
+@pytest.mark.skipif(skip_gym, reason="Gymnasium is not installed")
+def test_togym_unavailable_action_default_random():
+    """When the agent performs an action that is unavailable, we should decide what to do !"""
+    from marlenv.adapters import ToGym
+
+    env = marlenv.Builder(catalog.DiscreteMockEnv(n_agents=1, n_actions=5)).mask_actions(0).build()
+    env = ToGym(env)
+    env.reset()
+    env.step(0)  # Random step
+
+
+@pytest.mark.skipif(skip_gym, reason="Gymnasium is not installed")
+def test_togym_unavailable_action_default_error():
+    """When the agent performs an action that is unavailable, we should decide what to do !"""
+    from marlenv.adapters import ToGym
+
+    env = marlenv.Builder(catalog.DiscreteMockEnv(n_agents=1, n_actions=5)).mask_actions(0).build()
+    env = ToGym(env, on_unavailable_action="error")
+    env.reset()
+    with pytest.raises(NotImplementedError):
+        env.step(0)

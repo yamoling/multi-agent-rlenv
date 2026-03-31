@@ -100,7 +100,14 @@ class ToGym(gym.Env[np.ndarray, Any], Generic[S]):
     ToGym can not be serialized as JSON because gymnasium's Box type (among others) is not serializable.
     """
 
-    def __init__(self, env: MARLEnv[S], render_mode: Optional[Literal["human", "rgb_array", "ansi"]] = "human"):
+    on_unavailable_action: Literal["error", "random"]
+
+    def __init__(
+        self,
+        env: MARLEnv[S],
+        render_mode: Optional[Literal["human", "rgb_array", "ansi"]] = "human",
+        on_unavailable_action: Literal["error", "random"] = "random",
+    ):
         assert env.n_agents == 1, "Only single-agent environments can be tunred into gymnasium environments"
         assert env.reward_space.size == 1, "Only single-objective environments can be turned into gymnasium environments"
         if len(env.observation_shape) > 1 and env.extras_size > 0:
@@ -108,6 +115,7 @@ class ToGym(gym.Env[np.ndarray, Any], Generic[S]):
         gym.Env.__init__(self)
         self._env = env
         self.render_mode = render_mode
+        self.on_unavailable_action = on_unavailable_action
         self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=env.observation_shape, dtype=np.float32)
         match env.action_space:
             case DiscreteSpace() as s:
@@ -125,6 +133,13 @@ class ToGym(gym.Env[np.ndarray, Any], Generic[S]):
                 raise NotImplementedError(f"Action space {other} not supported")
 
     def step(self, action) -> tuple[np.ndarray, float, bool, bool, dict[str, Any]]:
+        if isinstance(action, int):
+            available = self._env.available_actions()[0]
+            if not available[action]:
+                if self.on_unavailable_action == "random":
+                    action = self._env.sample_action()[0]
+                else:
+                    raise NotImplementedError("Unavailable action selected. To allow this, set on_unavailable_action to 'random'.")
         action = np.array(action)
         action = np.expand_dims(action, axis=0)
         step = self._env.step(action)

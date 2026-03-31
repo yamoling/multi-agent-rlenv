@@ -1,9 +1,12 @@
+from typing import Optional
+
 import numpy as np
 import pytest
+
 import marlenv
-from marlenv import Builder, catalog, MARLEnv
+from marlenv import Builder, MARLEnv, catalog
 from marlenv.catalog import DiscreteMOMockEnv
-from marlenv.wrappers import AvailableActionsMask, Centralized, DelayedReward, LastAction, TimeLimit, ActionRandomizer, EnvPool
+from marlenv.wrappers import ActionRandomizer, AvailableActionsMask, Centralized, DelayedReward, EnvPool, LastAction, TimeLimit
 
 
 def test_padding():
@@ -437,7 +440,7 @@ def test_potential_shaping():
             self.phi = 10
             super().__init__(env)
 
-        def reset(self):
+        def reset(self, *, seed: Optional[int] = None):
             self.phi = 10
             return super().reset()
 
@@ -556,4 +559,9 @@ def test_incompatible_envs():
     with pytest.raises(AssertionError):
         EnvPool([catalog.DiscreteMockEnv(n_agents=2, n_actions=2), catalog.DiscreteMockEnv(n_agents=3, n_actions=2)])
     with pytest.raises(AssertionError):
-        EnvPool([catalog.DiscreteMockEnv(n_agents=2, n_actions=2, extras_size=10), catalog.DiscreteMockEnv(n_agents=2, n_actions=2, extras_size=1)])
+        EnvPool(
+            [
+                catalog.DiscreteMockEnv(n_agents=2, n_actions=2, extras_size=10),
+                catalog.DiscreteMockEnv(n_agents=2, n_actions=2, extras_size=1),
+            ]
+        )

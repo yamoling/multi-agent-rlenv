@@ -1,5 +1,6 @@
 from collections import deque
 from dataclasses import dataclass
+from typing import Optional
 
 import numpy as np
 import numpy.typing as npt
@@ -21,7 +22,7 @@ class DelayedReward(RLEnvWrapper[AS]):
         self.delay = delay
         self._reward_queue = deque[npt.NDArray[np.float32]](maxlen=delay + 1)
 
-    def reset(self):
+    def reset(self, *, seed: Optional[int] = None):
         self._reward_queue.clear()
         for _ in range(self.delay):
             self._reward_queue.append(np.zeros(self.reward_space.shape, dtype=np.float32))
