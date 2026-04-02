@@ -105,7 +105,9 @@ class CustomEnv(MARLEnv[MultiDiscreteSpace]):
         )
         self.t = 0
 
-    def reset(self):
+    def reset(self, * seed:int|None=None):
+        if seed is not None:
+            self.seed(seed)
         self.t = 0
         return self.get_observation(), self.get_state()
 

@@ -1,9 +1,12 @@
 from dataclasses import dataclass
-from typing import Generic, Optional
-from typing_extensions import TypeVar
+from typing import TYPE_CHECKING, Generic, Literal, Optional, overload
+
 import numpy as np
 import numpy.typing as npt
+from typing_extensions import TypeVar
 
+if TYPE_CHECKING:
+    from torch import Tensor  # pyright: ignore[reportMissingImports]
 
 StateType = TypeVar("StateType", default=npt.NDArray[np.float32])
 
@@ -53,10 +56,20 @@ class State(Generic[StateType]):
             return False
         return True
 
-    def as_tensors(self, device=None):
+    @overload
+    def as_tensors(self, device=None, *, batch_dim: Literal[True]) -> "tuple[Tensor, Tensor]":
+        """Convert the state to a tuple of tensors of shape `(1, *self.shape)`."""
+
+    @overload
+    def as_tensors(self, device=None, *, batch_dim: bool = False) -> "tuple[Tensor, Tensor]":
         """Convert the state to a tuple of tensors of shape `self.shape`."""
+
+    def as_tensors(self, device=None, *, batch_dim=False):
         import torch  # pyright: ignore[reportMissingImports]
 
         data = torch.from_numpy(self.data).to(device, non_blocking=True)
         extras = torch.from_numpy(self.extras).to(device, non_blocking=True)
+        if batch_dim:
+            data = data.unsqueeze(0)
+            extras = extras.unsqueeze(0)
         return data, extras

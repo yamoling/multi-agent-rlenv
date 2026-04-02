@@ -1,10 +1,10 @@
-from typing import Optional, Sequence
-from typing_extensions import TypeVar
 from dataclasses import dataclass
+from typing import Optional, Sequence
+
 import numpy as np
+from typing_extensions import TypeVar
 
-from marlenv.models import MARLEnv, Space, DiscreteSpace, State
-
+from marlenv.models import DiscreteSpace, MARLEnv, Space, State
 
 AS = TypeVar("AS", bound=Space, default=Space)
 
@@ -65,7 +65,7 @@ class RLEnvWrapper(MARLEnv[AS]):
     def step(self, action: np.ndarray | Sequence):
         return self.wrapped.step(action)
 
-    def reset(self):
+    def reset(self, *, seed: Optional[int] = None):
         return self.wrapped.reset()
 
     def get_state(self):

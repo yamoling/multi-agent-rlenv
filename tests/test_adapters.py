@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 import marlenv
-from marlenv import ContinuousSpace, DiscreteMockEnv, MARLEnv, Observation, State, MultiDiscreteSpace
+from marlenv import ContinuousSpace, MARLEnv, MultiDiscreteSpace, Observation, State, catalog
 from marlenv.adapters import PymarlAdapter
 
 skip_gym = not marlenv.adapters.HAS_GYM
@@ -116,6 +116,7 @@ def _check_env_3m(env):
 @pytest.mark.skipif(skip_smac, reason="SMAC is not installed")
 def test_smac_from_class():
     from smac.env import StarCraft2Env  # pyright: ignore[reportMissingImports]
+
     from marlenv.adapters import SMAC
 
     env = SMAC(StarCraft2Env("3m"))
@@ -173,6 +174,7 @@ def test_smac_obs():
 @pytest.mark.skipif(skip_smacv2, reason="SMACv2 is not installed")
 def test_smacv2():
     from smacv2.env.starcraft2.wrapper import StarCraftCapabilityEnvWrapper
+
     from marlenv.adapters import SMACv2
 
     smac_env = StarCraftCapabilityEnvWrapper(
@@ -242,7 +244,7 @@ def test_pymarl():
     OBS_SIZE = 42
     REWARD_STEP = 1
     env = PymarlAdapter(
-        DiscreteMockEnv(
+        catalog.DiscreteMockEnv(
             N_AGENTS,
             n_actions=N_ACTIONS,
             agent_state_size=UNIT_STATE_SIZE,
@@ -281,3 +283,80 @@ def test_pymarl():
     reward, done, _ = env.step([0] * N_AGENTS)
     assert reward == REWARD_STEP
     assert done
+
+
+@pytest.mark.skipif(skip_gym, reason="Gymnasium is not installed")
+def test_from_gym_togym():
+    from gymnasium import make
+
+    from marlenv.adapters import Gym, ToGym
+
+    cartpole = make("CartPole-v1", render_mode="rgb_array")
+    marlenv_cartpole = Gym(cartpole)
+    to_gym = ToGym(marlenv_cartpole, render_mode="rgb_array")
+
+    copy = make("CartPole-v1", render_mode="rgb_array")
+
+    obs1, _ = copy.reset(seed=0)
+    obs2, _ = to_gym.reset(seed=0)
+    assert np.array_equal(obs1, obs2)
+
+    done = False
+    while not done:
+        action = copy.action_space.sample()
+        obs1, r1, done1, trunc1, _ = copy.step(action)
+        obs2, r2, done2, trunc2, _ = to_gym.step(action)
+        assert np.array_equal(obs1, obs2)
+        assert r1 == r2
+        assert done1 == done2
+        assert trunc1 == trunc2
+        done = done1 or trunc1
+
+
+@pytest.mark.skipif(skip_gym, reason="Gymnasium is not installed")
+def test_togym():
+    from marlenv.adapters import ToGym
+
+    env = ToGym(catalog.DiscreteMockEnv(n_agents=1))
+
+    obs, info = env.reset(seed=123)
+    assert isinstance(obs, np.ndarray)
+    assert isinstance(info, dict)
+
+    obs, reward, done, trucated, info = env.step(0)
+    assert isinstance(obs, np.ndarray)
+    assert isinstance(reward, float)
+    assert isinstance(done, bool)
+    assert isinstance(trucated, bool)
+    assert isinstance(info, dict)
+
+
+@pytest.mark.skipif(skip_gym, reason="Gymnasium is not installed")
+def test_togym_multi():
+    from marlenv.adapters import ToGym
+
+    with pytest.raises(AssertionError):
+        ToGym(catalog.DiscreteMockEnv(n_agents=3))
+
+
+@pytest.mark.skipif(skip_gym, reason="Gymnasium is not installed")
+def test_togym_unavailable_action_default_random():
+    """When the agent performs an action that is unavailable, we should decide what to do !"""
+    from marlenv.adapters import ToGym
+
+    env = marlenv.Builder(catalog.DiscreteMockEnv(n_agents=1, n_actions=5)).mask_actions(0).build()
+    env = ToGym(env)
+    env.reset()
+    env.step(0)  # Random step
+
+
+@pytest.mark.skipif(skip_gym, reason="Gymnasium is not installed")
+def test_togym_unavailable_action_default_error():
+    """When the agent performs an action that is unavailable, we should decide what to do !"""
+    from marlenv.adapters import ToGym
+
+    env = marlenv.Builder(catalog.DiscreteMockEnv(n_agents=1, n_actions=5)).mask_actions(0).build()
+    env = ToGym(env, on_unavailable_action="error")
+    env.reset()
+    with pytest.raises(NotImplementedError):
+        env.step(0)

@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, Sequence
+from typing import Any, Sequence, overload
 
 import numpy as np
 import numpy.typing as npt
@@ -57,18 +57,31 @@ class Transition:
         self.next_state = next_state
         self.other = kwargs
 
+    @overload
+    @staticmethod
+    def from_step(prev_obs: Observation, prev_state: State, step: Step, /, **kwargs) -> "Transition": ...
+
+    @overload
+    @staticmethod
+    def from_step(
+        prev_obs: Observation, prev_state: State, action: np.ndarray | Sequence[float], step: Step, /, **kwargs
+    ) -> "Transition": ...
+
     @staticmethod
     def from_step(
         prev_obs: Observation,
         prev_state: State,
-        action: np.ndarray | Sequence[float],
-        step: Step,
+        *action_step,
         **kwargs,
     ):
+        if len(action_step) == 1:
+            step: Step = action_step[0]  # type: ignore
+        else:
+            step: Step = action_step[1]
         return Transition(
             obs=prev_obs,
             state=prev_state,
-            action=action,
+            action=step.action,
             reward=step.reward,
             done=step.done,
             info=step.info,
@@ -84,13 +97,13 @@ class Transition:
         return self.done or self.truncated
 
     @property
-    def n_agents(self) -> int:
+    def n_agents(self):
         """
         The number of agents computed from the number of actions.
 
         Note: this fails if the action does not have a __len__ method.
         """
-        return len(self.action)  # type: ignore
+        return len(self.action)
 
     @property
     def n_actions(self) -> int:
@@ -101,9 +114,9 @@ class Transition:
         obs = self.obs.agent(agent_id, keep_dim)
         next_obs = self.next_obs.agent(agent_id, keep_dim)
         if keep_dim:
-            action = self.action[agent_id : agent_id + 1]  # type: ignore
+            action = self.action[agent_id : agent_id + 1]
         else:
-            action = self.action[agent_id]  # type: ignore
+            action = self.action[agent_id]
         return Transition(
             obs=obs,
             state=self.state,
@@ -125,6 +138,9 @@ class Transition:
             keys = ", ".join(keys)
             raise KeyError(f"Key {key} not found in transition. The availables keys are: {keys}")
         return self.other[key]
+
+    def __setitem__(self, key: str, value: Any):
+        self.other[key] = value
 
     def __hash__(self) -> int:
         ho = hash(self.obs)

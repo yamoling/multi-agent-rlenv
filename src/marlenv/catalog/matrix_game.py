@@ -1,5 +1,8 @@
+from typing import Optional
+
 import numpy as np
-from marlenv import MARLEnv, Observation, DiscreteSpace, State, Step
+
+from marlenv import DiscreteSpace, MARLEnv, Observation, State, Step
 
 
 class MatrixGame(MARLEnv):
@@ -27,7 +30,9 @@ class MatrixGame(MARLEnv):
         self.current_step = 0
         self.payoffs = payoff_matrix
 
-    def reset(self):
+    def reset(self, *, seed: Optional[int] = None):
+        if seed is not None:
+            self.seed(seed)
         self.current_step = 0
         return self.get_observation(), self.get_state()
 
@@ -40,7 +45,7 @@ class MatrixGame(MARLEnv):
     def step(self, action):
         action = list(action)
         self.current_step += 1
-        return Step(self.get_observation(), self.get_state(), self.payoffs[action[0]][action[1]], True)
+        return Step(action, self.get_observation(), self.get_state(), self.payoffs[action[0]][action[1]], True)
 
     def render(self):
         return

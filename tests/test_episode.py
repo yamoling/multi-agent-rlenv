@@ -1,6 +1,8 @@
 import numpy as np
+import pytest
 
-from marlenv import DiscreteMockEnv, Episode, Transition, wrappers
+from marlenv import Episode, Transition, wrappers
+from marlenv.catalog import DiscreteMockEnv
 from marlenv.exceptions import EnvironmentMismatchException, ReplayMismatchException
 
 from .utils import generate_episode
@@ -39,12 +41,27 @@ def test_returns():
         t = Transition(obs, state, [0, 0], r, done, {}, obs, state, False)
         episode.add(t)
     rewards = np.array(rewards, dtype=np.float32)
-    returns = episode.compute_returns(discount=gamma)
+    returns = episode.compute_returns(gamma=gamma)
     for i, r in enumerate(returns):
         G_t = rewards[-1]
         for j in range(len(rewards) - 2, i - 1, -1):
             G_t = rewards[j] + gamma * G_t
         assert all(abs(r - G_t) < 1e-6)
+
+
+def test_returns_with_next_value():
+    env = DiscreteMockEnv(2, end_game=50)
+    obs, state = env.reset()
+    episode = Episode.new(obs, state)
+    gamma = 0.99
+    for _ in range(20):
+        step = env.random_step()
+        episode.add(Transition.from_step(obs, state, [0, 0], step))
+    with pytest.raises(ValueError):
+        episode.compute_returns(gamma)
+    returns = episode.compute_returns(1.0, 0)
+    for i, r in enumerate(returns):
+        assert r == np.sum(episode.rewards[i:]).item()
 
 
 def test_dones_not_set_when_truncated():

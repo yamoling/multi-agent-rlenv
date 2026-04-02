@@ -1,10 +1,12 @@
-from typing import Sequence
-from dataclasses import dataclass
-from typing_extensions import TypeVar
 import random
+from dataclasses import dataclass
+from typing import Optional, Sequence
 
-from marlenv import RLEnvWrapper, MARLEnv
+from typing_extensions import TypeVar
+
 from marlenv.models import Space
+
+from .rlenv_wrapper import MARLEnv, RLEnvWrapper
 
 ActionSpaceType = TypeVar("ActionSpaceType", bound=Space, default=Space)
 
@@ -25,6 +27,6 @@ class EnvPool(RLEnvWrapper[ActionSpaceType]):
         for env in self.envs:
             env.seed(seed_value)
 
-    def reset(self):
+    def reset(self, *, seed: Optional[int] = None):
         self.wrapped = random.choice(self.envs)
         return super().reset()

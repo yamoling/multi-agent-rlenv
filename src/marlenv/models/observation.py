@@ -1,8 +1,11 @@
 from dataclasses import dataclass
-from typing import Optional, Sequence
+from typing import TYPE_CHECKING, Literal, Optional, Sequence, overload
 
 import numpy as np
 import numpy.typing as npt
+
+if TYPE_CHECKING:
+    from torch import Tensor  # pyright: ignore[reportMissingImports]
 
 
 @dataclass
@@ -93,12 +96,27 @@ class Observation:
                 return False
         return np.array_equal(self.extras, other.extras) and np.array_equal(self.available_actions, other.available_actions)
 
-    def as_tensors(self, device=None):
-        """
-        Convert the observation to a tuple of tensors of shape `(n_agents, *self.shape)` and `(n_agents, *self.extras_shape)`.
-        """
+    @overload
+    def as_tensors(self, device=None, *, batch_dim: Literal[True]) -> "tuple[Tensor, Tensor]":
+        """Convert the observation data and extras to a tuple of tensors of shape `(1, n_agents, *self.shape)` and `(1, n_agents, *self.extras_shape)` respectively."""
+
+    @overload
+    def as_tensors(self, device=None, *, batch_dim: bool = False) -> "tuple[Tensor, Tensor]":
+        """Convert the observation data and extras to a tuple of tensors of shape `(n_agents, *self.shape)` and `(n_agents, *self.extras_shape)` respectively."""
+
+    @overload
+    def as_tensors(self, device=None, *, batch_dim: Literal[True], actions: Literal[True]) -> "tuple[Tensor, Tensor, Tensor]":
+        """Convert the observation data, extras and available actions to a tuple of tensors of shape `(1, n_agents, *self.shape)`, `(1, n_agents, *self.extras_shape)` and `(1, n_agents, *self.available_actions_shape)` respectively."""
+
+    def as_tensors(self, device=None, *, batch_dim=False, actions=False):
         import torch  # pyright: ignore[reportMissingImports]
 
         data = torch.from_numpy(self.data).to(device, non_blocking=True)
         extras = torch.from_numpy(self.extras).to(device, non_blocking=True)
-        return data, extras
+        to_return = [data, extras]
+        if actions:
+            available_actions = torch.from_numpy(self.available_actions).to(device, non_blocking=True)
+            to_return.append(available_actions)
+        if batch_dim:
+            to_return = (t.unsqueeze(0) for t in to_return)
+        return tuple(to_return)

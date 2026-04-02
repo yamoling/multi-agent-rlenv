@@ -1,14 +1,16 @@
+import math
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from itertools import product
-from typing import Generic, Optional, Sequence, TypeVar
+from typing import Callable, Generic, Optional, Sequence, TypeVar
 
 import cv2
 import numpy as np
 import numpy.typing as npt
 
+from .episode import Episode
 from .observation import Observation
-from .spaces import ContinuousSpace, Space, DiscreteSpace, MultiDiscreteSpace
+from .spaces import ContinuousSpace, DiscreteSpace, MultiDiscreteSpace, Space
 from .state import State
 from .step import Step
 
@@ -116,6 +118,16 @@ class MARLEnv(ABC, Generic[ActionSpaceType]):
         """The number of objectives in the environment."""
         return self.reward_space.size
 
+    @property
+    def extras_size(self) -> int:
+        """The size of the flattened extras features for a single agent."""
+        return math.prod(self.extras_shape)
+
+    @property
+    def observation_size(self) -> int:
+        """The size of a flattened observation for a single agent."""
+        return math.prod(self.observation_shape)
+
     def sample_action(self):
         """Sample an available action from the action space."""
         match self.action_space:
@@ -164,8 +176,8 @@ class MARLEnv(ABC, Generic[ActionSpaceType]):
         - observations: The observation resulting from the action.
         - state: The new state of the environment.
         - reward: The team reward.
-        - done: Whether the episode is over
-        - truncated: Whether the episode is truncated
+        - done: Whether the episode has reached a terminal state
+        - truncated: Whether the episode is truncated (not a terminal state)
         - info: Extra information
         """
 
@@ -174,7 +186,7 @@ class MARLEnv(ABC, Generic[ActionSpaceType]):
         return self.step(self.sample_action())
 
     @abstractmethod
-    def reset(self) -> tuple[Observation, State]:
+    def reset(self, *, seed: Optional[int] = None) -> tuple[Observation, State]:
         """Reset the environment and return the initial observation and state."""
 
     def render(self):
@@ -200,11 +212,30 @@ class MARLEnv(ABC, Generic[ActionSpaceType]):
         episode = Episode.new(obs, state)
         for action in actions:
             step = self.step(action)
-            episode.add(step, action)
+            episode.add(step)
+        return episode
+
+    def rollout(self, agent: Callable[[Observation], np.ndarray | Sequence]):
+        obs, state = self.reset()
+        episode = Episode.new(obs, state)
+        action = agent(obs)
+        step = self.step(action)
+        while not step.is_terminal:
+            episode.add(step)
+            action = agent(step.obs)
+            step = self.step(action)
+        episode.add(step)
         return episode
 
     def has_same_inouts(self, other: "MARLEnv[ActionSpaceType]") -> bool:
-        """Alias for `have_same_inouts(self, other)`."""
+        """
+        Returns whether the environment has the same input and output shapes as another environment, which includes:
+            - action space
+            - observation shape
+            - state shape
+            - extras shape
+            - reward space
+        """
         if not isinstance(other, MARLEnv):
             return False
         if self.action_space != other.action_space:

@@ -1,11 +1,13 @@
-from abc import abstractmethod, ABC
-from .rlenv_wrapper import RLEnvWrapper
-from marlenv import Space, MARLEnv, Observation
-from typing import TypeVar, Optional
+from abc import ABC, abstractmethod
+from dataclasses import dataclass
+from typing import Optional, TypeVar
+
 import numpy as np
 import numpy.typing as npt
 
-from dataclasses import dataclass
+from marlenv import MARLEnv, Observation, Space
+
+from .rlenv_wrapper import RLEnvWrapper
 
 A = TypeVar("A", bound=Space)
 
@@ -34,7 +36,7 @@ class PotentialShaping(RLEnvWrapper[A], ABC):
         """Add the extras related to potential shaping. Does nothing by default."""
         return obs
 
-    def reset(self):
+    def reset(self, *, seed: Optional[int] = None):
         obs, state = super().reset()
         self._current_potential = self.compute_potential()
         return self.add_extras(obs), state

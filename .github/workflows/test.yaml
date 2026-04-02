@@ -24,6 +24,8 @@ jobs:
           - x86_64
           - aarch64
         python-version: 
+          - '3.10'
+          - '3.11'
           - '3.12'
           - '3.13'
     runs-on: ${{ matrix.os }}
@@ -38,7 +40,7 @@ jobs:
       - name: Install uv
         uses: yezz123/setup-uv@v4
         with:
-          uv-version: 0.9.24
+          uv-version: 0.10.2
       - name: Install dependencies and run pytest
         run: |
           uv sync --extra overcooked --extra gym --extra pettingzoo --extra torch

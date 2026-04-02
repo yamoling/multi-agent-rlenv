@@ -1,9 +1,12 @@
-import numpy as np
 from dataclasses import dataclass
-from marlenv.models import Observation, Space
-from .rlenv_wrapper import RLEnvWrapper, MARLEnv
+from typing import Optional
+
+import numpy as np
 from typing_extensions import TypeVar
 
+from marlenv.models import Observation, Space
+
+from .rlenv_wrapper import MARLEnv, RLEnvWrapper
 
 AS = TypeVar("AS", bound=Space, default=Space)
 
@@ -29,7 +32,7 @@ class PadExtras(RLEnvWrapper[AS]):
         step.obs = self._add_extras(step.obs)
         return step
 
-    def reset(self):
+    def reset(self, *, seed: Optional[int] = None):
         obs, state = super().reset()
         obs = self._add_extras(obs)
         return obs, state
@@ -53,7 +56,7 @@ class PadObservations(RLEnvWrapper[AS]):
         step.obs = self._add_obs(step.obs)
         return step
 
-    def reset(self):
+    def reset(self, *, seed: Optional[int] = None):
         obs, state = super().reset()
         obs = self._add_obs(obs)
         return obs, state

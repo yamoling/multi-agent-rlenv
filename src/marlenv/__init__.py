@@ -45,7 +45,6 @@ from . import wrappers
 from . import adapters
 from .env_builder import Builder
 from .wrappers import RLEnvWrapper
-from .mock_env import DiscreteMockEnv, DiscreteMOMockEnv
 from . import catalog
 from .adapters import make
 
@@ -65,8 +64,6 @@ __all__ = [
     "Transition",
     "DiscreteSpace",
     "ContinuousSpace",
-    "DiscreteMockEnv",
-    "DiscreteMOMockEnv",
     "RLEnvWrapper",
     "Space",
     "MultiDiscreteSpace",

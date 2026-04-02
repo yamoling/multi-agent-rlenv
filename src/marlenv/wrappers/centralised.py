@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from itertools import product
-from typing import Sequence
+from typing import Optional, Sequence
 
 import numpy as np
 import numpy.typing as npt
@@ -27,7 +27,7 @@ class Centralized(RLEnvWrapper[MultiDiscreteSpace]):
             action_space=self._make_joint_action_space(env),
         )
 
-    def reset(self):
+    def reset(self, *, seed: Optional[int] = None):
         obs, state = super().reset()
         return self._joint_observation(obs), state
 

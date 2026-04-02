@@ -1,14 +1,16 @@
 import math
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, TypeVar, Generic
 
 import numpy as np
 import numpy.typing as npt
 
+T = TypeVar("T")
+
 
 @dataclass
-class Space[T](ABC):
+class Space(ABC, Generic[T]):
     shape: tuple[int, ...]
     size: int
     labels: list[str]

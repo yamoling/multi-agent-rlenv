@@ -56,7 +56,7 @@ class VideoRecorder(RLEnvWrapper[AS]):
             self._recorder.release()
         return step
 
-    def reset(self):
+    def reset(self, *, seed: Optional[int] = None):
         res = super().reset()
         image = self.get_image()
         height, width, _ = image.shape

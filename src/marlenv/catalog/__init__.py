@@ -11,20 +11,35 @@ from marlenv import catalog
 
 env1 = catalog.DeepSea(max_depth=5)
 env2 = catalog.CoordinatedGrid()
-env3 = catalog.connect_n()(width=7, height=6, n=4)
+env3 = catalog.ConnectN(width=7, height=6, n=4)
 env4 = catalog.smac()("3m")
+env5 = catalog.lle().level(6).build()
 ```
 
 Optional entries such as `smac`, `lle`, and `overcooked` require installing their
 corresponding extras (e.g., `multi-agent-rlenv[smac]`, `multi-agent-rlenv[lle]`, `multi-agent-rlenv[overcooked]`).
 """
 
+from .mock_env import DiscreteMockEnv, DiscreteMOMockEnv
+from .two_steps import TwoSteps
 from .deepsea import DeepSea
 from .matrix_game import MatrixGame
 from .coordinated_grid import CoordinatedGrid
+from .connectn import ConnectN
 
 
-__all__ = ["smac", "DeepSea", "lle", "overcooked", "MatrixGame", "connect_n", "CoordinatedGrid"]
+__all__ = [
+    "smac",
+    "DeepSea",
+    "lle",
+    "overcooked",
+    "MatrixGame",
+    "CoordinatedGrid",
+    "TwoSteps",
+    "DiscreteMockEnv",
+    "DiscreteMOMockEnv",
+    "ConnectN",
+]
 
 
 def smac():
@@ -72,13 +87,3 @@ def overcooked():
     from overcooked import Overcooked  # pyright: ignore[reportMissingImports]
 
     return Overcooked
-
-
-def connect_n():
-    """
-    Returns the `ConnectN` environment class.
-    """
-
-    from .connectn import ConnectN
-
-    return ConnectN

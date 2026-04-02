@@ -5,7 +5,7 @@ import numpy as np
 
 from marlenv.models import Observation, State
 
-from .rlenv_wrapper import MARLEnv, RLEnvWrapper, AS
+from .rlenv_wrapper import AS, MARLEnv, RLEnvWrapper
 
 
 @dataclass
@@ -57,7 +57,7 @@ class TimeLimit(RLEnvWrapper[AS]):
         assert truncation_penalty >= 0, "The truncation penalty must be a positive value."
         self.truncation_penalty = truncation_penalty
 
-    def reset(self):
+    def reset(self, *, seed: Optional[int] = None):
         self._current_step = 0
         obs, state = super().reset()
         if self.add_extra:

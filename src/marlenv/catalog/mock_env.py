@@ -1,6 +1,9 @@
-import numpy as np
 from dataclasses import dataclass
-from marlenv import MARLEnv, Observation, ContinuousSpace, Step, State, DiscreteSpace, MultiDiscreteSpace
+from typing import Optional
+
+import numpy as np
+
+from marlenv import ContinuousSpace, DiscreteSpace, MARLEnv, MultiDiscreteSpace, Observation, State, Step
 
 
 @dataclass
@@ -45,7 +48,9 @@ class DiscreteMockEnv(MARLEnv[MultiDiscreteSpace]):
     def agent_state_size(self):
         return self._agent_state_size
 
-    def reset(self):
+    def reset(self, *, seed: Optional[int] = None):
+        if seed is not None:
+            self.seed(seed)
         self.t = 0
         self._seed += 1
         return self.get_observation(), self.get_state()
@@ -77,6 +82,7 @@ class DiscreteMockEnv(MARLEnv[MultiDiscreteSpace]):
         self.t += 1
         self.actions_history.append(action)
         return Step(
+            action,
             self.get_observation(),
             self.get_state(),
             self.reward_step,
@@ -84,7 +90,7 @@ class DiscreteMockEnv(MARLEnv[MultiDiscreteSpace]):
         )
 
 
-class DiscreteMOMockEnv(MARLEnv[DiscreteSpace]):
+class DiscreteMOMockEnv(MARLEnv[MultiDiscreteSpace]):
     """Multi-Objective Mock Environment"""
 
     def __init__(
@@ -100,7 +106,7 @@ class DiscreteMOMockEnv(MARLEnv[DiscreteSpace]):
     ) -> None:
         super().__init__(
             n_agents,
-            DiscreteSpace(n_actions),
+            DiscreteSpace(n_actions).repeat(n_agents),
             (obs_size,),
             (n_agents * agent_state_size,),
             extras_shape=(extras_size,),
@@ -118,7 +124,9 @@ class DiscreteMOMockEnv(MARLEnv[DiscreteSpace]):
     def agent_state_size(self):
         return self._agent_state_size
 
-    def reset(self):
+    def reset(self, *, seed: Optional[int] = None):
+        if seed is not None:
+            self.seed(seed)
         self.t = 0
         return self.get_observation(), self.get_state()
 
@@ -139,6 +147,7 @@ class DiscreteMOMockEnv(MARLEnv[DiscreteSpace]):
         self.t += 1
         self.actions_history.append(action)
         return Step(
+            action,
             self.get_observation(),
             self.get_state(),
             self.reward_step,

@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from functools import cached_property
-from typing import Any, Callable, Optional, Sequence, overload
+from typing import TYPE_CHECKING, Any, Callable, Optional, Sequence, overload
+import logging
 
 import cv2
 import numpy as np
@@ -9,14 +10,16 @@ import numpy.typing as npt
 from marlenv.exceptions import EnvironmentMismatchException, ReplayMismatchException
 from marlenv.utils import CachedPropertyInvalidator
 
-from .env import MARLEnv
 from .observation import Observation
 from .state import State
 from .step import Step
 from .transition import Transition
 
+if TYPE_CHECKING:
+    from .env import MARLEnv
 
-@dataclass
+
+@dataclass(repr=False)
 class Episode(CachedPropertyInvalidator):
     """Episode model made of observations, actions, rewards, ..."""
 
@@ -213,11 +216,11 @@ class Episode(CachedPropertyInvalidator):
 
     def replay(
         self,
-        env: MARLEnv,
+        env: "MARLEnv",
         seed: Optional[int] = None,
         *,
-        after_reset: Optional[Callable[[Observation, State, MARLEnv], None]] = None,
-        after_step: Optional[Callable[[int, Step, MARLEnv], None]] = None,
+        after_reset: "Optional[Callable[[Observation, State, MARLEnv], None]]" = None,
+        after_step: "Optional[Callable[[int, Step, MARLEnv], None]]" = None,
     ):
         """
         Replay the episode in the environment (i.e. perform the actions) and assert that the outcomes match.
@@ -247,7 +250,7 @@ class Episode(CachedPropertyInvalidator):
             if after_step is not None:
                 after_step(i, step, env)
 
-    def get_images(self, env: MARLEnv, seed: Optional[int] = None) -> list[np.ndarray]:
+    def get_images(self, env: "MARLEnv", seed: Optional[int] = None) -> list[np.ndarray]:
         images = []
 
         def collect_image(*_, **__):
@@ -256,7 +259,7 @@ class Episode(CachedPropertyInvalidator):
         self.replay(env, seed, after_reset=collect_image, after_step=collect_image)
         return images
 
-    def render(self, env: MARLEnv, seed: Optional[int] = None, fps: int = 5):
+    def render(self, env: "MARLEnv", seed: Optional[int] = None, fps: int = 5):
         def render_callback(*_, **__):
             env.render()
             cv2.waitKey(1000 // fps)
@@ -269,6 +272,9 @@ class Episode(CachedPropertyInvalidator):
     def __len__(self):
         return self.episode_len
 
+    def __repr__(self):
+        return f"Episode(len={self.episode_len}, is_done={self.is_done}, is_truncated={self.is_truncated}, metrics={self.metrics})"
+
     @property
     def score(self) -> list[float]:
         """The episode score (sum of all rewards across all objectives)"""
@@ -278,46 +284,49 @@ class Episode(CachedPropertyInvalidator):
                 score.append(value)
         return score
 
-    def compute_returns(self, discount: float = 1.0):
+    def compute_returns(self, gamma: float, next_value: Optional[npt.NDArray[np.float32] | float] = None):
         """Compute the returns (discounted sum of future rewards) of the episode at each time step"""
-        returns = np.zeros_like(self.rewards)
-        returns[-1] = self.rewards[-1]
-        for t in range(len(self.rewards) - 2, -1, -1):
-            returns[t] = self.rewards[t] + discount * returns[t + 1]
-        return returns
+        if self.is_done:
+            if next_value is not None:
+                logging.warning("Next value provided for a done episode in `compute_returns`. Ignoring the provided it.")
+            next_value = np.zeros_like(self.rewards[0])
+        else:
+            if next_value is None:
+                raise ValueError("Next value must be provided for a non-done episode in `compute_returns`.")
+        returns = [self.rewards[0] + gamma * next_value] * (self.episode_len - 1) + [self.rewards[-1]]
+        for t in range(self.episode_len - 2, -1, -1):
+            returns[t] = self.rewards[t] + gamma * returns[t + 1]
+        return np.array(returns, dtype=np.float32)
 
     @overload
     def add(self, transition: Transition, /): ...
 
     @overload
-    def add(self, step: Step, action: np.ndarray, /): ...
+    def add(self, step: Step, /): ...
 
-    def add(self, *data):
-        match data:
-            case (Transition() as transition,):
-                self.add_data(
-                    transition.next_obs,
-                    transition.next_state,
-                    transition.action,
-                    transition.reward,
-                    transition.other,
-                    transition.done,
-                    transition.truncated,
-                    transition.info,
-                )
-            case (Step() as step, action):
-                self.add_data(
-                    step.obs,
-                    step.state,
-                    action,
-                    step.reward,
-                    {},
-                    step.done,
-                    step.truncated,
-                    step.info,
-                )
-            case other:
-                raise ValueError(f"Invalid arguments: {other}")
+    def add(self, data: Transition | Step):
+        if isinstance(data, Transition):
+            self.add_data(
+                data.next_obs,
+                data.next_state,
+                data.action,
+                data.reward,
+                data.other,
+                data.done,
+                data.truncated,
+                data.info,
+            )
+        else:
+            self.add_data(
+                data.obs,
+                data.state,
+                data.action,
+                data.reward,
+                {},
+                data.done,
+                data.truncated,
+                data.info,
+            )
 
     def add_data(
         self,

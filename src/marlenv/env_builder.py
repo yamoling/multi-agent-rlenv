@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Generic, Literal, Optional, TypeVar, overload
+from typing import Generic, Literal, Optional, Sequence, TypeVar, overload
 
 import numpy as np
 import numpy.typing as npt
@@ -111,15 +111,14 @@ class Builder(Generic[AS]):
         self._env = wrappers.AvailableActions(self._env)
         return self
 
-    def available_actions_mask(self, mask: npt.NDArray[np.bool]):
-        """Masks a subset of the available actions.
-        The mask must have shape (n_agents, n_actions), where any False value will be masked."""
-        self._env = wrappers.AvailableActionsMask(self._env, mask)
-        return self
-
     def blind(self, p: float):
         """Blinds (replaces with zeros) the observations with probability p"""
         self._env = wrappers.Blind(self._env, p)  # type: ignore
+        return self
+
+    def randomize_actions(self, p: list[float] | float | npt.NDArray[np.float32]):
+        """Randomizes the actions with probability 0 <= p <= 1. The length of p must be equal to the number of agents."""
+        self._env = wrappers.ActionRandomizer(self._env, p)  # type: ignore
         return self
 
     def time_penalty(self, penalty: float):

@@ -1,11 +1,12 @@
+import logging
 from dataclasses import dataclass
-from typing import overload
+from typing import Optional, overload
 
 import numpy as np
 import numpy.typing as npt
 from smac.env import StarCraft2Env
 
-from marlenv.models import MARLEnv, Observation, State, Step, MultiDiscreteSpace, DiscreteSpace
+from marlenv.models import DiscreteSpace, MARLEnv, MultiDiscreteSpace, Observation, State, Step
 
 
 @dataclass
@@ -165,7 +166,9 @@ class SMAC(MARLEnv[MultiDiscreteSpace]):
         self._seed = self._env.seed()
         self.name = f"smac-{self._env.map_name}"
 
-    def reset(self):
+    def reset(self, *, seed: Optional[int] = None):
+        if seed is not None:
+            logging.warning("SMAC does not support seeding after initialization. Ignoring seed argument.")
         obs, state = self._env.reset()
         obs = Observation(np.array(obs), self.available_actions())
         state = State(state)
@@ -179,7 +182,15 @@ class SMAC(MARLEnv[MultiDiscreteSpace]):
 
     def step(self, action):
         reward, done, info = self._env.step(action)
-        return Step(self.get_observation(), self.get_state(), reward, done, False, info)
+        return Step(
+            np.array(action),
+            self.get_observation(),
+            self.get_state(),
+            reward,
+            done,
+            False,
+            info,
+        )
 
     def available_actions(self) -> npt.NDArray[np.bool]:
         return np.array(self._env.get_avail_actions()) == 1

@@ -1,9 +1,12 @@
-import numpy as np
-from marlenv.models import MARLEnv, Space
 from dataclasses import dataclass
-from .rlenv_wrapper import RLEnvWrapper
+from typing import Optional
 
+import numpy as np
 from typing_extensions import TypeVar
+
+from marlenv.models import MARLEnv, Space
+
+from .rlenv_wrapper import RLEnvWrapper
 
 AS = TypeVar("AS", bound=Space, default=Space)
 
@@ -23,7 +26,7 @@ class AgentId(RLEnvWrapper[AS]):
         step.obs.add_extra(self._identity)
         return step
 
-    def reset(self):
+    def reset(self, *, seed: Optional[int] = None):
         obs, state = super().reset()
         obs.add_extra(self._identity)
         return obs, state

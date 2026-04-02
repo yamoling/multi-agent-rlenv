@@ -1,7 +1,9 @@
-import numpy as np
 import itertools
-from marlenv import MARLEnv, DiscreteSpace, Observation, State, Step
+from typing import Optional
 
+import numpy as np
+
+from marlenv import DiscreteSpace, MARLEnv, Observation, State, Step
 
 N_ROWS = 11
 N_COLS = 12
@@ -34,7 +36,9 @@ class CoordinatedGrid(MARLEnv):
         self.agents_location = [[0, 0], [N_ROWS - 1, N_COLS - 1]]
         self.time_penalty = time_penalty
 
-    def reset(self):
+    def reset(self, *, seed: Optional[int] = None):
+        if seed is not None:
+            self.seed(seed)
         self.agents_location = [[0, 0], [N_ROWS - 1, N_COLS - 1]]
         self._episode_steps = 0
         return self.get_observation(), self.get_state()
@@ -118,7 +122,7 @@ class CoordinatedGrid(MARLEnv):
             env_info = {"battle_won": True}
         else:
             reward = 0
-        return Step(self.get_observation(), self.get_state(), reward, terminated, terminated, env_info)
+        return Step(action, self.get_observation(), self.get_state(), reward, terminated, terminated, env_info)
 
     def n_agents_arrived(self):
         n = 0

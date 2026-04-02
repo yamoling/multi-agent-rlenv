@@ -1,15 +1,27 @@
 from .rlenv_wrapper import RLEnvWrapper, AS, MARLEnv
 import numpy as np
+import numpy.typing as npt
+from dataclasses import dataclass
 
 
+@dataclass
 class ActionRandomizer(RLEnvWrapper[AS]):
-    def __init__(self, env: MARLEnv[AS], p: float):
+    p: npt.NDArray[np.float32]
+
+    def __init__(self, env: MARLEnv[AS], p: float | list[float] | npt.NDArray[np.float32]):
         super().__init__(env)
+        if isinstance(p, (float, int)):
+            p = np.full(self.n_agents, p, dtype=np.float32)
+        elif isinstance(p, list):
+            p = np.array(p, dtype=np.float32)
+        assert p.shape == (self.n_agents,), "p must be a float or a list/array of floats with length equal to n_agents"
+        assert np.all((0.0 <= p) & (p <= 1.0)), "Probabilities must be between 0 and 1"
         self.p = p
 
     def step(self, action):
-        if np.random.rand() < self.p:
-            action = self.action_space.sample()
+        replacements = self.action_space.sample(self.available_actions())
+        randomize_mask = np.random.rand(self.n_agents) < self.p
+        action = np.where(randomize_mask, replacements, action)
         return super().step(action)
 
     def seed(self, seed_value: int):

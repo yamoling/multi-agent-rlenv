@@ -1,9 +1,12 @@
+from dataclasses import dataclass
+from typing import Optional
+
 import numpy as np
 from typing_extensions import TypeVar
-from marlenv.models import Space, MARLEnv
-from .rlenv_wrapper import RLEnvWrapper
-from dataclasses import dataclass
 
+from marlenv.models import MARLEnv, Space
+
+from .rlenv_wrapper import RLEnvWrapper
 
 AS = TypeVar("AS", bound=Space, default=Space)
 
@@ -16,7 +19,7 @@ class AvailableActions(RLEnvWrapper[AS]):
         meanings = env.extras_meanings + [f"{a} available" for a in env.action_space.labels]
         super().__init__(env, extra_shape=(env.extras_shape[0] + env.n_actions,), extra_meanings=meanings)
 
-    def reset(self):
+    def reset(self, *, seed: Optional[int] = None):
         obs, state = self.wrapped.reset()
         obs.add_extra(self.available_actions().astype(np.float32))
         return obs, state
