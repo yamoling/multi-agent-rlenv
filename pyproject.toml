@@ -1,6 +1,6 @@
 [project]
 name = "multi-agent-rlenv"
-version = "4.0.5"
+version = "4.1.0"
 description = "A strongly typed Multi-Agent Reinforcement Learning framework"
 readme = "README.md"
 requires-python = ">=3.10, <4"
@@ -49,7 +49,7 @@ packages = ["src/marlenv"]
 filterwarnings = [
   "ignore::DeprecationWarning",
   "ignore::RuntimeWarning",
-  "ignore::UserWarning"
+  "ignore::UserWarning",
 ]
 pythonpath = ["src"]
 testpaths = ["tests"]
