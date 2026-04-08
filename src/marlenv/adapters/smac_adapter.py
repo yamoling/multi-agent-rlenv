@@ -181,7 +181,7 @@ class SMAC(MARLEnv[MultiDiscreteSpace]):
         return State(self._env.get_state())
 
     def step(self, action):
-        reward, done, info = self._env.step(action)
+        reward, done, info = self._env.step(np.array(action))
         return Step(
             np.array(action),
             self.get_observation(),

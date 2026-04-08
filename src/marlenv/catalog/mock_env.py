@@ -82,7 +82,7 @@ class DiscreteMockEnv(MARLEnv[MultiDiscreteSpace]):
         self.t += 1
         self.actions_history.append(action)
         return Step(
-            action,
+            np.array(action),
             self.get_observation(),
             self.get_state(),
             self.reward_step,
@@ -147,7 +147,7 @@ class DiscreteMOMockEnv(MARLEnv[MultiDiscreteSpace]):
         self.t += 1
         self.actions_history.append(action)
         return Step(
-            action,
+            np.array(action),
             self.get_observation(),
             self.get_state(),
             self.reward_step,

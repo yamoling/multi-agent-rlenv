@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Literal, Optional, Sequence, overload
+from deprecated import deprecated
 
 import numpy as np
 import numpy.typing as npt
@@ -42,7 +43,7 @@ class Observation:
         """Append an extra feature to the observation"""
         self.extras = np.concatenate((self.extras, extra), axis=1)
 
-    def agent(self, agent_id: int, keep_dim: bool = True) -> "Observation":
+    def of_agent(self, agent_id: int, keep_dim: bool = True) -> "Observation":
         """
         Return the observation of the given agent.
 
@@ -60,6 +61,13 @@ class Observation:
             extras=self.extras[agent_id],
             available_actions=self.available_actions[agent_id],
         )
+
+    @deprecated(reason="Use `of_agent` instead")
+    def agent(self, agent_id: int, keep_dim: bool = True):
+        """
+        See `of_agent`. This method is deprecated and will be removed in a future version.
+        """
+        return self.of_agent(agent_id, keep_dim)
 
     @property
     def forbidden_actions(self):

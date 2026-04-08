@@ -95,6 +95,7 @@ class CoordinatedGrid(MARLEnv):
         return avail_actions
 
     def step(self, action):
+        action = np.array(action)
         for idx, action in enumerate(action):
             match action:
                 case 0:
