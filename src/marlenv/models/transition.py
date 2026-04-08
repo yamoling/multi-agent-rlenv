@@ -15,7 +15,7 @@ class Transition:
 
     obs: Observation
     state: State
-    action: np.ndarray
+    action: npt.ArrayLike
     reward: npt.NDArray[np.float32]
     done: bool
     info: dict[str, Any]
@@ -28,7 +28,7 @@ class Transition:
         self,
         obs: Observation,
         state: State,
-        action: np.ndarray | Sequence[float],
+        action: npt.ArrayLike | Sequence[float],
         reward: npt.NDArray[np.float32] | float | Sequence[float],
         done: bool,
         info: dict[str, Any],
@@ -64,7 +64,7 @@ class Transition:
     @overload
     @staticmethod
     def from_step(
-        prev_obs: Observation, prev_state: State, action: np.ndarray | Sequence[float], step: Step, /, **kwargs
+        prev_obs: Observation, prev_state: State, action: npt.ArrayLike | Sequence[float], step: Step, /, **kwargs
     ) -> "Transition": ...
 
     @staticmethod
@@ -99,11 +99,9 @@ class Transition:
     @property
     def n_agents(self):
         """
-        The number of agents computed from the number of actions.
-
-        Note: this fails if the action does not have a __len__ method.
+        The number of agents computed from the observation shape.
         """
-        return len(self.action)
+        return self.obs.data.shape[0]
 
     @property
     def n_actions(self) -> int:
@@ -113,10 +111,11 @@ class Transition:
         """Return a transition for a single agent"""
         obs = self.obs.agent(agent_id, keep_dim)
         next_obs = self.next_obs.agent(agent_id, keep_dim)
+        action = np.array(self.action)
         if keep_dim:
-            action = self.action[agent_id : agent_id + 1]
+            action = action[agent_id : agent_id + 1]
         else:
-            action = self.action[agent_id]
+            action = action[agent_id]
         return Transition(
             obs=obs,
             state=self.state,

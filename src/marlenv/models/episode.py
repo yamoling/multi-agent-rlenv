@@ -25,7 +25,7 @@ class Episode(CachedPropertyInvalidator):
 
     all_observations: list[npt.NDArray[np.float32]]
     all_extras: list[npt.NDArray[np.float32]]
-    actions: list[npt.NDArray]
+    actions: list[npt.ArrayLike]
     rewards: list[npt.NDArray[np.float32]]
     all_available_actions: list[npt.NDArray[np.bool]]
     all_states: list[npt.NDArray[np.float32]]

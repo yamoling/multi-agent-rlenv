@@ -39,9 +39,9 @@ class Observation:
         else:
             self.extras = np.zeros((self.n_agents, 0), dtype=np.float32)
 
-    def add_extra(self, extra: list[list[float]] | npt.NDArray[np.float32]):
+    def add_extra(self, extra: list[list[float]] | npt.ArrayLike):
         """Append an extra feature to the observation"""
-        self.extras = np.concatenate((self.extras, extra), axis=1)
+        self.extras = np.concatenate((self.extras, extra), axis=1, dtype=np.float32)
 
     def of_agent(self, agent_id: int, keep_dim: bool = True) -> "Observation":
         """
