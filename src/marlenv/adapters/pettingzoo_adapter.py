@@ -46,7 +46,8 @@ class PettingZoo(MARLEnv[Space]):
             assert self.last_observation is not None, "Cannot get the state unless there is a previous observation"
             return State(self.last_observation.data)
 
-    def step(self, action: npt.NDArray | Sequence):
+    def step(self, action: npt.ArrayLike | Sequence):
+        action = np.array(action)
         action_dict = dict(zip(self.agents, action))
         obs, reward, term, trunc, info = self._pz_env.step(action_dict)
         obs_data = np.array([v for v in obs.values()])

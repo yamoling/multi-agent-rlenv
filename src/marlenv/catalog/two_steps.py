@@ -54,7 +54,8 @@ class TwoSteps(marlenv.MARLEnv):
         self.state = TwoStepsState.INITIAL
         return self.observation(), self.get_state()
 
-    def step(self, action: npt.NDArray[np.int32] | Sequence):
+    def step(self, action: npt.ArrayLike | Sequence[int]):
+        action = np.array(action)
         match self.state:
             case TwoStepsState.INITIAL:
                 # In the initial step, only agent 0's actions have an influence on the state

@@ -22,7 +22,8 @@ class ConnectN(MARLEnv[MultiDiscreteSpace]):
         self.board.clear()
         return self.get_observation(), self.get_state()
 
-    def step(self, action: Sequence[int] | npt.NDArray[np.uint32]):
+    def step(self, action: Sequence[int] | npt.ArrayLike):
+        action = np.array(action)
         match self.board.play(action[0]):
             case StepResult.NOTHING:
                 done = False

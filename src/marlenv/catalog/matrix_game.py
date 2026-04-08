@@ -43,7 +43,7 @@ class MatrixGame(MARLEnv):
         )
 
     def step(self, action):
-        action = list(action)
+        action = np.array(action)
         self.current_step += 1
         return Step(action, self.get_observation(), self.get_state(), self.payoffs[action[0]][action[1]], True)
 

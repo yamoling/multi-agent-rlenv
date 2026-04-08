@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import Optional, Sequence
 
 import numpy as np
+import numpy.typing as npt
 
 from marlenv import DiscreteSpace, MARLEnv, MultiDiscreteSpace, Observation, State, Step
 
@@ -48,7 +49,8 @@ class DeepSea(MARLEnv[MultiDiscreteSpace]):
         self._col = 0
         return self.get_observation(), self.get_state()
 
-    def step(self, action: Sequence[int] | np.ndarray):
+    def step(self, action: Sequence[int] | npt.ArrayLike):
+        action = np.array(action)
         self._row += 1
         if action[0] == LEFT:
             self._col -= 1

@@ -169,7 +169,7 @@ class MARLEnv(ABC, Generic[ActionSpaceType]):
         raise NotImplementedError("Method not implemented")
 
     @abstractmethod
-    def step(self, action: Sequence | np.ndarray) -> Step:
+    def step(self, action: Sequence | npt.ArrayLike) -> Step:
         """Perform a step in the environment.
 
         Returns a Step object that can be unpacked as a 6-tuple containing:

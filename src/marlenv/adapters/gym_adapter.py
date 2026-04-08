@@ -48,7 +48,8 @@ class Gym(MARLEnv[Space]):
         return self._last_obs
 
     def step(self, action):
-        obs, reward, done, truncated, info = self._gym_env.step(list(action)[0])
+        action = np.array(action)
+        obs, reward, done, truncated, info = self._gym_env.step(action.item())
         self._last_obs = Observation(
             np.array([obs], dtype=np.float32),
             self.available_actions(),
