@@ -1,6 +1,7 @@
 import pytest
+
 from marlenv import catalog
-from marlenv.utils import dummy_type, dummy_function
+from marlenv.utils import dummy_function, dummy_type
 
 try:
     catalog.lle()
@@ -48,3 +49,85 @@ def test_dummy_function():
         assert False, "Expected ImportError upon usage because dummy_function is not installed"
     except ImportError:
         pass
+
+
+def test_m_steps_matrix_optimal_path():
+    from marlenv.catalog.m_steps_matrix import Action
+
+    env = catalog.MStepsMatrix(10)
+    actions = [Action.TOP_LEFT] * 9 + [Action.BOTTOM_RIGHT]
+    for _ in range(5):
+        env.reset()
+        score = 0
+        for action in actions:
+            step = env.step(action.to_tuple())
+            score += step.reward.item()
+        assert score == 13
+
+
+def test_m_steps_matrix_suboptimal_path_left():
+    from marlenv.catalog.m_steps_matrix import Action
+
+    env = catalog.MStepsMatrix(10)
+    env.reset()
+    actions = [Action.TOP_LEFT] * 9
+    last_actions = [Action.TOP_LEFT, Action.TOP_RIGHT, Action.BOTTOM_LEFT]
+    for last in last_actions:
+        env.reset()
+        score = 0
+        for action in actions:
+            step = env.step(action.to_tuple())
+            score += step.reward.item()
+        step = env.step(last.to_tuple())
+        score += step.reward.item()
+        assert score == 10
+
+
+def test_m_steps_matrix_suboptimal_path_right():
+    from marlenv.catalog.m_steps_matrix import Action
+
+    env = catalog.MStepsMatrix(10)
+    env.reset()
+    actions = [Action.BOTTOM_RIGHT] * 9
+    for last in Action:
+        env.reset()
+        score = 0
+        for action in actions:
+            step = env.step(action.to_tuple())
+            score += step.reward.item()
+        step = env.step(last.to_tuple())
+        score += step.reward.item()
+        assert score == 10
+
+
+def test_m_steps_other_paths():
+    from marlenv.catalog.m_steps_matrix import Action
+
+    env = catalog.MStepsMatrix(10)
+    env.reset()
+    assert env.step(Action.TOP_RIGHT.to_tuple()).done
+    env.reset()
+    assert env.step(Action.BOTTOM_LEFT.to_tuple()).done
+
+    # Test left path
+    for i in range(8):
+        for last_action in [Action.TOP_RIGHT, Action.BOTTOM_LEFT, Action.BOTTOM_RIGHT]:
+            env.reset()
+            actions = [Action.TOP_LEFT] * (i + 1)
+            for action in actions:
+                step = env.step(action.to_tuple())
+                assert not step.is_terminal
+            step = env.step(last_action.to_tuple())
+            assert step.done
+            assert step.reward.item() == 0
+    # Test right path
+    for i in range(8):
+        for last_action in [Action.TOP_LEFT, Action.TOP_RIGHT, Action.BOTTOM_LEFT]:
+            env.reset()
+            actions = [Action.BOTTOM_RIGHT] * (i + 1)
+            for action in actions:
+                step = env.step(action.to_tuple())
+                assert not step.is_terminal
+            step = env.step(last_action.to_tuple())
+            assert step.done
+            assert step.reward.item() == 0

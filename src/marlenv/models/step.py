@@ -37,7 +37,7 @@ class Step:
 
     def __init__(
         self,
-        action: npt.NDArray | Sequence,
+        action: npt.ArrayLike | Sequence,
         obs: Observation,
         state: State,
         reward: npt.NDArray[np.float32] | float | Sequence[float],
