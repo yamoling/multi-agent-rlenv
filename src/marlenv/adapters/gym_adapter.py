@@ -1,6 +1,6 @@
 import sys
 from dataclasses import dataclass
-from typing import Any, Generic, Literal, Optional, TypeVar
+from typing import Any, Generic, Literal, TypeVar
 
 import cv2
 import gymnasium as gym
@@ -67,7 +67,7 @@ class Gym(MARLEnv[Space]):
     def get_state(self):
         return State(np.zeros(1, dtype=np.float32))
 
-    def reset(self, *, seed: Optional[int] = None):
+    def reset(self, *, seed: int | None = None):
         obs_data, _info = self._gym_env.reset(seed=seed)
         self._last_obs = Observation(
             np.array([obs_data], dtype=np.float32),
@@ -106,7 +106,7 @@ class ToGym(gym.Env[np.ndarray, Any], Generic[S]):
     def __init__(
         self,
         env: MARLEnv[S],
-        render_mode: Optional[Literal["human", "rgb_array", "ansi"]] = "human",
+        render_mode: Literal["human", "rgb_array", "ansi"] | None = "human",
         on_unavailable_action: Literal["error", "random"] = "random",
     ):
         assert env.n_agents == 1, "Only single-agent environments can be tunred into gymnasium environments"

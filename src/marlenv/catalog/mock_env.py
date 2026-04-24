@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Optional
 
 import numpy as np
 
@@ -48,7 +47,7 @@ class DiscreteMockEnv(MARLEnv[MultiDiscreteSpace]):
     def agent_state_size(self):
         return self._agent_state_size
 
-    def reset(self, *, seed: Optional[int] = None):
+    def reset(self, *, seed: int | None = None):
         if seed is not None:
             self.seed(seed)
         self.t = 0
@@ -124,7 +123,7 @@ class DiscreteMOMockEnv(MARLEnv[MultiDiscreteSpace]):
     def agent_state_size(self):
         return self._agent_state_size
 
-    def reset(self, *, seed: Optional[int] = None):
+    def reset(self, *, seed: int | None = None):
         if seed is not None:
             self.seed(seed)
         self.t = 0

@@ -1,5 +1,3 @@
-from typing import Optional
-
 import numpy as np
 import pytest
 
@@ -24,6 +22,16 @@ def test_padding():
     env.reset()
     for _ in range(10):
         env.step(env.action_space.sample())
+
+
+def test_extras_padding_labels():
+    PAD_SIZE = 2
+    mock = catalog.DiscreteMockEnv(5)
+    env = Builder(mock).pad("extra", PAD_SIZE, label="the-extras").build()
+    assert all(m.startswith("the-extras") for m in env.extras_meanings)
+
+    env = Builder(mock).pad("extra", PAD_SIZE).build()
+    assert all(m.startswith("Padding") for m in env.extras_meanings)
 
 
 def test_available_actions():
@@ -320,6 +328,12 @@ def test_mask_actions_builder_errors_all_actions_masked():
         pass
 
 
+def test_mask_actions_builder_from_bool_mask():
+    mock = catalog.DiscreteMockEnv()
+    mask = [i % 2 == 0 for i in range(mock.n_actions)]
+    _ = Builder(mock).mask_actions(mask).build()
+
+
 def test_wrapper_reward_shape():
     mock = DiscreteMOMockEnv(1)
     env = Builder(mock).time_penalty(0.1).last_action().available_actions().build()
@@ -440,7 +454,7 @@ def test_potential_shaping():
             self.phi = 10
             super().__init__(env)
 
-        def reset(self, *, seed: Optional[int] = None):
+        def reset(self, *, seed: int | None = None):
             self.phi = 10
             return super().reset()
 

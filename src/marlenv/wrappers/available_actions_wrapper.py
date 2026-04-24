@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Optional
 
 import numpy as np
 from typing_extensions import TypeVar
@@ -19,7 +18,7 @@ class AvailableActions(RLEnvWrapper[AS]):
         meanings = env.extras_meanings + [f"{a} available" for a in env.action_space.labels]
         super().__init__(env, extra_shape=(env.extras_shape[0] + env.n_actions,), extra_meanings=meanings)
 
-    def reset(self, *, seed: Optional[int] = None):
+    def reset(self, *, seed: int | None = None):
         obs, state = self.wrapped.reset()
         obs.add_extra(self.available_actions().astype(np.float32))
         return obs, state

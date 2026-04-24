@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Optional
 
 import numpy as np
 import numpy.typing as npt
@@ -27,7 +26,7 @@ class LastAction(RLEnvWrapper[AS]):
         self.state_extra_index = env.state_extra_shape[0]
         self.last_one_hot_actions = np.zeros((env.n_agents, env.n_actions), dtype=np.float32)
 
-    def reset(self, *, seed: Optional[int] = None):
+    def reset(self, *, seed: int | None = None):
         obs, state = super().reset()
         self.last_one_hot_actions = np.zeros((self.n_agents, self.n_actions), dtype=np.float32)
         obs.add_extra(self.last_one_hot_actions)

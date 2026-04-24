@@ -1,7 +1,9 @@
-from typing import Any, Optional, Sequence
-import numpy.typing as npt
-import numpy as np
 from dataclasses import dataclass
+from typing import Any, Sequence
+
+import numpy as np
+import numpy.typing as npt
+
 from .observation import Observation
 from .state import State
 
@@ -41,7 +43,7 @@ class Step:
         reward: npt.NDArray[np.float32] | float | Sequence[float],
         done: bool,
         truncated: bool = False,
-        info: Optional[dict[str, Any]] = None,
+        info: dict[str, Any] | None = None,
     ):
         if info is None:
             info = {}

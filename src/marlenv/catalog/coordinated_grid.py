@@ -1,5 +1,4 @@
 import itertools
-from typing import Optional
 
 import numpy as np
 
@@ -36,7 +35,7 @@ class CoordinatedGrid(MARLEnv):
         self.agents_location = [[0, 0], [N_ROWS - 1, N_COLS - 1]]
         self.time_penalty = time_penalty
 
-    def reset(self, *, seed: Optional[int] = None):
+    def reset(self, *, seed: int | None = None):
         if seed is not None:
             self.seed(seed)
         self.agents_location = [[0, 0], [N_ROWS - 1, N_COLS - 1]]

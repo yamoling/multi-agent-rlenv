@@ -1,5 +1,4 @@
 from importlib.util import find_spec
-from typing import Optional
 
 import numpy as np
 import pytest
@@ -460,7 +459,7 @@ def test_env_extras_size_from_multidim_shape():
         def step(self, action):
             raise NotImplementedError()
 
-        def reset(self, *, seed: Optional[int] = None):
+        def reset(self, *, seed: int | None = None):
             raise NotImplementedError()
 
     env = TestClass()
@@ -486,7 +485,7 @@ def test_env_observation_size_from_multidim_shape():
         def step(self, action):
             raise NotImplementedError()
 
-        def reset(self, *, seed: Optional[int] = None):
+        def reset(self, *, seed: int | None = None):
             raise NotImplementedError()
 
     env = TestClass()
@@ -512,7 +511,7 @@ def test_wrong_extras_meanings_length():
         def step(self, action):
             raise NotImplementedError()
 
-        def reset(self, *, seed: Optional[int] = None):
+        def reset(self, *, seed: int | None = None):
             raise NotImplementedError()
 
     try:

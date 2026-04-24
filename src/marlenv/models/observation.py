@@ -1,9 +1,9 @@
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Literal, Optional, Sequence, overload
-from deprecated import deprecated
+from typing import TYPE_CHECKING, Literal, Sequence, overload
 
 import numpy as np
 import numpy.typing as npt
+from deprecated import deprecated
 
 if TYPE_CHECKING:
     from torch import Tensor  # pyright: ignore[reportMissingImports]
@@ -27,7 +27,7 @@ class Observation:
         self,
         data: npt.NDArray[np.float32],
         available_actions: Sequence[bool] | npt.NDArray[np.bool],
-        extras: Optional[npt.NDArray[np.float32]] = None,
+        extras: npt.NDArray[np.float32] | None = None,
     ):
         self.data = data
         if not isinstance(available_actions, np.ndarray):

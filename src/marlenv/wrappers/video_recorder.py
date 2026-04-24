@@ -20,7 +20,7 @@ class VideoRecorder(RLEnvWrapper[AS]):
     def __init__(
         self,
         env: MARLEnv[AS],
-        video_folder: Optional[str] = None,
+        video_folder: str | None = None,
         video_encoding: Literal["mp4", "avi"] = "mp4",
         initial_pause_frames: int = 1,
         end_pause_frames: int = 1,
@@ -56,7 +56,7 @@ class VideoRecorder(RLEnvWrapper[AS]):
             self._recorder.release()
         return step
 
-    def reset(self, *, seed: Optional[int] = None):
+    def reset(self, *, seed: int | None = None):
         res = super().reset()
         image = self.get_image()
         height, width, _ = image.shape

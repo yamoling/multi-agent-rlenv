@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Optional, Sequence
+from typing import Sequence
 
 import numpy as np
 import numpy.typing as npt
@@ -31,7 +31,7 @@ class AvailableActionsMask(RLEnvWrapper[AS]):
         assert np.all(n_available_action_per_agent >= 1), "At least one action must be available for each agent."
         self.action_mask = action_mask
 
-    def reset(self, *, seed: Optional[int] = None):
+    def reset(self, *, seed: int | None = None):
         obs, state = self.wrapped.reset()
         obs.available_actions = self.available_actions()
         return obs, state

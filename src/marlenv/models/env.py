@@ -2,7 +2,7 @@ import math
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from itertools import product
-from typing import Callable, Generic, Optional, Sequence, TypeVar
+from typing import Callable, Generic, Sequence, TypeVar
 
 import cv2
 import numpy as np
@@ -80,8 +80,8 @@ class MARLEnv(ABC, Generic[ActionSpaceType]):
         state_shape: tuple[int, ...],
         extras_shape: tuple[int, ...] = (0,),
         state_extra_shape: tuple[int, ...] = (0,),
-        reward_space: Optional[Space] = None,
-        extras_meanings: Optional[list[str]] = None,
+        reward_space: Space | None = None,
+        extras_meanings: list[str] | None = None,
     ):
         super().__init__()
         self.name = self.__class__.__name__
@@ -186,7 +186,7 @@ class MARLEnv(ABC, Generic[ActionSpaceType]):
         return self.step(self.sample_action())
 
     @abstractmethod
-    def reset(self, *, seed: Optional[int] = None) -> tuple[Observation, State]:
+    def reset(self, *, seed: int | None = None) -> tuple[Observation, State]:
         """Reset the environment and return the initial observation and state."""
 
     def render(self):
@@ -202,7 +202,7 @@ class MARLEnv(ABC, Generic[ActionSpaceType]):
         """Retrieve an image of the environment"""
         raise NotImplementedError("No image available for this environment")
 
-    def replay(self, actions: Sequence, seed: Optional[int] = None):
+    def replay(self, actions: Sequence, seed: int | None = None):
         """Replay a sequence of actions."""
         from .episode import Episode  # Avoid circular import
 

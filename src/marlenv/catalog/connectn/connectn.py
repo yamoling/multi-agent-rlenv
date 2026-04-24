@@ -1,4 +1,4 @@
-from typing import Optional, Sequence
+from typing import Sequence
 
 import numpy as np
 import numpy.typing as npt
@@ -16,7 +16,7 @@ class ConnectN(MARLEnv[MultiDiscreteSpace]):
         state_shape = observation_shape
         super().__init__(1, action_space, observation_shape, state_shape)
 
-    def reset(self, *, seed: Optional[int] = None):
+    def reset(self, *, seed: int | None = None):
         if seed is not None:
             self.seed(seed)
         self.board.clear()

@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Optional, Sequence
+from typing import Sequence
 
 import numpy as np
 import numpy.typing as npt
@@ -64,7 +64,7 @@ class PettingZoo(MARLEnv[Space]):
             info,
         )
 
-    def reset(self, *, seed: Optional[int] = None):
+    def reset(self, *, seed: int | None = None):
         obs = self._pz_env.reset(seed=seed)[0]
         obs_data = np.array([v for v in obs.values()])
         self.last_observation = Observation(obs_data, self.available_actions())

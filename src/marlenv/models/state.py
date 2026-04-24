@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Generic, Literal, Optional, overload
+from typing import TYPE_CHECKING, Generic, Literal, overload
 
 import numpy as np
 import numpy.typing as npt
@@ -16,7 +16,7 @@ class State(Generic[StateType]):
     data: StateType
     extras: npt.NDArray[np.float32]
 
-    def __init__(self, data: StateType, extras: Optional[npt.NDArray[np.float32]] = None):
+    def __init__(self, data: StateType, extras: npt.NDArray[np.float32] | None = None):
         self.data = data
         if extras is None:
             extras = np.empty(0, dtype=np.float32)

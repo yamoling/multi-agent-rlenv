@@ -1,6 +1,6 @@
 import random
 from dataclasses import dataclass
-from typing import Optional, Sequence
+from typing import Sequence
 
 from typing_extensions import TypeVar
 
@@ -27,6 +27,6 @@ class EnvPool(RLEnvWrapper[ActionSpaceType]):
         for env in self.envs:
             env.seed(seed_value)
 
-    def reset(self, *, seed: Optional[int] = None):
+    def reset(self, *, seed: int | None = None):
         self.wrapped = random.choice(self.envs)
         return super().reset()
