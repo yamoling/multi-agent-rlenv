@@ -3,8 +3,16 @@ import pytest
 
 import marlenv
 from marlenv import Builder, MARLEnv, catalog
-from marlenv.catalog import DiscreteMOMockEnv
-from marlenv.wrappers import ActionRandomizer, AvailableActionsMask, Centralized, DelayedReward, EnvPool, LastAction, TimeLimit
+from marlenv.wrappers import (
+    ActionRandomizer,
+    AvailableActionsMask,
+    Centralized,
+    DelayedReward,
+    EnvPool,
+    LastAction,
+    NoiseWrapper,
+    TimeLimit,
+)
 
 
 def test_padding():
@@ -53,7 +61,7 @@ def test_agent_id():
 
 def test_penalty_wrapper():
     N_OBJECTIVES = 5
-    mock = DiscreteMOMockEnv(1, N_OBJECTIVES, reward_step=1)
+    mock = catalog.DiscreteMOMockEnv(1, N_OBJECTIVES, reward_step=1)
     env = Builder(mock).time_penalty(0.1).build()
     expected = np.array([0.9] * N_OBJECTIVES, dtype=np.float32)
     done = False
@@ -335,7 +343,7 @@ def test_mask_actions_builder_from_bool_mask():
 
 
 def test_wrapper_reward_shape():
-    mock = DiscreteMOMockEnv(1)
+    mock = catalog.DiscreteMOMockEnv(1)
     env = Builder(mock).time_penalty(0.1).last_action().available_actions().build()
 
     assert mock.is_multi_objective == env.is_multi_objective
@@ -579,3 +587,23 @@ def test_incompatible_envs():
                 catalog.DiscreteMockEnv(n_agents=2, n_actions=2, extras_size=1),
             ]
         )
+
+
+def test_one_hot_noise():
+    NOISE_SIZE = 4
+    mock_env = catalog.DiscreteMockEnv()
+    env = NoiseWrapper(mock_env, noise_size=NOISE_SIZE, noise_type="one-hot")
+    assert env.extras_size == mock_env.extras_size + NOISE_SIZE
+    assert env.state_extras_size == mock_env.state_extras_size + NOISE_SIZE
+    obs, state = env.reset()
+    assert obs.extras_size == mock_env.extra_size + NOISE_SIZE
+    assert len(obs.extras_shape) == 1
+    assert state.extras_size == mock_env.state_extras_size + NOISE_SIZE
+    assert len(state.extras_shape) == 1
+
+    done = False
+    while not done:
+        step = env.random_step()
+        done = step.is_terminal
+        assert step.obs.extras_size == mock_env.extra_size + NOISE_SIZE
+        assert step.state.extras_size == mock_env.state_extras_size + NOISE_SIZE

@@ -280,6 +280,7 @@ def test_serialize_all_wrappers_dynamic():
         "DelayedReward": lambda env: wrappers.DelayedReward(env, 2),
         "ActionRandomizer": lambda env: wrappers.ActionRandomizer(env, 0.2),
         "EnvPool": lambda env: wrappers.EnvPool([catalog.DiscreteMockEnv(2, n_actions=2), catalog.DiscreteMockEnv(2, n_actions=2)]),
+        "NoiseWrapper": lambda env: wrappers.NoiseWrapper(env, 5),
     }
 
     for wrapper_name in wrappers.__all__:
@@ -305,7 +306,7 @@ def test_serialize_all_adapters_dynamic():
     envs_factory = {
         "SMAC": lambda: adapters.SMAC("3m"),
         "SMACv2": lambda: adapters.SMACv2(),
-        "PettingZoo": lambda: adapters.PettingZoo(pz_env),
+        "PettingZoo": lambda: adapters.PettingZoo(pz_env) if pz_env is not None else None,
         "Gym": lambda: adapters.Gym("CartPole-v1"),
         "PymarlAdapter": lambda: adapters.PymarlAdapter(catalog.DiscreteMockEnv(4), episode_limit=20),
         "ToGym": lambda: adapters.ToGym(catalog.DiscreteMockEnv(1)),

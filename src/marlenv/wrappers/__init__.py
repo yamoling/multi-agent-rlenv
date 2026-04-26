@@ -7,6 +7,7 @@ from .centralised import Centralized
 from .delayed_rewards import DelayedReward
 from .env_pool import EnvPool
 from .last_action_wrapper import LastAction
+from .noise import NoiseWrapper
 from .paddings import PadExtras, PadObservations
 from .penalty_wrapper import TimePenalty
 from .potential_shaping import PotentialShaping
@@ -32,4 +33,5 @@ __all__ = [
     "PotentialShaping",
     "ActionRandomizer",
     "EnvPool",
+    "NoiseWrapper",
 ]

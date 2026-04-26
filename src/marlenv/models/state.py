@@ -1,3 +1,4 @@
+import math
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Generic, Literal, overload
 
@@ -36,6 +37,10 @@ class State(Generic[StateType]):
     @property
     def extras_shape(self) -> tuple[int, ...]:
         return self.extras.shape
+
+    @property
+    def extras_size(self) -> int:
+        return math.prod(self.extras_shape)
 
     def __hash__(self) -> int:
         if isinstance(self.data, np.ndarray):

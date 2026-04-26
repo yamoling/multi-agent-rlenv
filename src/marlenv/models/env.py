@@ -124,6 +124,10 @@ class MARLEnv(ABC, Generic[ActionSpaceType]):
         return math.prod(self.extras_shape)
 
     @property
+    def state_extras_size(self) -> int:
+        return math.prod(self.state_extra_shape)
+
+    @property
     def observation_size(self) -> int:
         """The size of a flattened observation for a single agent."""
         return math.prod(self.observation_shape)

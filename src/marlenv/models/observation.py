@@ -1,3 +1,4 @@
+import math
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Literal, Sequence, overload
 
@@ -83,6 +84,10 @@ class Observation:
     def extras_shape(self) -> tuple[int, ...]:
         """The individual shape of the observation extras"""
         return self.extras[0].shape
+
+    @property
+    def extras_size(self):
+        return math.prod(self.extras_shape)
 
     def __hash__(self):
         if isinstance(self.data, np.ndarray):

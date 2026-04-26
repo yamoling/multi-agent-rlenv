@@ -97,6 +97,15 @@ class Builder(Generic[AS]):
         self._env = wrappers.AvailableActionsMask(self._env, mask_array)
         return self
 
+    def extra_noise(self, noise_size: int, noise_type: Literal["one-hot", "continuous"] = "one-hot", with_state_extras: bool = True):
+        """
+        Add noise to the observation extras (and optionally to the state extras). The noise remains constant during the episode, but is resampled at the beginning of each episode. The noise is added to the end of the extras.
+
+        This can be useful for some algorithms such as MAVEN (https://proceedings.neurips.cc/paper_files/paper/2019/file/f816dc0acface7498e10496222e9db10-Paper.pdf) that use a latent variable to condition the policy and value functions.
+        """
+        self._env = wrappers.NoiseWrapper(self._env, noise_size, noise_type, with_state_extras=with_state_extras)
+        return self
+
     def centralised(self):
         """Centralises the observations and actions"""
         from marlenv.models import MultiDiscreteSpace
