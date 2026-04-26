@@ -132,6 +132,11 @@ class MARLEnv(ABC, Generic[ActionSpaceType]):
         """The size of a flattened observation for a single agent."""
         return math.prod(self.observation_shape)
 
+    @property
+    def state_size(self) -> int:
+        """The size of a flattened state."""
+        return math.prod(self.state_shape)
+
     def sample_action(self):
         """Sample an available action from the action space."""
         match self.action_space:
