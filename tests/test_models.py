@@ -608,3 +608,84 @@ def test_state_as_tensor_with_batch():
     assert isinstance(extras, torch.Tensor)
     assert extras.shape == (1, *env.state_extra_shape)
     assert extras.dtype == torch.float32
+
+
+def test_as_joint_1d_obs():
+    """With 4 agents and obs shape (20,), the joint obs shape should be (80,)."""
+    n_agents = 4
+    obs_size = 20
+    n_actions = 5
+    n_extras = 3
+
+    obs = Observation(
+        data=np.ones((n_agents, obs_size), dtype=np.float32),
+        available_actions=np.ones((n_agents, n_actions), dtype=bool),
+        extras=np.zeros((n_agents, n_extras), dtype=np.float32),
+    )
+
+    joint = obs.as_joint()
+
+    # The underlying array has a leading agent dimension of 1
+    assert joint.data.shape == (1, n_agents * obs_size)
+    assert joint.available_actions.shape == (1, n_agents * n_actions)
+    assert joint.extras.shape == (1, n_agents * n_extras)
+    # As seen by the single joint agent, the obs shape is (80,)
+    assert joint.shape == (n_agents * obs_size,)
+    assert joint.n_agents == 1
+
+
+def test_as_joint_image_obs():
+    """With 2 agents each receiving an RGB (3, 80, 80) image, the joint obs shape should be (6, 80, 80)."""
+    n_agents = 2
+    C, H, W = 3, 80, 80
+    n_actions = 4
+    n_extras = 2
+
+    obs = Observation(
+        data=np.ones((n_agents, C, H, W), dtype=np.float32),
+        available_actions=np.ones((n_agents, n_actions), dtype=bool),
+        extras=np.zeros((n_agents, n_extras), dtype=np.float32),
+    )
+
+    joint = obs.as_joint()
+
+    # The underlying array has a leading agent dimension of 1
+    assert joint.data.shape == (1, n_agents * C, H, W)
+    assert joint.available_actions.shape == (1, n_agents * n_actions)
+    assert joint.extras.shape == (1, n_agents * n_extras)
+    # As seen by the single joint agent, the obs shape is (6, 80, 80)
+    assert joint.shape == (n_agents * C, H, W)
+    assert joint.n_agents == 1
+
+
+def test_as_joint_preserves_data_values():
+    """Values in the joint observation should be the concatenation of per-agent data."""
+    obs = Observation(
+        data=np.array([[1.0, 2.0], [3.0, 4.0]], dtype=np.float32),
+        available_actions=np.array([[True, False], [False, True]], dtype=bool),
+        extras=np.array([[10.0], [20.0]], dtype=np.float32),
+    )
+
+    joint = obs.as_joint()
+
+    np.testing.assert_array_equal(joint.data[0], np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float32))
+    np.testing.assert_array_equal(joint.available_actions[0], np.array([True, False, False, True], dtype=bool))
+    np.testing.assert_array_equal(joint.extras[0], np.array([10.0, 20.0], dtype=np.float32))
+
+
+def test_as_joint_no_extras():
+    """as_joint works correctly when no extras are provided (extras default to empty)."""
+    n_agents = 3
+    obs_size = 10
+    n_actions = 5
+
+    obs = Observation(
+        data=np.arange(n_agents * obs_size, dtype=np.float32).reshape(n_agents, obs_size),
+        available_actions=np.ones((n_agents, n_actions), dtype=bool),
+    )
+
+    joint = obs.as_joint()
+
+    assert joint.shape == (n_agents * obs_size,)
+    assert joint.extras_shape == (0,)
+    assert joint.n_agents == 1

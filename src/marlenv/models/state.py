@@ -63,11 +63,19 @@ class State(Generic[StateType]):
 
     @overload
     def as_tensors(self, device=None, *, batch_dim: Literal[True]) -> "tuple[Tensor, Tensor]":
-        """Convert the state to a tuple of tensors of shape `(1, *self.shape)`."""
+        """
+        Convert the state and the state extras to tensors of shape `(1, *self.shape)` and `(1, *self.extras_shape)` respectively.
+        """
 
     @overload
     def as_tensors(self, device=None, *, batch_dim: bool = False) -> "tuple[Tensor, Tensor]":
-        """Convert the state to a tuple of tensors of shape `self.shape`."""
+        """
+        Convert the state and the state extras to tensors of shape `self.shape` and `self.extras_shape` respectively.
+
+        ```python
+        torch_state, torch_extras = state.as_tensors(device=torch.device("cuda:0"))
+        ```
+        """
 
     def as_tensors(self, device=None, *, batch_dim=False):
         import torch  # pyright: ignore[reportMissingImports]

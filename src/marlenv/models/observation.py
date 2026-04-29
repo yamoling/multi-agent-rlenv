@@ -63,6 +63,25 @@ class Observation:
             available_actions=self.available_actions[agent_id],
         )
 
+    def as_joint(self):
+        """
+        Concatenates the agent-wise observations into a single observation.
+        The resulting observation has n_agents=1, with shape (1, n_agents * obs_shape[0], *obs_shape[1:]).
+
+        Example:
+        ----
+        - With 2 agents and an individual obs_shape=(3,), the resulting joint observation has a shape of (1, 6).
+        - With 4 agents and an individual RGB image with individual obs_shape=(3, 64, 64), the resulting joint observation has a shape of (1, 12, 64, 64).
+        """
+        joint_data = np.concatenate(self.data, axis=0)
+        joint_actions = np.concatenate(self.available_actions, axis=0)
+        joint_extras = np.concatenate(self.extras, axis=0)
+        return Observation(
+            data=joint_data[np.newaxis],
+            available_actions=joint_actions[np.newaxis],
+            extras=joint_extras[np.newaxis],
+        )
+
     @deprecated(reason="Use `of_agent` instead")
     def agent(self, agent_id: int, keep_dim: bool = True):
         """
