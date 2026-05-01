@@ -75,7 +75,7 @@ class MStepsMatrix(MARLEnv[MultiDiscreteSpace]):
         if self._path is None:
             match action_enum:
                 case Action.TOP_RIGHT | Action.BOTTOM_LEFT:
-                    return Step(action, self.get_observation(), self.get_state(), 0.0, done=True, info={"path": 0})
+                    return Step(action, self.get_observation(), self.get_state(), 0.0, done=True)
                 case Action.TOP_LEFT:
                     self._path = "left"
                 case Action.BOTTOM_RIGHT:

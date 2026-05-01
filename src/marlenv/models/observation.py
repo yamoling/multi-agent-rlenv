@@ -70,8 +70,8 @@ class Observation:
 
         Example:
         ----
-        - With 2 agents and an individual obs_shape=(3,), the resulting joint observation has a shape of (1, 6).
-        - With 4 agents and an individual RGB image with individual obs_shape=(3, 64, 64), the resulting joint observation has a shape of (1, 12, 64, 64).
+        - With 2 agents and an individual obs_shape=(3,), the resulting joint observation has a shape of (6, ).
+        - With 4 agents and an individual RGB image with individual obs_shape=(3, 64, 64), the resulting joint observation has a shape of (12, 64, 64).
         """
         joint_data = np.concatenate(self.data, axis=0)
         joint_actions = np.concatenate(self.available_actions, axis=0)

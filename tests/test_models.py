@@ -1,3 +1,4 @@
+from copy import deepcopy
 from importlib.util import find_spec
 
 import numpy as np
@@ -665,12 +666,24 @@ def test_as_joint_preserves_data_values():
         available_actions=np.array([[True, False], [False, True]], dtype=bool),
         extras=np.array([[10.0], [20.0]], dtype=np.float32),
     )
-
     joint = obs.as_joint()
+    assert np.array_equal(joint.data[0], np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float32))
+    assert np.array_equal(joint.available_actions[0], np.array([True, False, False, True], dtype=bool))
+    assert np.array_equal(joint.extras[0], np.array([10.0, 20.0], dtype=np.float32))
 
-    np.testing.assert_array_equal(joint.data[0], np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float32))
-    np.testing.assert_array_equal(joint.available_actions[0], np.array([True, False, False, True], dtype=bool))
-    np.testing.assert_array_equal(joint.extras[0], np.array([10.0, 20.0], dtype=np.float32))
+
+def test_original_obs_is_unchanged():
+    """Calling as_joint should not modify the original observation."""
+    obs = Observation(
+        data=np.array([[1.0, 2.0], [3.0, 4.0]], dtype=np.float32),
+        available_actions=np.array([[True, False], [False, True]], dtype=bool),
+        extras=np.array([[10.0], [20.0]], dtype=np.float32),
+    )
+    obs_copy = deepcopy(obs)
+    _ = obs.as_joint()
+    assert np.array_equal(obs.data, obs_copy.data)
+    assert np.array_equal(obs.available_actions, obs_copy.available_actions)
+    assert np.array_equal(obs.extras, obs_copy.extras)
 
 
 def test_as_joint_no_extras():
