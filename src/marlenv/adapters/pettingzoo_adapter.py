@@ -31,6 +31,9 @@ class PettingZoo(MARLEnv[npt.NDArray]):
         if obs_space.shape is None:
             raise NotImplementedError("Only discrete observation spaces are supported")
         self._pz_env = env
+        # self.reset() requires n_agents and self.n_actions, so set them before calling reset
+        self.n_agents = n_agents
+        self.action_space = space
         self.last_observation, state = self.reset()
         super().__init__(n_agents, space, obs_space.shape, state.shape)
         self.agents = env.possible_agents

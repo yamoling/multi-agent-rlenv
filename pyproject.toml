@@ -34,7 +34,7 @@ all = [
 gym = ["gymnasium>=0.29.1"]
 lle = ["laser-learning-environment>=2.6.1"]
 overcooked = ["overcooked>=0.1.0"]
-pettingzoo = ["pettingzoo>=1.20", "pymunk>=6.0", "scipy>=1.10"]
+pettingzoo = ["pettingzoo>=1.20", "pymunk>=6.0", "scipy>=1.10", "pygame>=2.0"]
 smac = ["smac", "pysc2"]
 smacv2 = ["smacv2", "pysc2"]
 torch = ["torch>=2.0"]

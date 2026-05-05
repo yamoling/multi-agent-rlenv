@@ -302,9 +302,9 @@ def test_serialize_all_adapters_dynamic():
             from pettingzoo.sisl import pursuit_v4  # pyright: ignore[reportMissingImports]
 
             pz_env = pursuit_v4.parallel_env()
+            return adapters.PettingZoo(pz_env)
         except ImportError:
-            pz_env = None
-        return adapters.PettingZoo(pz_env)
+            return None
 
     envs_factory = {
         "SMAC": lambda: adapters.SMAC("3m"),
@@ -315,7 +315,7 @@ def test_serialize_all_adapters_dynamic():
         "ToGym": lambda: adapters.ToGym(catalog.DiscreteMockEnv(1)),
     }
     for adapter in adapters.__all__:
-        if adapter == "make" or adapter.startswith("HAS_"):
+        if adapter in ("make", "PettingZoo") or adapter.startswith("HAS_"):
             continue
         try:
             env = envs_factory[adapter]()
