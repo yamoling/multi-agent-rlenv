@@ -1,16 +1,14 @@
 from dataclasses import dataclass
+
 import numpy as np
 
-from marlenv.models import MARLEnv, MultiDiscreteSpace
+from marlenv.models import DiscreteMARLEnv
 from marlenv.wrappers import TimeLimit
 
 try:
     from smac.env import MultiAgentEnv  # pyright: ignore[reportMissingImports]
 except ImportError:
-    try:
-        from smacv2.env import MultiAgentEnv  # pyright: ignore[reportMissingImports]
-    except ImportError:
-        MultiAgentEnv = object
+    MultiAgentEnv = object
 
 
 @dataclass
@@ -19,7 +17,7 @@ class PymarlAdapter(MultiAgentEnv):  # pyright: ignore[reportGeneralTypeIssues]
     Adapter from MARLEnv to pymarl MultiAgentEnv.
     """
 
-    def __init__(self, env: MARLEnv[MultiDiscreteSpace], episode_limit: int):
+    def __init__(self, env: DiscreteMARLEnv, episode_limit: int):
         assert env.reward_space.size == 1, "Only single objective environments are supported."
         self.env = TimeLimit(env, episode_limit, add_extra=False)
         # Required by PyMarl

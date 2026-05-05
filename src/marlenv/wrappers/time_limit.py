@@ -4,11 +4,11 @@ import numpy as np
 
 from marlenv.models import Observation, State
 
-from .rlenv_wrapper import AS, MARLEnv, RLEnvWrapper
+from .rlenv_wrapper import A, MARLEnv, RLEnvWrapper
 
 
 @dataclass
-class TimeLimit(RLEnvWrapper[AS]):
+class TimeLimit(RLEnvWrapper[A]):
     """
     Limits the number of time steps for an episode. When the number of steps is reached, then the episode is truncated.
 
@@ -26,7 +26,7 @@ class TimeLimit(RLEnvWrapper[AS]):
 
     def __init__(
         self,
-        env: MARLEnv[AS],
+        env: MARLEnv[A],
         step_limit: int,
         add_extra: bool = True,
         truncation_penalty: float | None = None,

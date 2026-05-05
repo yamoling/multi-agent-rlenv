@@ -6,18 +6,18 @@ import numpy.typing as npt
 from typing_extensions import Self
 
 from . import wrappers
-from .models import MARLEnv, Space
+from .models import MARLEnv
 
-AS = TypeVar("AS", bound=Space)
+A = TypeVar("A")
 
 
 @dataclass
-class Builder(Generic[AS]):
+class Builder(Generic[A]):
     """Builder for environments"""
 
-    _env: MARLEnv[AS]
+    _env: MARLEnv[A]
 
-    def __init__(self, env: MARLEnv[AS]):
+    def __init__(self, env: MARLEnv[A]):
         self._env = env
 
     def time_limit(self, n_steps: int, add_extra: bool = True, truncation_penalty: float | None = None):
@@ -142,6 +142,6 @@ class Builder(Generic[AS]):
         self._env = wrappers.TimePenalty(self._env, penalty)
         return self
 
-    def build(self) -> MARLEnv[AS]:
+    def build(self) -> MARLEnv[A]:
         """Build and return the environment"""
         return self._env

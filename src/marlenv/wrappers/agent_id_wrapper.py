@@ -1,20 +1,20 @@
 from dataclasses import dataclass
+from typing import TypeVar
 
 import numpy as np
-from typing_extensions import TypeVar
 
-from marlenv.models import MARLEnv, Space
+from marlenv.models import MARLEnv
 
 from .rlenv_wrapper import RLEnvWrapper
 
-AS = TypeVar("AS", bound=Space, default=Space)
+A = TypeVar("A")
 
 
 @dataclass
-class AgentId(RLEnvWrapper[AS]):
+class AgentId(RLEnvWrapper[A]):
     """RLEnv wrapper that adds a one-hot encoding of the agent id."""
 
-    def __init__(self, env: MARLEnv[AS]):
+    def __init__(self, env: MARLEnv[A]):
         assert len(env.extras_shape) == 1, "AgentIdWrapper only works with single dimension extras"
         meanings = env.extras_meanings + [f"Agent ID-{i}" for i in range(env.n_agents)]
         super().__init__(env, extra_shape=(env.n_agents + env.extras_shape[0],), extra_meanings=meanings)

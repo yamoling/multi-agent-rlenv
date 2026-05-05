@@ -1,16 +1,12 @@
 import random
 from dataclasses import dataclass
-from typing import Literal, Sequence, TypeVar
+from typing import Literal, TypeVar
 
 import numpy as np
-import numpy.typing as npt
 
-from marlenv import MARLEnv
-from marlenv.models.spaces import Space
+from .rlenv_wrapper import MARLEnv, RLEnvWrapper
 
-from .rlenv_wrapper import RLEnvWrapper
-
-A = TypeVar("A", bound=Space)
+A = TypeVar("A")
 
 
 @dataclass
@@ -61,7 +57,7 @@ class NoiseWrapper(RLEnvWrapper[A]):
             state.add_extra(self._episode_noise[0])
         return obs, state
 
-    def step(self, action: npt.ArrayLike | Sequence):
+    def step(self, action: A):
         step = super().step(action)
         step.obs.add_extra(self._episode_noise)
         if self.with_state_extras:

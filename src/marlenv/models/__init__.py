@@ -9,14 +9,13 @@ wrappers, and environments:
 - `Space` variants: action/reward space definitions.
 """
 
-from .spaces import DiscreteSpace, ContinuousSpace, MultiDiscreteSpace, Space
-from .observation import Observation
-from .step import Step
-from .state import State
-from .env import MARLEnv
-from .transition import Transition
+from .env import ContinuousMARLEnv, DiscreteMARLEnv, MARLEnv
 from .episode import Episode
-
+from .observation import Observation
+from .spaces import ContinuousSpace, DiscreteSpace, MultiDiscreteSpace, Space
+from .state import State
+from .step import Step
+from .transition import Transition
 
 __all__ = [
     "Step",
@@ -29,4 +28,6 @@ __all__ = [
     "Episode",
     "MultiDiscreteSpace",
     "Space",
+    "DiscreteMARLEnv",
+    "ContinuousMARLEnv",
 ]

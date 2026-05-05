@@ -3,20 +3,20 @@ from dataclasses import dataclass
 import numpy as np
 from typing_extensions import TypeVar
 
-from marlenv.models import Observation, Space
+from marlenv.models import Observation
 
 from .rlenv_wrapper import MARLEnv, RLEnvWrapper
 
-AS = TypeVar("AS", bound=Space, default=Space)
+A = TypeVar("A")
 
 
 @dataclass
-class PadExtras(RLEnvWrapper[AS]):
+class PadExtras(RLEnvWrapper[A]):
     """RLEnv wrapper that adds extra zeros at the end of the observation extras."""
 
     n: int
 
-    def __init__(self, env: MARLEnv[AS], n_added: int, label: str = "Padding"):
+    def __init__(self, env: MARLEnv[A], n_added: int, label: str = "Padding"):
         assert len(env.extras_shape) == 1, "PadExtras only accepts 1D extras"
         super().__init__(
             env,
@@ -38,10 +38,10 @@ class PadExtras(RLEnvWrapper[AS]):
 
 
 @dataclass
-class PadObservations(RLEnvWrapper[AS]):
+class PadObservations(RLEnvWrapper[A]):
     """RLEnv wrapper that adds extra zeros at the end of the observation data."""
 
-    def __init__(self, env: MARLEnv[AS], n_added: int) -> None:
+    def __init__(self, env: MARLEnv[A], n_added: int) -> None:
         assert len(env.observation_shape) == 1, "PadObservations only accepts 1D observations"
         super().__init__(env, observation_shape=(env.observation_shape[0] + n_added,))
         self.n = n_added

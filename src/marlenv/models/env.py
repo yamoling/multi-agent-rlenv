@@ -1,6 +1,6 @@
 import math
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
+from dataclasses import KW_ONLY, dataclass, field
 from itertools import product
 from typing import Callable, Generic, Sequence, TypeVar
 
@@ -10,15 +10,15 @@ import numpy.typing as npt
 
 from .episode import Episode
 from .observation import Observation
-from .spaces import ContinuousSpace, DiscreteSpace, MultiDiscreteSpace, Space
+from .spaces import ContinuousSpace, Space
 from .state import State
 from .step import Step
 
-ActionSpaceType = TypeVar("ActionSpaceType", bound=Space)
+A = TypeVar("A")
 
 
 @dataclass
-class MARLEnv(ABC, Generic[ActionSpaceType]):
+class MARLEnv(ABC, Generic[A]):
     """
     Multi-agent reinforcement learning environment interface.
 
@@ -30,7 +30,7 @@ class MARLEnv(ABC, Generic[ActionSpaceType]):
     N_AGENTS = 3
     N_ACTIONS = 5
 
-    class CustomEnv(MARLEnv[MultiDiscreteSpace]):
+    class CustomEnv(MARLEnv[npt.NDArry[np.int64]]):
         def __init__(self, width: int, height: int):
             super().__init__(
                 n_agents=N_AGENTS,
@@ -59,49 +59,62 @@ class MARLEnv(ABC, Generic[ActionSpaceType]):
     ```
     """
 
-    action_space: ActionSpaceType
+    n_agents: int
+    action_space: Space[A]
     observation_shape: tuple[int, ...]
     """The shape of an observation for a single agent."""
-    extras_shape: tuple[int, ...]
-    """The shape of the extras features for a single agent (or the state)"""
-    extras_meanings: list[str]
     state_shape: tuple[int, ...]
+    _: KW_ONLY
+    extras_shape: tuple[int, ...] = ()
+    """The shape of the extras features for a single agent"""
+    state_extra_shape: tuple[int, ...] = (0,)
     """The shape of the state."""
-    n_agents: int
-    n_actions: int
-    name: str
-    reward_space: Space
+    reward_space: Space[npt.NDArray[np.float32]] = field(default_factory=lambda: ContinuousSpace.from_shape(1, labels=["Reward"]))
+    extras_meanings: list[str] = field(default_factory=list)
 
-    def __init__(
-        self,
-        n_agents: int,
-        action_space: ActionSpaceType,
-        observation_shape: tuple[int, ...],
-        state_shape: tuple[int, ...],
-        extras_shape: tuple[int, ...] = (0,),
-        state_extra_shape: tuple[int, ...] = (0,),
-        reward_space: Space | None = None,
-        extras_meanings: list[str] | None = None,
-    ):
-        super().__init__()
-        self.name = self.__class__.__name__
-        self.action_space = action_space
-        self.n_actions = action_space.shape[-1]
-        self.n_agents = n_agents
-        self.observation_shape = observation_shape
-        self.state_shape = state_shape
-        self.extras_shape = extras_shape
-        self.state_extra_shape = state_extra_shape
-        if reward_space is None:
-            reward_space = ContinuousSpace.from_shape(1, labels=["Reward"])
-        self.reward_space = reward_space
-        if extras_meanings is None:
-            extras_meanings = [f"{self.name}-extra-{i}" for i in range(extras_shape[0])]
-        elif len(extras_meanings) != extras_shape[0]:
-            raise ValueError(f"extras_meanings has length {len(extras_meanings)} but expected {extras_shape[0]}")
-        self.extras_meanings = extras_meanings
-        """The reward space has shape (1, ) for single-objective environments."""
+    def __post_init__(self):
+        if len(self.extras_meanings) == 0:
+            self.extras_meanings = [f"{self.name}-extra-{i}" for i in range(self.extras_size)]
+        if len(self.extras_meanings) != self.extras_size:
+            raise ValueError("There should either be no extra meaning provided, or all of then should be provided.")
         self._cv2_window_name = None
+
+    # def __init__(
+    #     self,
+    #     n_agents: int,
+    #     action_space: Space[A],
+    #     observation_shape: tuple[int, ...],
+    #     state_shape: tuple[int, ...],
+    #     extras_shape: tuple[int, ...] = (0,),
+    #     state_extra_shape: tuple[int, ...] = (0,),
+    #     reward_space: Space | None = None,
+    #     extras_meanings: list[str] | None = None,
+    # ):
+    #     super().__init__()
+    #     self.action_space = action_space
+    #     self.n_actions = action_space.shape[-1]
+    #     self.n_agents = n_agents
+    #     self.observation_shape = observation_shape
+    #     self.state_shape = state_shape
+    #     self.extras_shape = extras_shape
+    #     self.state_extra_shape = state_extra_shape
+    #     if reward_space is None:
+    #         reward_space = ContinuousSpace.from_shape(1, labels=["Reward"])
+    #     self.reward_space = reward_space
+    #     if extras_meanings is None:
+    #         extras_meanings = [f"{self.name}-extra-{i}" for i in range(extras_shape[0])]
+    #     elif len(extras_meanings) != extras_shape[0]:
+    #         raise ValueError(f"extras_meanings has length {len(extras_meanings)} but expected {extras_shape[0]}")
+    #     self.extras_meanings = extras_meanings
+    #     self._cv2_window_name = None
+
+    @property
+    def name(self):
+        return self.__class__.__name__
+
+    @property
+    def n_actions(self):
+        return self.action_space.shape[-1]
 
     @property
     def agent_state_size(self) -> int:
@@ -139,14 +152,7 @@ class MARLEnv(ABC, Generic[ActionSpaceType]):
 
     def sample_action(self):
         """Sample an available action from the action space."""
-        match self.action_space:
-            case MultiDiscreteSpace() as aspace:
-                return aspace.sample(mask=self.available_actions())
-            case ContinuousSpace() as aspace:
-                return aspace.sample()
-            case DiscreteSpace() as aspace:
-                return np.array([aspace.sample(mask=self.available_actions())])
-        raise NotImplementedError("Action space not supported")
+        return self.action_space.sample(self.available_actions())
 
     def available_actions(self) -> npt.NDArray[np.bool]:
         """
@@ -178,7 +184,7 @@ class MARLEnv(ABC, Generic[ActionSpaceType]):
         raise NotImplementedError("Method not implemented")
 
     @abstractmethod
-    def step(self, action: Sequence | npt.ArrayLike) -> Step:
+    def step(self, action: A) -> Step:
         """Perform a step in the environment.
 
         Returns a Step object that can be unpacked as a 6-tuple containing:
@@ -224,7 +230,7 @@ class MARLEnv(ABC, Generic[ActionSpaceType]):
             episode.add(step)
         return episode
 
-    def rollout(self, agent: Callable[[Observation], np.ndarray | Sequence]):
+    def rollout(self, agent: Callable[[Observation], A]):
         obs, state = self.reset()
         episode = Episode.new(obs, state)
         action = agent(obs)
@@ -236,7 +242,7 @@ class MARLEnv(ABC, Generic[ActionSpaceType]):
         episode.add(step)
         return episode
 
-    def has_same_inouts(self, other: "MARLEnv[ActionSpaceType]") -> bool:
+    def has_same_inouts(self, other: "MARLEnv[A]") -> bool:
         """
         Returns whether the environment has the same input and output shapes as another environment, which includes:
             - action space
@@ -264,3 +270,7 @@ class MARLEnv(ABC, Generic[ActionSpaceType]):
             return
         if self._cv2_window_name is not None:
             cv2.destroyWindow(self._cv2_window_name)
+
+
+DiscreteMARLEnv = MARLEnv[npt.NDArray[np.int64]]
+ContinuousMARLEnv = MARLEnv[npt.NDArray[np.float32]]

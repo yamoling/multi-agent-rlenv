@@ -4,7 +4,7 @@ from typing import Literal
 
 import numpy as np
 
-from marlenv.models import DiscreteSpace, MARLEnv, MultiDiscreteSpace, Observation, State, Step
+from marlenv.models import DiscreteMARLEnv, DiscreteSpace, Observation, State, Step
 
 
 class Action(Enum):
@@ -39,7 +39,7 @@ class Action(Enum):
 
 
 @dataclass
-class MStepsMatrix(MARLEnv[MultiDiscreteSpace]):
+class MStepsMatrix(DiscreteMARLEnv):
     """
     Implementation of the `m`-steps matrix game used in the MAVEN paper (https://proceedings.neurips.cc/paper_files/paper/2019/file/f816dc0acface7498e10496222e9db10-Paper.pdf).
     """

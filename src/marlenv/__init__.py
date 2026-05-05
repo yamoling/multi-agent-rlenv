@@ -17,7 +17,7 @@ For full documentation and examples, see `README.md` and:
 https://yamoling.github.io/multi-agent-rlenv
 """
 
-from importlib.metadata import version, PackageNotFoundError
+from importlib.metadata import PackageNotFoundError, version
 
 try:
     __version__ = version("multi-agent-rlenv")
@@ -25,28 +25,25 @@ except PackageNotFoundError:
     __version__ = "0.0.0"  # fallback for CI
 
 
-from . import models
+from . import adapters, catalog, models, wrappers
+from .adapters import make
+from .env_builder import Builder
 from .models import (
-    spaces,
+    ContinuousMARLEnv,
+    ContinuousSpace,
+    DiscreteMARLEnv,
+    DiscreteSpace,
+    Episode,
     MARLEnv,
+    MultiDiscreteSpace,
+    Observation,
+    Space,
     State,
     Step,
-    Observation,
-    Episode,
     Transition,
-    DiscreteSpace,
-    ContinuousSpace,
-    Space,
-    MultiDiscreteSpace,
+    spaces,
 )
-
-
-from . import wrappers
-from . import adapters
-from .env_builder import Builder
 from .wrappers import RLEnvWrapper
-from . import catalog
-from .adapters import make
 
 __all__ = [
     "models",
@@ -57,6 +54,8 @@ __all__ = [
     "spaces",
     "Builder",
     "MARLEnv",
+    "DiscreteMARLEnv",
+    "ContinuousMARLEnv",
     "Step",
     "State",
     "Observation",

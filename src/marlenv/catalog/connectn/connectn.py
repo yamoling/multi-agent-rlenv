@@ -3,12 +3,12 @@ from typing import Sequence
 import numpy as np
 import numpy.typing as npt
 
-from marlenv import DiscreteSpace, MARLEnv, MultiDiscreteSpace, Observation, State, Step
+from marlenv.models import DiscreteMARLEnv, DiscreteSpace, Observation, State, Step
 
 from .board import GameBoard, StepResult
 
 
-class ConnectN(MARLEnv[MultiDiscreteSpace]):
+class ConnectN(DiscreteMARLEnv):
     def __init__(self, width: int = 7, height: int = 6, n: int = 4):
         self.board = GameBoard(width, height, n)
         action_space = DiscreteSpace(self.board.width).repeat(1)

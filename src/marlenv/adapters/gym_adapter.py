@@ -1,22 +1,22 @@
 import sys
 from dataclasses import dataclass
-from typing import Any, Generic, Literal, TypeVar
+from typing import Any, Literal
 
 import cv2
-import gymnasium as gym
+import gymnasium as gym  # pyright: ignore[reportMissingImports]
 import numpy as np
-from gymnasium import Env, spaces
+import numpy.typing as npt
+from gymnasium import Env, spaces  # pyright: ignore[reportMissingImports]
+from typing_extensions import override
 
-from marlenv import ContinuousSpace, DiscreteSpace, MARLEnv, MultiDiscreteSpace, Observation, Space, State, Step
-
-S = TypeVar("S", bound=Space)
+from marlenv import ContinuousSpace, DiscreteSpace, MARLEnv, MultiDiscreteSpace, Observation, State, Step
 
 
 @dataclass
-class Gym(MARLEnv[Space]):
+class Gym(MARLEnv[npt.NDArray]):
     """Wrap a Gymnasium environment in a `MARLEnv` interface."""
 
-    def __init__(self, env: Env | str, **kwargs):
+    def __init__(self, env: Env[npt.NDArray, Any] | str, **kwargs):
         if isinstance(env, str):
             env = gym.make(env, render_mode="rgb_array", **kwargs)
         if env.observation_space.shape is None:
@@ -36,11 +36,14 @@ class Gym(MARLEnv[Space]):
                 raise NotImplementedError(f"Action space {other} not supported")
         super().__init__(1, space, env.observation_space.shape, (1,))
         self._gym_env = env
-        if self._gym_env.unwrapped.spec is not None:
-            self.name = self._gym_env.unwrapped.spec.id
-        else:
-            self.name = "gym-no-id"
         self._last_obs = None
+
+    @property
+    @override
+    def name(self):
+        if self._gym_env.unwrapped.spec is not None:
+            return self._gym_env.unwrapped.spec.id
+        return "gym-no-id"
 
     def get_observation(self):
         if self._last_obs is None:
@@ -92,7 +95,7 @@ def make(env_id: str, **kwargs):
 
 
 @dataclass
-class ToGym(gym.Env[np.ndarray, Any], Generic[S]):
+class ToGym(gym.Env[npt.NDArray[np.float32], Any]):
     """
     Helper to turn a single-agent `MARLEnv` into a `gymnasium.Env`.
 
@@ -105,7 +108,7 @@ class ToGym(gym.Env[np.ndarray, Any], Generic[S]):
 
     def __init__(
         self,
-        env: MARLEnv[S],
+        env: MARLEnv[npt.NDArray],
         render_mode: Literal["human", "rgb_array", "ansi"] | None = "human",
         on_unavailable_action: Literal["error", "random"] = "random",
     ):
@@ -119,7 +122,7 @@ class ToGym(gym.Env[np.ndarray, Any], Generic[S]):
         self.on_unavailable_action = on_unavailable_action
         self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=env.observation_shape, dtype=np.float32)
         match env.action_space:
-            case DiscreteSpace() as s:
+            case DiscreteSpace() | MultiDiscreteSpace() as s:
                 self.action_space = spaces.Discrete(s.size)
             case ContinuousSpace() as s:
                 self.action_space = spaces.Box(
@@ -128,8 +131,6 @@ class ToGym(gym.Env[np.ndarray, Any], Generic[S]):
                     shape=s.shape,
                     dtype=np.float32,
                 )
-            case MultiDiscreteSpace() as s:
-                self.action_space = spaces.Discrete(s.size)
             case other:
                 raise NotImplementedError(f"Action space {other} not supported")
 
@@ -138,7 +139,7 @@ class ToGym(gym.Env[np.ndarray, Any], Generic[S]):
             available = self._env.available_actions()[0]
             if not available[action]:
                 if self.on_unavailable_action == "random":
-                    action = self._env.sample_action()[0]
+                    action = self._env.sample_action()
                 else:
                     raise NotImplementedError("Unavailable action selected. To allow this, set on_unavailable_action to 'random'.")
         action = np.array(action)
