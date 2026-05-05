@@ -5,8 +5,7 @@ import cv2
 import numpy as np
 import numpy.typing as npt
 
-import marlenv
-from marlenv import DiscreteSpace, Observation, State, Step
+from marlenv.models import DiscreteMARLEnv, DiscreteSpace, Observation, State, Step
 
 PAYOFF_INITIAL = [[0, 0], [0, 0]]
 PAYOFF_2A = [[7, 7], [7, 7]]
@@ -32,7 +31,7 @@ class TwoStepsState(IntEnum):
         raise ValueError()
 
 
-class TwoSteps(marlenv.MARLEnv):
+class TwoSteps(DiscreteMARLEnv):
     """
     Two-steps game used in QMix paper (https://arxiv.org/pdf/1803.11485.pdf, section 5)
     to demonstrate its superior representationability compared to VDN.

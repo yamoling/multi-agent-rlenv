@@ -2,11 +2,11 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from marlenv import ContinuousSpace, DiscreteSpace, MARLEnv, MultiDiscreteSpace, Observation, State, Step
+from marlenv.models import ContinuousSpace, DiscreteMARLEnv, DiscreteSpace, Observation, State, Step
 
 
 @dataclass
-class DiscreteMockEnv(MARLEnv[MultiDiscreteSpace]):
+class DiscreteMockEnv(DiscreteMARLEnv):
     def __init__(
         self,
         n_agents: int = 4,
@@ -89,7 +89,7 @@ class DiscreteMockEnv(MARLEnv[MultiDiscreteSpace]):
         )
 
 
-class DiscreteMOMockEnv(MARLEnv[MultiDiscreteSpace]):
+class DiscreteMOMockEnv(DiscreteMARLEnv):
     """Multi-Objective Mock Environment"""
 
     def __init__(

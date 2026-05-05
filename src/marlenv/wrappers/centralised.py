@@ -11,10 +11,10 @@ from .rlenv_wrapper import RLEnvWrapper
 
 
 @dataclass
-class Centralized(RLEnvWrapper[MultiDiscreteSpace]):
+class Centralized(RLEnvWrapper[npt.NDArray[np.int64]]):
     joint_action_space: DiscreteSpace
 
-    def __init__(self, env: MARLEnv[MultiDiscreteSpace]):
+    def __init__(self, env: MARLEnv[npt.NDArray[np.int64]]):
         if not isinstance(env.action_space, MultiDiscreteSpace):
             raise NotImplementedError(f"Action space {env.action_space} not supported")
         joint_observation_shape = (env.observation_shape[0] * env.n_agents, *env.observation_shape[1:])
@@ -35,7 +35,7 @@ class Centralized(RLEnvWrapper[MultiDiscreteSpace]):
         obs = super().get_observation()
         return self._joint_observation(obs)
 
-    def _make_joint_action_space(self, env: MARLEnv[MultiDiscreteSpace]):
+    def _make_joint_action_space(self, env: MARLEnv[npt.NDArray[np.int64]]):
         agent_actions = list[list[str]]()
         for agent in range(env.n_agents):
             agent_actions.append([f"{agent}-{action}" for action in env.action_space.labels])

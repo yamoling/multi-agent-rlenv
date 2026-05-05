@@ -1,9 +1,9 @@
 import numpy as np
 
-from marlenv import DiscreteSpace, MARLEnv, Observation, State, Step
+from marlenv.models import DiscreteMARLEnv, DiscreteSpace, Observation, State, Step
 
 
-class MatrixGame(MARLEnv):
+class MatrixGame(DiscreteMARLEnv):
     """Single step matrix game used in QTRAN, Qatten and QPLEX papers."""
 
     N_AGENTS = 2

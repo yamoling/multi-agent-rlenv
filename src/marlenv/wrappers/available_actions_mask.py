@@ -5,20 +5,18 @@ import numpy as np
 import numpy.typing as npt
 from typing_extensions import TypeVar
 
-from marlenv.models import Space
-
 from .rlenv_wrapper import MARLEnv, RLEnvWrapper
 
-AS = TypeVar("AS", bound=Space, default=Space)
+A = TypeVar("A")
 
 
 @dataclass
-class AvailableActionsMask(RLEnvWrapper[AS]):
+class AvailableActionsMask(RLEnvWrapper[A]):
     """Permanently masks a subset of the available actions."""
 
     action_mask: npt.NDArray[np.bool]
 
-    def __init__(self, env: MARLEnv[AS], action_mask: npt.NDArray[np.bool] | Sequence[bool] | Sequence[Sequence[bool]]):
+    def __init__(self, env: MARLEnv[A], action_mask: npt.NDArray[np.bool] | Sequence[bool] | Sequence[Sequence[bool]]):
         super().__init__(env)
         if not isinstance(action_mask, np.ndarray):
             action_mask = np.array(action_mask, dtype=np.bool)

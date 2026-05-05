@@ -4,14 +4,14 @@ from typing import Sequence
 import numpy as np
 import numpy.typing as npt
 
-from marlenv import DiscreteSpace, MARLEnv, MultiDiscreteSpace, Observation, State, Step
+from marlenv.models import DiscreteMARLEnv, DiscreteSpace, Observation, State, Step
 
 LEFT = 0
 RIGHT = 1
 
 
 @dataclass
-class DeepSea(MARLEnv[MultiDiscreteSpace]):
+class DeepSea(DiscreteMARLEnv):
     """
     Deep Sea single-agent environment to test for deep exploration. The probability of reaching the goal state under random exploration is 2^(-max_depth).
 
@@ -24,17 +24,20 @@ class DeepSea(MARLEnv[MultiDiscreteSpace]):
     max_depth: int
 
     def __init__(self, max_depth: int):
+        self.max_depth = max_depth
         super().__init__(
             n_agents=1,
             action_space=DiscreteSpace(size=2, labels=["left", "right"]).repeat(1),
             observation_shape=(2,),
             state_shape=(2,),
         )
-        self.max_depth = max_depth
         self._row = 0
         self._col = 0
         self._step_right_penalty = -0.01 / self.max_depth
-        self.name = f"{self.__class__.__name__}-{self.max_depth}"
+
+    @property
+    def name(self):
+        return f"{super().name}-{self.max_depth}"
 
     def get_observation(self) -> Observation:
         return Observation(np.array([[self._row, self._col]], dtype=np.float32), self.available_actions())

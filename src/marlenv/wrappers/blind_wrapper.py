@@ -1,20 +1,21 @@
 import random
-from typing_extensions import TypeVar
-import numpy as np
 from dataclasses import dataclass
+from typing import TypeVar
 
-from marlenv.models import MARLEnv, Space
+import numpy as np
+
+from marlenv.models import MARLEnv
+
 from .rlenv_wrapper import RLEnvWrapper
 
-
-AS = TypeVar("AS", bound=Space, default=Space)
+A = TypeVar("A")
 
 
 @dataclass
-class Blind(RLEnvWrapper[AS]):
+class Blind(RLEnvWrapper[A]):
     p: float
 
-    def __init__(self, env: MARLEnv[AS], p: float | int):
+    def __init__(self, env: MARLEnv[A], p: float | int):
         super().__init__(env)
         self.p = float(p)
 

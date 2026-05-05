@@ -4,13 +4,13 @@ from typing import overload
 
 import numpy as np
 import numpy.typing as npt
-from smac.env import StarCraft2Env
+from smac.env import StarCraft2Env  # pyright: ignore[reportMissingImports]
 
-from marlenv.models import DiscreteSpace, MARLEnv, MultiDiscreteSpace, Observation, State, Step
+from marlenv.models import DiscreteMARLEnv, DiscreteSpace, Observation, State, Step
 
 
 @dataclass
-class SMAC(MARLEnv[MultiDiscreteSpace]):
+class SMAC(DiscreteMARLEnv):
     """Wrapper for the SMAC environment to work with this framework"""
 
     @overload
@@ -164,7 +164,10 @@ class SMAC(MARLEnv[MultiDiscreteSpace]):
             state_shape=(self._env_info["state_shape"],),
         )
         self._seed = self._env.seed()
-        self.name = f"smac-{self._env.map_name}"
+
+    @property
+    def name(self):
+        return f"{super().name}-{self._env.map_name}"
 
     def reset(self, *, seed: int | None = None):
         if seed is not None:

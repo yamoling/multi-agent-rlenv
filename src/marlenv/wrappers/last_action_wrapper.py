@@ -1,21 +1,21 @@
 from dataclasses import dataclass
+from typing import TypeVar
 
 import numpy as np
 import numpy.typing as npt
-from typing_extensions import TypeVar
 
-from marlenv.models import ContinuousSpace, DiscreteSpace, MultiDiscreteSpace, Space, State
+from marlenv.models import ContinuousSpace, DiscreteSpace, MultiDiscreteSpace, State
 
 from .rlenv_wrapper import MARLEnv, RLEnvWrapper
 
-AS = TypeVar("AS", bound=Space, default=Space)
+A = TypeVar("A")
 
 
 @dataclass
-class LastAction(RLEnvWrapper[AS]):
+class LastAction(RLEnvWrapper[A]):
     """Env wrapper that adds the last action taken by the agents to the extra features."""
 
-    def __init__(self, env: MARLEnv[AS]):
+    def __init__(self, env: MARLEnv[A]):
         assert len(env.extras_shape) == 1, "Adding last action is only possible with 1D extras"
         super().__init__(
             env,

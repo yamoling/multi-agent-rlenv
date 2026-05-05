@@ -5,18 +5,16 @@ import numpy as np
 import numpy.typing as npt
 from typing_extensions import TypeVar
 
-from marlenv.models import Space
-
 from .rlenv_wrapper import MARLEnv, RLEnvWrapper
 
-AS = TypeVar("AS", bound=Space, default=Space)
+A = TypeVar("A")
 
 
 @dataclass
-class DelayedReward(RLEnvWrapper[AS]):
+class DelayedReward(RLEnvWrapper[A]):
     delay: int
 
-    def __init__(self, env: MARLEnv[AS], delay: int):
+    def __init__(self, env: MARLEnv[A], delay: int):
         super().__init__(env)
         self.delay = delay
         self._reward_queue = deque[npt.NDArray[np.float32]](maxlen=delay + 1)

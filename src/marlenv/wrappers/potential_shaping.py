@@ -5,11 +5,11 @@ from typing import TypeVar
 import numpy as np
 import numpy.typing as npt
 
-from marlenv import MARLEnv, Observation, Space
+from marlenv.models import Observation
 
-from .rlenv_wrapper import RLEnvWrapper
+from .rlenv_wrapper import MARLEnv, RLEnvWrapper
 
-A = TypeVar("A", bound=Space)
+A = TypeVar("A")
 
 
 @dataclass
@@ -24,7 +24,7 @@ class PotentialShaping(RLEnvWrapper[A], ABC):
 
     def __init__(
         self,
-        env: MARLEnv,
+        env: MARLEnv[A],
         gamma: float = 1.0,
         extra_shape: tuple[int] | None = None,
     ):

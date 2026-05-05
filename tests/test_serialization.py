@@ -1,3 +1,4 @@
+import logging
 import pickle
 
 import numpy as np
@@ -200,7 +201,7 @@ def test_json_serialize_gym():
 
 @pytest.mark.skipif(not marlenv.adapters.HAS_PETTINGZOO, reason="PettingZoo is not installed")
 def test_json_serialize_pettingzoo():
-    from pettingzoo.sisl import pursuit_v4
+    from pettingzoo.sisl import pursuit_v4  # pyright: ignore[reportMissingImports]
 
     env = marlenv.adapters.PettingZoo(pursuit_v4.parallel_env())
     serde_and_check_key_values(env)
@@ -296,23 +297,25 @@ def test_serialize_all_wrappers_dynamic():
 def test_serialize_all_adapters_dynamic():
     from dataclasses import is_dataclass
 
-    try:
-        from pettingzoo.sisl import pursuit_v4
+    def lambda_pz_env():
+        try:
+            from pettingzoo.sisl import pursuit_v4  # pyright: ignore[reportMissingImports]
 
-        pz_env = pursuit_v4.parallel_env()
-    except ImportError:
-        pz_env = None
+            pz_env = pursuit_v4.parallel_env()
+            return adapters.PettingZoo(pz_env)
+        except ImportError:
+            return None
 
     envs_factory = {
         "SMAC": lambda: adapters.SMAC("3m"),
         "SMACv2": lambda: adapters.SMACv2(),
-        "PettingZoo": lambda: adapters.PettingZoo(pz_env) if pz_env is not None else None,
+        "PettingZoo": lambda_pz_env,
         "Gym": lambda: adapters.Gym("CartPole-v1"),
         "PymarlAdapter": lambda: adapters.PymarlAdapter(catalog.DiscreteMockEnv(4), episode_limit=20),
         "ToGym": lambda: adapters.ToGym(catalog.DiscreteMockEnv(1)),
     }
     for adapter in adapters.__all__:
-        if adapter == "make" or adapter.startswith("HAS_"):
+        if adapter in ("make", "PettingZoo") or adapter.startswith("HAS_"):
             continue
         try:
             env = envs_factory[adapter]()
@@ -325,3 +328,4 @@ def test_serialize_all_adapters_dynamic():
             msg = str(e)
             if not msg.startswith("module 'marlenv.adapters' has no attribute") or adapter not in msg:
                 raise
+            logging.warning(f"{adapter} could not be tested because the ad hoc extra is not installed.")

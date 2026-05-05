@@ -1,18 +1,18 @@
 from dataclasses import dataclass
+from typing import TypeVar
+
 import numpy as np
-from marlenv.models import Space
-from .rlenv_wrapper import RLEnvWrapper, MARLEnv
 
-from typing_extensions import TypeVar
+from .rlenv_wrapper import MARLEnv, RLEnvWrapper
 
-AS = TypeVar("AS", bound=Space, default=Space)
+A = TypeVar("A")
 
 
 @dataclass
-class TimePenalty(RLEnvWrapper[AS]):
+class TimePenalty(RLEnvWrapper[A]):
     penalty: float | np.ndarray
 
-    def __init__(self, env: MARLEnv[AS], penalty: float | list[float]):
+    def __init__(self, env: MARLEnv[A], penalty: float | list[float]):
         super().__init__(env)
 
         if env.is_multi_objective:

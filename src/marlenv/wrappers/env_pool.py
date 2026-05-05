@@ -1,21 +1,17 @@
 import random
 from dataclasses import dataclass
-from typing import Sequence
-
-from typing_extensions import TypeVar
-
-from marlenv.models import Space
+from typing import Sequence, TypeVar
 
 from .rlenv_wrapper import MARLEnv, RLEnvWrapper
 
-ActionSpaceType = TypeVar("ActionSpaceType", bound=Space, default=Space)
+A = TypeVar("A")
 
 
 @dataclass
-class EnvPool(RLEnvWrapper[ActionSpaceType]):
-    envs: Sequence[MARLEnv[ActionSpaceType]]
+class EnvPool(RLEnvWrapper[A]):
+    envs: Sequence[MARLEnv[A]]
 
-    def __init__(self, envs: Sequence[MARLEnv[ActionSpaceType]]):
+    def __init__(self, envs: Sequence[MARLEnv[A]]):
         assert len(envs) > 0, "EnvPool must contain at least one environment"
         self.envs = envs
         for env in envs[1:]:

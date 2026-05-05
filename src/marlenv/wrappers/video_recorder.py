@@ -1,25 +1,22 @@
 import os
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Literal, Optional
+from typing import Literal, TypeVar
 
 import cv2
-from typing_extensions import TypeVar
-
-from marlenv.models import Space
 
 from .rlenv_wrapper import MARLEnv, RLEnvWrapper
 
-AS = TypeVar("AS", bound=Space, default=Space)
+A = TypeVar("A")
 
 
 @dataclass
-class VideoRecorder(RLEnvWrapper[AS]):
+class VideoRecorder(RLEnvWrapper[A]):
     """Records a video of the run"""
 
     def __init__(
         self,
-        env: MARLEnv[AS],
+        env: MARLEnv[A],
         video_folder: str | None = None,
         video_encoding: Literal["mp4", "avi"] = "mp4",
         initial_pause_frames: int = 1,

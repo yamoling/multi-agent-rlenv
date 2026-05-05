@@ -2,13 +2,13 @@ import itertools
 
 import numpy as np
 
-from marlenv import DiscreteSpace, MARLEnv, Observation, State, Step
+from marlenv.models import DiscreteMARLEnv, DiscreteSpace, Observation, State, Step
 
 N_ROWS = 11
 N_COLS = 12
 
 
-class CoordinatedGrid(MARLEnv):
+class CoordinatedGrid(DiscreteMARLEnv):
     """
     Coordinated grid world environment used in the EMC paper to test the effectiveness of the proposed method.
     https://proceedings.neurips.cc/paper_files/paper/2021/file/1e8ca836c962598551882e689265c1c5-Paper.pdf

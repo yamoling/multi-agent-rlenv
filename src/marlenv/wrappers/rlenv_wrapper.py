@@ -1,33 +1,31 @@
 from dataclasses import dataclass
-from typing import Sequence
 
-import numpy.typing as npt
 from typing_extensions import TypeVar
 
-from marlenv.models import DiscreteSpace, MARLEnv, Space, State
+from marlenv.models import ContinuousSpace, MARLEnv, Space, State
 
-AS = TypeVar("AS", bound=Space, default=Space)
+A = TypeVar("A")
 
 
 @dataclass
-class RLEnvWrapper(MARLEnv[AS]):
+class RLEnvWrapper(MARLEnv[A]):
     """Parent class for all RLEnv wrappers"""
 
-    wrapped: MARLEnv[AS]
+    wrapped: MARLEnv[A]
     full_name: str
     """The full name of the wrapped environment, excluding the name of the nested wrappers."""
 
     def __init__(
         self,
-        env: MARLEnv[AS],
+        env: MARLEnv[A],
         *,
         n_agents: int | None = None,
         observation_shape: tuple[int, ...] | None = None,
         state_shape: tuple[int, ...] | None = None,
         extra_shape: tuple[int, ...] | None = None,
         state_extra_shape: tuple[int, ...] | None = None,
-        action_space: AS | None = None,
-        reward_space: DiscreteSpace | None = None,
+        action_space: Space[A] | None = None,
+        reward_space: ContinuousSpace | None = None,
         extra_meanings: list[str] | None = None,
     ):
         if extra_meanings is not None:
@@ -53,16 +51,19 @@ class RLEnvWrapper(MARLEnv[AS]):
         else:
             self.full_name = f"{self.__class__.__name__}({env.name})"
             self.unwrapped = env
-        self.name = env.name
 
     def get_observation(self):
         return self.wrapped.get_observation()
 
     @property
+    def name(self):
+        return self.wrapped.name
+
+    @property
     def agent_state_size(self):
         return self.wrapped.agent_state_size
 
-    def step(self, action: npt.ArrayLike | Sequence):
+    def step(self, action: A):
         return self.wrapped.step(action)
 
     def reset(self, *, seed: int | None = None):
