@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Optional
 
 import numpy as np
 
@@ -30,7 +29,7 @@ class TimeLimit(RLEnvWrapper[AS]):
         env: MARLEnv[AS],
         step_limit: int,
         add_extra: bool = True,
-        truncation_penalty: Optional[float] = None,
+        truncation_penalty: float | None = None,
     ) -> None:
         assert len(env.extras_shape) == 1
         assert len(env.state_extra_shape) == 1
@@ -57,7 +56,7 @@ class TimeLimit(RLEnvWrapper[AS]):
         assert truncation_penalty >= 0, "The truncation penalty must be a positive value."
         self.truncation_penalty = truncation_penalty
 
-    def reset(self, *, seed: Optional[int] = None):
+    def reset(self, *, seed: int | None = None):
         self._current_step = 0
         obs, state = super().reset()
         if self.add_extra:

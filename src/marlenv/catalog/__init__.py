@@ -20,13 +20,13 @@ Optional entries such as `smac`, `lle`, and `overcooked` require installing thei
 corresponding extras (e.g., `multi-agent-rlenv[smac]`, `multi-agent-rlenv[lle]`, `multi-agent-rlenv[overcooked]`).
 """
 
+from .connectn import ConnectN
+from .coordinated_grid import CoordinatedGrid
+from .deepsea import DeepSea
+from .m_steps_matrix import MStepsMatrix
+from .matrix_game import MatrixGame
 from .mock_env import DiscreteMockEnv, DiscreteMOMockEnv
 from .two_steps import TwoSteps
-from .deepsea import DeepSea
-from .matrix_game import MatrixGame
-from .coordinated_grid import CoordinatedGrid
-from .connectn import ConnectN
-
 
 __all__ = [
     "smac",
@@ -39,6 +39,7 @@ __all__ = [
     "DiscreteMockEnv",
     "DiscreteMOMockEnv",
     "ConnectN",
+    "MStepsMatrix",
 ]
 
 

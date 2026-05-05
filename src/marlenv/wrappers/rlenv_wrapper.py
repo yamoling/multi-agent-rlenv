@@ -1,7 +1,7 @@
 from dataclasses import dataclass
-from typing import Optional, Sequence
+from typing import Sequence
 
-import numpy as np
+import numpy.typing as npt
 from typing_extensions import TypeVar
 
 from marlenv.models import DiscreteSpace, MARLEnv, Space, State
@@ -21,14 +21,14 @@ class RLEnvWrapper(MARLEnv[AS]):
         self,
         env: MARLEnv[AS],
         *,
-        n_agents: Optional[int] = None,
-        observation_shape: Optional[tuple[int, ...]] = None,
-        state_shape: Optional[tuple[int, ...]] = None,
-        extra_shape: Optional[tuple[int, ...]] = None,
-        state_extra_shape: Optional[tuple[int, ...]] = None,
-        action_space: Optional[AS] = None,
-        reward_space: Optional[DiscreteSpace] = None,
-        extra_meanings: Optional[list[str]] = None,
+        n_agents: int | None = None,
+        observation_shape: tuple[int, ...] | None = None,
+        state_shape: tuple[int, ...] | None = None,
+        extra_shape: tuple[int, ...] | None = None,
+        state_extra_shape: tuple[int, ...] | None = None,
+        action_space: AS | None = None,
+        reward_space: DiscreteSpace | None = None,
+        extra_meanings: list[str] | None = None,
     ):
         if extra_meanings is not None:
             if extra_shape is None:
@@ -62,10 +62,10 @@ class RLEnvWrapper(MARLEnv[AS]):
     def agent_state_size(self):
         return self.wrapped.agent_state_size
 
-    def step(self, action: np.ndarray | Sequence):
+    def step(self, action: npt.ArrayLike | Sequence):
         return self.wrapped.step(action)
 
-    def reset(self, *, seed: Optional[int] = None):
+    def reset(self, *, seed: int | None = None):
         return self.wrapped.reset()
 
     def get_state(self):

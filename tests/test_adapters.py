@@ -78,20 +78,23 @@ def test_pettingzoo_adapter_discrete_action():
 
 @pytest.mark.skipif(skip_pettingzoo, reason="PettingZoo is not installed")
 def test_pettingzoo_adapter_continuous_action():
-    from pettingzoo.mpe import simple_v3
+    from pettingzoo.butterfly import pistonball_v6
 
-    env = marlenv.adapters.PettingZoo(simple_v3.parallel_env(continuous_actions=True))
+    pz_env = pistonball_v6.env(continuous=True)
+    pz_env.reset()
+    action_space = pz_env.action_space(pz_env.agents[0])
+    env = marlenv.adapters.PettingZoo(pistonball_v6.parallel_env(continuous=True))
     env.reset()
-    action = env.action_space.sample()
-    step = env.step(action)
+    step = env.random_step()
     assert isinstance(step.obs, Observation)
     assert isinstance(step.reward, np.ndarray)
     assert step.reward.shape == (1,)
     assert isinstance(step.done, bool)
     assert isinstance(step.truncated, bool)
     assert isinstance(step.info, dict)
-    assert env.n_actions == 5
-    assert env.n_agents == 1
+    assert action_space.shape is not None
+    assert env.n_actions == action_space.shape[0]
+    assert env.n_agents == len(pz_env.agents)
     assert isinstance(env.action_space, ContinuousSpace)
 
 

@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Optional, TypeVar
+from typing import TypeVar
 
 import numpy as np
 import numpy.typing as npt
@@ -26,7 +26,7 @@ class PotentialShaping(RLEnvWrapper[A], ABC):
         self,
         env: MARLEnv,
         gamma: float = 1.0,
-        extra_shape: Optional[tuple[int]] = None,
+        extra_shape: tuple[int] | None = None,
     ):
         super().__init__(env, extra_shape=extra_shape)
         self.gamma = gamma
@@ -36,7 +36,7 @@ class PotentialShaping(RLEnvWrapper[A], ABC):
         """Add the extras related to potential shaping. Does nothing by default."""
         return obs
 
-    def reset(self, *, seed: Optional[int] = None):
+    def reset(self, *, seed: int | None = None):
         obs, state = super().reset()
         self._current_potential = self.compute_potential()
         return self.add_extras(obs), state

@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Optional, Sequence
+from typing import Sequence
 
 import numpy as np
 import numpy.typing as npt
@@ -22,8 +22,11 @@ class AvailableActionsMask(RLEnvWrapper[AS]):
         super().__init__(env)
         if not isinstance(action_mask, np.ndarray):
             action_mask = np.array(action_mask, dtype=np.bool)
-        assert len(action_mask.shape) <= 2, "Action mask must be a 1D (actions) or 2D (agent-wise actions) array."
-        assert action_mask.shape[-1] == env.n_actions, "Action mask must have the same number of actions as the environment."
+        assert 0 < len(action_mask.shape) <= 2, "Action mask must be a 1D (actions) or 2D (agent-wise actions) array."
+        # shape = cast(tuple[int, ...] | tuple[int, int], action_mask.shape)
+        assert action_mask.shape[action_mask.ndim - 1] == env.n_actions, (
+            "Action mask must have the same number of actions as the environment."
+        )
         if action_mask.ndim == 1:
             action_mask = np.tile(action_mask, (env.n_agents, 1))
         assert action_mask.shape[0] == env.n_agents, "Action mask must have the same number of agents as the environment."
@@ -31,7 +34,7 @@ class AvailableActionsMask(RLEnvWrapper[AS]):
         assert np.all(n_available_action_per_agent >= 1), "At least one action must be available for each agent."
         self.action_mask = action_mask
 
-    def reset(self, *, seed: Optional[int] = None):
+    def reset(self, *, seed: int | None = None):
         obs, state = self.wrapped.reset()
         obs.available_actions = self.available_actions()
         return obs, state

@@ -1,12 +1,18 @@
-from typing import Optional
-
 import numpy as np
 import pytest
 
 import marlenv
 from marlenv import Builder, MARLEnv, catalog
-from marlenv.catalog import DiscreteMOMockEnv
-from marlenv.wrappers import ActionRandomizer, AvailableActionsMask, Centralized, DelayedReward, EnvPool, LastAction, TimeLimit
+from marlenv.wrappers import (
+    ActionRandomizer,
+    AvailableActionsMask,
+    Centralized,
+    DelayedReward,
+    EnvPool,
+    LastAction,
+    NoiseWrapper,
+    TimeLimit,
+)
 
 
 def test_padding():
@@ -24,6 +30,16 @@ def test_padding():
     env.reset()
     for _ in range(10):
         env.step(env.action_space.sample())
+
+
+def test_extras_padding_labels():
+    PAD_SIZE = 2
+    mock = catalog.DiscreteMockEnv(5)
+    env = Builder(mock).pad("extra", PAD_SIZE, label="the-extras").build()
+    assert all(m.startswith("the-extras") for m in env.extras_meanings)
+
+    env = Builder(mock).pad("extra", PAD_SIZE).build()
+    assert all(m.startswith("Padding") for m in env.extras_meanings)
 
 
 def test_available_actions():
@@ -45,7 +61,7 @@ def test_agent_id():
 
 def test_penalty_wrapper():
     N_OBJECTIVES = 5
-    mock = DiscreteMOMockEnv(1, N_OBJECTIVES, reward_step=1)
+    mock = catalog.DiscreteMOMockEnv(1, N_OBJECTIVES, reward_step=1)
     env = Builder(mock).time_penalty(0.1).build()
     expected = np.array([0.9] * N_OBJECTIVES, dtype=np.float32)
     done = False
@@ -320,8 +336,14 @@ def test_mask_actions_builder_errors_all_actions_masked():
         pass
 
 
+def test_mask_actions_builder_from_bool_mask():
+    mock = catalog.DiscreteMockEnv()
+    mask = [i % 2 == 0 for i in range(mock.n_actions)]
+    _ = Builder(mock).mask_actions(mask).build()
+
+
 def test_wrapper_reward_shape():
-    mock = DiscreteMOMockEnv(1)
+    mock = catalog.DiscreteMOMockEnv(1)
     env = Builder(mock).time_penalty(0.1).last_action().available_actions().build()
 
     assert mock.is_multi_objective == env.is_multi_objective
@@ -440,7 +462,7 @@ def test_potential_shaping():
             self.phi = 10
             super().__init__(env)
 
-        def reset(self, *, seed: Optional[int] = None):
+        def reset(self, *, seed: int | None = None):
             self.phi = 10
             return super().reset()
 
@@ -565,3 +587,23 @@ def test_incompatible_envs():
                 catalog.DiscreteMockEnv(n_agents=2, n_actions=2, extras_size=1),
             ]
         )
+
+
+def test_one_hot_noise():
+    NOISE_SIZE = 4
+    mock_env = catalog.DiscreteMockEnv()
+    env = NoiseWrapper(mock_env, noise_size=NOISE_SIZE, noise_type="one-hot")
+    assert env.extras_size == mock_env.extras_size + NOISE_SIZE
+    assert env.state_extras_size == mock_env.state_extras_size + NOISE_SIZE
+    obs, state = env.reset()
+    assert obs.extras_size == mock_env.extra_size + NOISE_SIZE
+    assert len(obs.extras_shape) == 1
+    assert state.extras_size == mock_env.state_extras_size + NOISE_SIZE
+    assert len(state.extras_shape) == 1
+
+    done = False
+    while not done:
+        step = env.random_step()
+        done = step.is_terminal
+        assert step.obs.extras_size == mock_env.extra_size + NOISE_SIZE
+        assert step.state.extras_size == mock_env.state_extras_size + NOISE_SIZE

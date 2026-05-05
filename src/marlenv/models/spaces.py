@@ -1,7 +1,7 @@
 import math
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Optional, TypeVar, Generic
+from typing import Generic, TypeVar
 
 import numpy as np
 import numpy.typing as npt
@@ -15,7 +15,7 @@ class Space(ABC, Generic[T]):
     size: int
     labels: list[str]
 
-    def __init__(self, shape: tuple[int, ...], labels: Optional[list[str]] = None):
+    def __init__(self, shape: tuple[int, ...], labels: list[str] | None = None):
         self.shape = shape
         self.size = math.prod(shape)
         if labels is None:
@@ -50,7 +50,7 @@ class DiscreteSpace(Space[int]):
     size: int
     """Number of categories"""
 
-    def __init__(self, size: int, labels: Optional[list[str]] = None):
+    def __init__(self, size: int, labels: list[str] | None = None):
         super().__init__((size,), labels)
         self.size = size
         self.space = np.arange(size)
@@ -73,7 +73,7 @@ class DiscreteSpace(Space[int]):
         return True
 
     @staticmethod
-    def action(size, labels: Optional[list[str]] = None):
+    def action(size, labels: list[str] | None = None):
         """
         Create a discrete action space where the default labels are set to "Action-n".
         """
@@ -93,7 +93,7 @@ class MultiDiscreteSpace(Space[npt.NDArray[np.int32]]):
     n_dims: int
     spaces: tuple[DiscreteSpace, ...]
 
-    def __init__(self, *spaces: DiscreteSpace, labels: Optional[list[str]] = None):
+    def __init__(self, *spaces: DiscreteSpace, labels: list[str] | None = None):
         if labels is None:
             labels = [f"Discrete space {i}" for i in range(len(spaces))]
         Space.__init__(self, tuple(space.size for space in spaces), labels)
@@ -104,7 +104,7 @@ class MultiDiscreteSpace(Space[npt.NDArray[np.int32]]):
     def from_sizes(cls, *sizes: int):
         return cls(*(DiscreteSpace(size) for size in sizes))
 
-    def sample(self, mask: Optional[npt.NDArray[np.bool] | list[npt.NDArray[np.bool]]] = None):
+    def sample(self, mask: npt.NDArray[np.bool] | list[npt.NDArray[np.bool]] | None = None):
         if mask is None:
             return np.array([space.sample() for space in self.spaces], dtype=np.int32)
         return np.array([space.sample(mask=mask) for mask, space in zip(mask, self.spaces)], dtype=np.int32)  # type: ignore
@@ -137,7 +137,7 @@ class ContinuousSpace(Space[npt.NDArray[np.float32]]):
         self,
         low: int | float | list | npt.NDArray[np.float32] | None,
         high: int | float | list | npt.NDArray[np.float32] | None,
-        labels: Optional[list[str]] = None,
+        labels: list[str] | None = None,
     ):
         match low:
             case None:
@@ -166,9 +166,9 @@ class ContinuousSpace(Space[npt.NDArray[np.float32]]):
     @staticmethod
     def from_shape(
         shape: int | tuple[int, ...],
-        low: Optional[int | float | list | npt.NDArray[np.float32]] = None,
-        high: Optional[int | float | list | npt.NDArray[np.float32]] = None,
-        labels: Optional[list[str]] = None,
+        low: int | float | list | npt.NDArray[np.float32] | None = None,
+        high: int | float | list | npt.NDArray[np.float32] | None = None,
+        labels: list[str] | None = None,
     ):
         if isinstance(shape, int):
             shape = (shape,)

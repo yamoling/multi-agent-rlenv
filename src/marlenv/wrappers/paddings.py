@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Optional
 
 import numpy as np
 from typing_extensions import TypeVar
@@ -17,29 +16,25 @@ class PadExtras(RLEnvWrapper[AS]):
 
     n: int
 
-    def __init__(self, env: MARLEnv[AS], n_added: int):
+    def __init__(self, env: MARLEnv[AS], n_added: int, label: str = "Padding"):
         assert len(env.extras_shape) == 1, "PadExtras only accepts 1D extras"
-        meanings = env.extras_meanings + [f"Padding-{i}" for i in range(n_added)]
         super().__init__(
             env,
             extra_shape=(env.extras_shape[0] + n_added,),
-            extra_meanings=meanings,
+            extra_meanings=env.extras_meanings + [f"{label}-{i}" for i in range(n_added)],
         )
         self.n = n_added
+        self.padding = np.zeros((self.n_agents, self.n), dtype=np.float32)
 
     def step(self, action):
         step = super().step(action)
-        step.obs = self._add_extras(step.obs)
+        step.obs.add_extra(self.padding)
         return step
 
-    def reset(self, *, seed: Optional[int] = None):
+    def reset(self, *, seed: int | None = None):
         obs, state = super().reset()
-        obs = self._add_extras(obs)
+        obs.add_extra(self.padding)
         return obs, state
-
-    def _add_extras(self, obs: Observation):
-        obs.extras = np.concatenate([obs.extras, np.zeros((obs.n_agents, self.n), dtype=np.float32)], axis=-1)
-        return obs
 
 
 @dataclass
@@ -56,7 +51,7 @@ class PadObservations(RLEnvWrapper[AS]):
         step.obs = self._add_obs(step.obs)
         return step
 
-    def reset(self, *, seed: Optional[int] = None):
+    def reset(self, *, seed: int | None = None):
         obs, state = super().reset()
         obs = self._add_obs(obs)
         return obs, state

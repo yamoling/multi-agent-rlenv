@@ -1,6 +1,6 @@
 [project]
 name = "multi-agent-rlenv"
-version = "4.0.5"
+version = "4.2.4"
 description = "A strongly typed Multi-Agent Reinforcement Learning framework"
 readme = "README.md"
 requires-python = ">=3.10, <4"
@@ -14,10 +14,10 @@ classifiers = [
 urls = { "repository" = "https://github.com/yamoling/multi-agent-rlenv" }
 
 dependencies = [
-    "deprecated>=1.3.1",
-    "numpy>=2.0.0",
-    "opencv-python>=4.0",
-    "typing_extensions>=4.0",
+  "deprecated>=1.3.1",
+  "numpy>=2.0.0",
+  "opencv-python>=4.0",
+  "typing_extensions>=4.0",
 ]
 
 [project.optional-dependencies]
@@ -46,6 +46,11 @@ dev = ["orjson>=3.10.12", "pdoc>=15.0.1", "pytest>=9"]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
+[tool.basedpyright]
+typeCheckingMode = "standard"
+# Without overriding the default setting of "reportPrivateImportUsage", all torch functions are marked as private and thus cause a large number of errors in Pyright. Setting it to "none" suppresses these errors.
+reportPrivateImportUsage = "none"
+
 [tool.hatch.build.targets.wheel]
 packages = ["src/marlenv"]
 
@@ -54,7 +59,7 @@ packages = ["src/marlenv"]
 filterwarnings = [
   "ignore::DeprecationWarning",
   "ignore::RuntimeWarning",
-  "ignore::UserWarning"
+  "ignore::UserWarning",
 ]
 pythonpath = ["src"]
 testpaths = ["tests"]

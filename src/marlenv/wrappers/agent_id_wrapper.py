@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Optional
 
 import numpy as np
 from typing_extensions import TypeVar
@@ -26,7 +25,7 @@ class AgentId(RLEnvWrapper[AS]):
         step.obs.add_extra(self._identity)
         return step
 
-    def reset(self, *, seed: Optional[int] = None):
+    def reset(self, *, seed: int | None = None):
         obs, state = super().reset()
         obs.add_extra(self._identity)
         return obs, state

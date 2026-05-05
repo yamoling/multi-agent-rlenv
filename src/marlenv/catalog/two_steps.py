@@ -1,5 +1,5 @@
 from enum import IntEnum
-from typing import Optional, Sequence
+from typing import Sequence
 
 import cv2
 import numpy as np
@@ -48,7 +48,7 @@ class TwoSteps(marlenv.MARLEnv):
             state_shape=self.state.one_hot().shape,
         )
 
-    def reset(self, *, seed: Optional[int] = None):
+    def reset(self, *, seed: int | None = None):
         if seed is not None:
             self.seed(seed)
         self.state = TwoStepsState.INITIAL

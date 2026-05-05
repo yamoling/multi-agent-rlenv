@@ -25,7 +25,7 @@ class Schedule:
         self._t = 0
         self._current_value = self.start_value
 
-    def update(self, step: Optional[int] = None):
+    def update(self, step: int | None = None):
         """Update the value of the schedule. Force a step if given."""
         if step is not None:
             self._t = step
@@ -58,7 +58,7 @@ class Schedule:
         return ExpSchedule(start_value, end_value, n_steps)
 
     @staticmethod
-    def arbitrary(func: Callable[[int], float], n_steps: Optional[int] = None):
+    def arbitrary(func: Callable[[int], float], n_steps: int | None = None):
         if n_steps is None:
             n_steps = 0
         return ArbitrarySchedule(func, n_steps)

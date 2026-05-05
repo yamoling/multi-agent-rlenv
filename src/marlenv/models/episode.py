@@ -1,7 +1,7 @@
+import logging
 from dataclasses import dataclass
 from functools import cached_property
-from typing import TYPE_CHECKING, Any, Callable, Optional, Sequence, overload
-import logging
+from typing import TYPE_CHECKING, Any, Callable, Sequence, overload
 
 import cv2
 import numpy as np
@@ -25,7 +25,7 @@ class Episode(CachedPropertyInvalidator):
 
     all_observations: list[npt.NDArray[np.float32]]
     all_extras: list[npt.NDArray[np.float32]]
-    actions: list[npt.NDArray]
+    actions: list[npt.ArrayLike]
     rewards: list[npt.NDArray[np.float32]]
     all_available_actions: list[npt.NDArray[np.bool]]
     all_states: list[npt.NDArray[np.float32]]
@@ -38,7 +38,7 @@ class Episode(CachedPropertyInvalidator):
     """Whether the episode did reach a terminal state (different from truncated)"""
 
     @staticmethod
-    def new(obs: Observation, state: State, metrics: Optional[dict[str, Any]] = None) -> "Episode":
+    def new(obs: Observation, state: State, metrics: dict[str, Any] | None = None) -> "Episode":
         if metrics is None:
             metrics = {}
         return Episode(
@@ -217,10 +217,10 @@ class Episode(CachedPropertyInvalidator):
     def replay(
         self,
         env: "MARLEnv",
-        seed: Optional[int] = None,
+        seed: int | None = None,
         *,
-        after_reset: "Optional[Callable[[Observation, State, MARLEnv], None]]" = None,
-        after_step: "Optional[Callable[[int, Step, MARLEnv], None]]" = None,
+        after_reset: "Callable[[Observation, State, MARLEnv], None] | None" = None,
+        after_step: "Callable[[int, Step, MARLEnv], None] | None" = None,
     ):
         """
         Replay the episode in the environment (i.e. perform the actions) and assert that the outcomes match.
@@ -250,7 +250,7 @@ class Episode(CachedPropertyInvalidator):
             if after_step is not None:
                 after_step(i, step, env)
 
-    def get_images(self, env: "MARLEnv", seed: Optional[int] = None) -> list[np.ndarray]:
+    def get_images(self, env: "MARLEnv", seed: int | None = None) -> list[np.ndarray]:
         images = []
 
         def collect_image(*_, **__):
@@ -259,7 +259,7 @@ class Episode(CachedPropertyInvalidator):
         self.replay(env, seed, after_reset=collect_image, after_step=collect_image)
         return images
 
-    def render(self, env: "MARLEnv", seed: Optional[int] = None, fps: int = 5):
+    def render(self, env: "MARLEnv", seed: int | None = None, fps: int = 5):
         def render_callback(*_, **__):
             env.render()
             cv2.waitKey(1000 // fps)
@@ -284,7 +284,7 @@ class Episode(CachedPropertyInvalidator):
                 score.append(value)
         return score
 
-    def compute_returns(self, gamma: float, next_value: Optional[npt.NDArray[np.float32] | float] = None):
+    def compute_returns(self, gamma: float, next_value: npt.NDArray[np.float32] | float | None = None):
         """Compute the returns (discounted sum of future rewards) of the episode at each time step"""
         if self.is_done:
             if next_value is not None:
@@ -332,7 +332,7 @@ class Episode(CachedPropertyInvalidator):
         self,
         next_obs: Observation,
         next_state: State,
-        action: np.ndarray,
+        action: npt.ArrayLike,
         reward: npt.NDArray[np.float32],
         others: dict[str, Any],
         done: bool,
@@ -347,11 +347,7 @@ class Episode(CachedPropertyInvalidator):
         self.all_available_actions.append(next_obs.available_actions)
         self.all_states.append(next_state.data)
         self.all_states_extras.append(next_state.extras)
-        match action:
-            case np.ndarray() as action:
-                self.actions.append(action)
-            case other:
-                self.actions.append(np.array(other))
+        self.actions.append(np.array(action))
         self.rewards.append(reward)
         for key, value in others.items():
             current = self.other.get(key, [])

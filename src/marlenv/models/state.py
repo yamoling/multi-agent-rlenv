@@ -1,5 +1,6 @@
+import math
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Generic, Literal, Optional, overload
+from typing import TYPE_CHECKING, Generic, Literal, overload
 
 import numpy as np
 import numpy.typing as npt
@@ -16,7 +17,7 @@ class State(Generic[StateType]):
     data: StateType
     extras: npt.NDArray[np.float32]
 
-    def __init__(self, data: StateType, extras: Optional[npt.NDArray[np.float32]] = None):
+    def __init__(self, data: StateType, extras: npt.NDArray[np.float32] | None = None):
         self.data = data
         if extras is None:
             extras = np.empty(0, dtype=np.float32)
@@ -36,6 +37,10 @@ class State(Generic[StateType]):
     @property
     def extras_shape(self) -> tuple[int, ...]:
         return self.extras.shape
+
+    @property
+    def extras_size(self) -> int:
+        return math.prod(self.extras_shape)
 
     def __hash__(self) -> int:
         if isinstance(self.data, np.ndarray):
@@ -58,11 +63,19 @@ class State(Generic[StateType]):
 
     @overload
     def as_tensors(self, device=None, *, batch_dim: Literal[True]) -> "tuple[Tensor, Tensor]":
-        """Convert the state to a tuple of tensors of shape `(1, *self.shape)`."""
+        """
+        Convert the state and the state extras to tensors of shape `(1, *self.shape)` and `(1, *self.extras_shape)` respectively.
+        """
 
     @overload
     def as_tensors(self, device=None, *, batch_dim: bool = False) -> "tuple[Tensor, Tensor]":
-        """Convert the state to a tuple of tensors of shape `self.shape`."""
+        """
+        Convert the state and the state extras to tensors of shape `self.shape` and `self.extras_shape` respectively.
+
+        ```python
+        torch_state, torch_extras = state.as_tensors(device=torch.device("cuda:0"))
+        ```
+        """
 
     def as_tensors(self, device=None, *, batch_dim=False):
         import torch  # pyright: ignore[reportMissingImports]

@@ -1,9 +1,10 @@
+import math
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Literal, Optional, Sequence, overload
-from deprecated import deprecated
+from typing import TYPE_CHECKING, Literal, Sequence, overload
 
 import numpy as np
 import numpy.typing as npt
+from deprecated import deprecated
 
 if TYPE_CHECKING:
     from torch import Tensor  # pyright: ignore[reportMissingImports]
@@ -27,7 +28,7 @@ class Observation:
         self,
         data: npt.NDArray[np.float32],
         available_actions: Sequence[bool] | npt.NDArray[np.bool],
-        extras: Optional[npt.NDArray[np.float32]] = None,
+        extras: npt.NDArray[np.float32] | None = None,
     ):
         self.data = data
         if not isinstance(available_actions, np.ndarray):
@@ -39,9 +40,9 @@ class Observation:
         else:
             self.extras = np.zeros((self.n_agents, 0), dtype=np.float32)
 
-    def add_extra(self, extra: list[list[float]] | npt.NDArray[np.float32]):
+    def add_extra(self, extra: list[list[float]] | npt.ArrayLike):
         """Append an extra feature to the observation"""
-        self.extras = np.concatenate((self.extras, extra), axis=1)
+        self.extras = np.concatenate((self.extras, extra), axis=1, dtype=np.float32)
 
     def of_agent(self, agent_id: int, keep_dim: bool = True) -> "Observation":
         """
@@ -60,6 +61,25 @@ class Observation:
             data=self.data[agent_id],
             extras=self.extras[agent_id],
             available_actions=self.available_actions[agent_id],
+        )
+
+    def as_joint(self):
+        """
+        Concatenates the agent-wise observations into a single observation.
+        The resulting observation has n_agents=1, with shape (1, n_agents * obs_shape[0], *obs_shape[1:]).
+
+        Example:
+        ----
+        - With 2 agents and an individual obs_shape=(3,), the resulting joint observation has a shape of (6, ).
+        - With 4 agents and an individual RGB image with individual obs_shape=(3, 64, 64), the resulting joint observation has a shape of (12, 64, 64).
+        """
+        joint_data = np.concatenate(self.data, axis=0)
+        joint_actions = np.concatenate(self.available_actions, axis=0)
+        joint_extras = np.concatenate(self.extras, axis=0)
+        return Observation(
+            data=joint_data[np.newaxis],
+            available_actions=joint_actions[np.newaxis],
+            extras=joint_extras[np.newaxis],
         )
 
     @deprecated(reason="Use `of_agent` instead")
@@ -83,6 +103,10 @@ class Observation:
     def extras_shape(self) -> tuple[int, ...]:
         """The individual shape of the observation extras"""
         return self.extras[0].shape
+
+    @property
+    def extras_size(self):
+        return math.prod(self.extras_shape)
 
     def __hash__(self):
         if isinstance(self.data, np.ndarray):

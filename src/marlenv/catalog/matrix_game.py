@@ -1,5 +1,3 @@
-from typing import Optional
-
 import numpy as np
 
 from marlenv import DiscreteSpace, MARLEnv, Observation, State, Step
@@ -30,7 +28,7 @@ class MatrixGame(MARLEnv):
         self.current_step = 0
         self.payoffs = payoff_matrix
 
-    def reset(self, *, seed: Optional[int] = None):
+    def reset(self, *, seed: int | None = None):
         if seed is not None:
             self.seed(seed)
         self.current_step = 0

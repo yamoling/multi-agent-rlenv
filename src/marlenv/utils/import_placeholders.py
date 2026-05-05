@@ -1,8 +1,8 @@
-from typing import Optional, Any
 from types import SimpleNamespace
+from typing import Any, Optional
 
 
-def _raise_error(module_name: str, package_name: Optional[str] = None):
+def _raise_error(module_name: str, package_name: str | None = None):
     if package_name is None:
         package_name = module_name
     raise ImportError(
@@ -10,7 +10,7 @@ def _raise_error(module_name: str, package_name: Optional[str] = None):
     )
 
 
-def dummy_type(module_name: str, package_name: Optional[str] = None):
+def dummy_type(module_name: str, package_name: str | None = None):
     class DummyType(type):
         def __getattr__(cls, _) -> Any:
             _raise_error(module_name, package_name)
@@ -25,7 +25,7 @@ def dummy_type(module_name: str, package_name: Optional[str] = None):
     return DummyClass
 
 
-def dummy_function(module_name: str, package_name: Optional[str] = None):
+def dummy_function(module_name: str, package_name: str | None = None):
     def fail(*args, **kwargs) -> Any:
         _raise_error(module_name, package_name)
 

@@ -1,6 +1,6 @@
 import logging
 from dataclasses import dataclass
-from typing import Optional, overload
+from typing import overload
 
 import numpy as np
 import numpy.typing as npt
@@ -166,7 +166,7 @@ class SMAC(MARLEnv[MultiDiscreteSpace]):
         self._seed = self._env.seed()
         self.name = f"smac-{self._env.map_name}"
 
-    def reset(self, *, seed: Optional[int] = None):
+    def reset(self, *, seed: int | None = None):
         if seed is not None:
             logging.warning("SMAC does not support seeding after initialization. Ignoring seed argument.")
         obs, state = self._env.reset()

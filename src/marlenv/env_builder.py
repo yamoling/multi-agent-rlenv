@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Generic, Literal, Optional, Sequence, TypeVar, overload
+from typing import Generic, Literal, TypeVar, overload
 
 import numpy as np
 import numpy.typing as npt
@@ -20,7 +20,7 @@ class Builder(Generic[AS]):
     def __init__(self, env: MARLEnv[AS]):
         self._env = env
 
-    def time_limit(self, n_steps: int, add_extra: bool = True, truncation_penalty: Optional[float] = None):
+    def time_limit(self, n_steps: int, add_extra: bool = True, truncation_penalty: float | None = None):
         """
         Limits the number of time steps for an episode. When the number of steps is reached, then the episode is truncated.
 
@@ -39,12 +39,20 @@ class Builder(Generic[AS]):
         self._env = wrappers.DelayedReward(self._env, delay)
         return self
 
-    def pad(self, to_pad: Literal["obs", "extra"], n: int):
+    @overload
+    def pad(self, to_pad: Literal["extra"], n: int, label: str = "Padding") -> Self:
+        """Pad the extras with `n` zeroes at the end of each observation."""
+
+    @overload
+    def pad(self, to_pad: Literal["obs"], n: int) -> Self:
+        """Pad the observations with `n` zeroes at the end of each observation. Only applicable to 1-dimensional observations."""
+
+    def pad(self, to_pad: Literal["obs", "extra"], n: int, label: str = "Padding"):
         match to_pad:
             case "obs":
                 self._env = wrappers.PadObservations(self._env, n)
             case "extra":
-                self._env = wrappers.PadExtras(self._env, n)
+                self._env = wrappers.PadExtras(self._env, n, label)
             case other:
                 raise ValueError(f"Unknown padding type: {other}")
         return self
@@ -75,18 +83,27 @@ class Builder(Generic[AS]):
             assert self._env.n_actions > mask, f"Action {mask} does not exist."
             mask_array[:, mask] = False
         elif isinstance(mask, list):
-            is_int = isinstance(mask[0], int)
+            is_bool = isinstance(mask[0], bool)
             for i, m in enumerate(mask):
-                if isinstance(m, int):
-                    assert is_int, f"Mask {mask} is a list of integers, but element {m} is not an integer."
+                if isinstance(m, bool):
+                    assert is_bool, f"Mask {mask} is a list of booleans, but element {m} is not a boolean."
+                    mask_array[:, i] = m
+                else:
+                    assert not is_bool, f"Mask {mask} is a list of integers, but element {m} is not an integer."
                     assert m < self._env.n_actions, f"Action {m} does not exist."
                     mask_array[:, m] = False
-                else:
-                    assert not is_int, f"Mask {mask} is a list of booleans, but element {m} is not a boolean."
-                    mask_array[:, i] = m
         else:
             mask_array = mask
         self._env = wrappers.AvailableActionsMask(self._env, mask_array)
+        return self
+
+    def extra_noise(self, noise_size: int, noise_type: Literal["one-hot", "continuous"] = "one-hot", with_state_extras: bool = True):
+        """
+        Add noise to the observation extras (and optionally to the state extras). The noise remains constant during the episode, but is resampled at the beginning of each episode. The noise is added to the end of the extras.
+
+        This can be useful for some algorithms such as MAVEN (https://proceedings.neurips.cc/paper_files/paper/2019/file/f816dc0acface7498e10496222e9db10-Paper.pdf) that use a latent variable to condition the policy and value functions.
+        """
+        self._env = wrappers.NoiseWrapper(self._env, noise_size, noise_type, with_state_extras=with_state_extras)
         return self
 
     def centralised(self):
