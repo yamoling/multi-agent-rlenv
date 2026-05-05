@@ -79,35 +79,6 @@ class MARLEnv(ABC, Generic[A]):
             raise ValueError("There should either be no extra meaning provided, or all of then should be provided.")
         self._cv2_window_name = None
 
-    # def __init__(
-    #     self,
-    #     n_agents: int,
-    #     action_space: Space[A],
-    #     observation_shape: tuple[int, ...],
-    #     state_shape: tuple[int, ...],
-    #     extras_shape: tuple[int, ...] = (0,),
-    #     state_extra_shape: tuple[int, ...] = (0,),
-    #     reward_space: Space | None = None,
-    #     extras_meanings: list[str] | None = None,
-    # ):
-    #     super().__init__()
-    #     self.action_space = action_space
-    #     self.n_actions = action_space.shape[-1]
-    #     self.n_agents = n_agents
-    #     self.observation_shape = observation_shape
-    #     self.state_shape = state_shape
-    #     self.extras_shape = extras_shape
-    #     self.state_extra_shape = state_extra_shape
-    #     if reward_space is None:
-    #         reward_space = ContinuousSpace.from_shape(1, labels=["Reward"])
-    #     self.reward_space = reward_space
-    #     if extras_meanings is None:
-    #         extras_meanings = [f"{self.name}-extra-{i}" for i in range(extras_shape[0])]
-    #     elif len(extras_meanings) != extras_shape[0]:
-    #         raise ValueError(f"extras_meanings has length {len(extras_meanings)} but expected {extras_shape[0]}")
-    #     self.extras_meanings = extras_meanings
-    #     self._cv2_window_name = None
-
     @property
     def name(self):
         return self.__class__.__name__
@@ -184,7 +155,7 @@ class MARLEnv(ABC, Generic[A]):
         raise NotImplementedError("Method not implemented")
 
     @abstractmethod
-    def step(self, action: A) -> Step:
+    def step(self, action: A | npt.ArrayLike) -> Step:
         """Perform a step in the environment.
 
         Returns a Step object that can be unpacked as a 6-tuple containing:

@@ -75,3 +75,24 @@ class Step:
 
     def __iter__(self):
         return iter((self.obs, self.state, self.reward, self.done, self.truncated, self.info))
+
+    def __eq__(self, other: object, /):
+        if other is self:
+            return True
+        if not isinstance(other, Step):
+            return False
+        if self.done != other.done or self.truncated != other.truncated:
+            return False
+        if not np.array_equal(self.action, other.action) or not np.array_equal(self.reward, other.reward):
+            return False
+        if self.state != other.state or self.obs != other.obs:
+            return False
+        for key, value in self.info.items():
+            if key not in other.info:
+                return False
+            if isinstance(value, np.ndarray):
+                if not np.array_equal(value, other.info[key]):
+                    return False
+            elif value != other.info[key]:
+                return False
+        return True
