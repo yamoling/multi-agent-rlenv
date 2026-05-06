@@ -5,7 +5,7 @@ import numpy as np
 import pytest
 
 from marlenv import Builder, DiscreteSpace, Episode, MARLEnv, Observation, State, Transition
-from marlenv.catalog import DiscreteMockEnv, DiscreteMOMockEnv
+from marlenv.catalog import DiscreteMockEnv, DiscreteMOMockEnv, MStepsMatrix
 
 from .utils import generate_episode
 
@@ -434,6 +434,11 @@ def test_env_replay():
 def test_env_extras_meanings():
     env = DiscreteMockEnv(4, extras_size=4)
     assert len(env.extras_meanings) == 4
+
+
+def test_env_extras_size_without_extras():
+    env = MStepsMatrix(10)
+    assert env.extras_size == 0
 
 
 def test_env_extras_size_from_1d_shape():

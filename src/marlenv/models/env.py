@@ -65,7 +65,7 @@ class MARLEnv(ABC, Generic[A]):
     """The shape of an observation for a single agent."""
     state_shape: tuple[int, ...]
     _: KW_ONLY
-    extras_shape: tuple[int, ...] = ()
+    extras_shape: tuple[int, ...] = (0,)
     """The shape of the extras features for a single agent"""
     state_extra_shape: tuple[int, ...] = (0,)
     """The shape of the state."""

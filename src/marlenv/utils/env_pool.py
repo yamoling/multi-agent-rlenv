@@ -1,20 +1,21 @@
 import random
 from dataclasses import dataclass
-from typing import Sequence, TypeVar
+from typing import Collection, TypeVar
 
-from .rlenv_wrapper import MARLEnv, RLEnvWrapper
+from marlenv.wrappers.rlenv_wrapper import MARLEnv, RLEnvWrapper
 
 A = TypeVar("A")
 
 
 @dataclass
 class EnvPool(RLEnvWrapper[A]):
-    envs: Sequence[MARLEnv[A]]
+    """Randomly selects an environment from the pool on reset."""
 
-    def __init__(self, envs: Sequence[MARLEnv[A]]):
-        assert len(envs) > 0, "EnvPool must contain at least one environment"
-        self.envs = envs
-        for env in envs[1:]:
+    envs: list[MARLEnv[A]]
+
+    def __init__(self, envs: Collection[MARLEnv[A]]):
+        assert len(self.envs) > 0, "EnvPool must contain at least one environment"
+        for env in self.envs[1:]:
             assert env.has_same_inouts(self.envs[0]), "All environments must have the same inputs and outputs"
         super().__init__(self.envs[0])
 
