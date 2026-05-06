@@ -14,6 +14,7 @@ class EnvPool(RLEnvWrapper[A]):
     envs: list[MARLEnv[A]]
 
     def __init__(self, envs: Collection[MARLEnv[A]]):
+        self.envs = list(envs)
         assert len(self.envs) > 0, "EnvPool must contain at least one environment"
         for env in self.envs[1:]:
             assert env.has_same_inouts(self.envs[0]), "All environments must have the same inputs and outputs"

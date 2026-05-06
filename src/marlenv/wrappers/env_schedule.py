@@ -1,12 +1,20 @@
+from dataclasses import dataclass
+from typing import TypeVar
+
 from marlenv.wrappers.rlenv_wrapper import MARLEnv, RLEnvWrapper
 
+A = TypeVar("A")
 
-class EnvSchedule(RLEnvWrapper):
+
+@dataclass
+class EnvSchedule(RLEnvWrapper[A]):
     """
     Schedules the environments to change after a certain number of resets (i.e. episodes).
     """
 
-    def __init__(self, envs: dict[int, MARLEnv]):
+    envs: list[tuple[int, MARLEnv[A]]]
+
+    def __init__(self, envs: dict[int, MARLEnv[A]]):
         """
         Args:
             envs: A dictionary mapping the number of resets to the environment to use after that many resets. For instance, `{0: env1, 100: env2}` means that env1 will be used for the first 100 resets, and then env2 will be used for all subsequent resets.
@@ -19,9 +27,9 @@ class EnvSchedule(RLEnvWrapper):
                 raise ValueError("All environments must have the same observation, extras and action spaces")
         sorted_envs = sorted(envs.items(), key=lambda x: x[0])
         assert sorted_envs[0][0] == 0, "The first environment must start at reset 0"
-        super().__init__(sorted_envs[0][1])
         self.envs = sorted_envs
         self.current_index = 0
+        super().__init__(sorted_envs[0][1])
 
     @property
     def current_env_end(self):

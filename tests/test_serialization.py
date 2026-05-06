@@ -282,6 +282,7 @@ def test_serialize_all_wrappers_dynamic():
         "ActionRandomizer": lambda env: wrappers.ActionRandomizer(env, 0.2),
         "EnvPool": lambda env: wrappers.EnvPool([catalog.DiscreteMockEnv(2, n_actions=2), catalog.DiscreteMockEnv(2, n_actions=2)]),
         "NoiseWrapper": lambda env: wrappers.NoiseWrapper(env, 5),
+        "EnvSchedule": lambda env: wrappers.EnvSchedule({0: env, 20: env}),
     }
 
     for wrapper_name in wrappers.__all__:
