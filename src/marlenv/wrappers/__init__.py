@@ -5,7 +5,6 @@ from .available_actions_wrapper import AvailableActions
 from .blind_wrapper import Blind
 from .centralised import Centralized
 from .delayed_rewards import DelayedReward
-from .env_pool import EnvPool
 from .env_schedule import EnvSchedule
 from .last_action_wrapper import LastAction
 from .noise import NoiseWrapper
@@ -34,6 +33,5 @@ __all__ = [
     "PotentialShaping",
     "ActionRandomizer",
     "NoiseWrapper",
-    "EnvPool",
     "EnvSchedule",
 ]

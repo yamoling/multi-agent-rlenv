@@ -23,6 +23,7 @@ corresponding extras (e.g., `multi-agent-rlenv[smac]`, `multi-agent-rlenv[lle]`,
 from .connectn import ConnectN
 from .coordinated_grid import CoordinatedGrid
 from .deepsea import DeepSea
+from .env_pool import EnvPool
 from .m_steps_matrix import MStepsMatrix
 from .matrix_game import MatrixGame
 from .mock_env import DiscreteMockEnv, DiscreteMOMockEnv
@@ -40,6 +41,7 @@ __all__ = [
     "DiscreteMOMockEnv",
     "ConnectN",
     "MStepsMatrix",
+    "EnvPool",
 ]
 
 
