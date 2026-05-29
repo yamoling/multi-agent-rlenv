@@ -24,14 +24,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - name: Set up Python
-      uses: actions/setup-python@v5
+    - uses: astral-sh/setup-uv@v8.0.0
       with:
+        version: 0.10.2
         python-version: 3.14
-    - name: Install UV
-      uses: yezz123/setup-uv@v4
-      with:
-          uv-version: 0.10.2
     - name: Build wheels
       run: |
         uv venv
@@ -39,7 +35,7 @@ jobs:
         uv run python -m build
     
     - name: 📡 Upload package distributions
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: wheels
         path: dist/
@@ -56,7 +52,7 @@ jobs:
       id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
     steps:
     - name: 📡 Download package distributions
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v8
       with:
         name: wheels
         path: dist/
@@ -72,22 +68,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Setup Pages
         uses: actions/configure-pages@v5
-      - uses: actions/setup-python@v5
+      - uses: astral-sh/setup-uv@v8.0.0
         with:
+          version: 0.10.2
           python-version: 3.14
-      - name: Install UV
-        uses: yezz123/setup-uv@v4
-        with:
-          uv-version: 0.10.2
       - name: Install dependencies
         run: |
           uv sync
           uv run pdoc python/marlenv -o ./docs --docformat=google
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v4
+        uses: actions/upload-pages-artifact@v5
         with:
           # Upload entire repository
           path: './docs'
