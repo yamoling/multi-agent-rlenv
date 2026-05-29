@@ -5,7 +5,7 @@ import numpy as np
 import pytest
 
 from marlenv import Builder, DiscreteSpace, Episode, MARLEnv, Observation, State, Transition
-from marlenv.catalog import DiscreteMockEnv, DiscreteMOMockEnv
+from marlenv.catalog import DiscreteMockEnv, DiscreteMOMockEnv, MStepsMatrix
 
 from .utils import generate_episode
 
@@ -436,6 +436,11 @@ def test_env_extras_meanings():
     assert len(env.extras_meanings) == 4
 
 
+def test_env_extras_size_without_extras():
+    env = MStepsMatrix(10)
+    assert env.extras_size == 0
+
+
 def test_env_extras_size_from_1d_shape():
     env = DiscreteMockEnv(4, extras_size=4)
     assert env.extras_size == 4
@@ -702,3 +707,24 @@ def test_as_joint_no_extras():
     assert joint.shape == (n_agents * obs_size,)
     assert joint.extras_shape == (0,)
     assert joint.n_agents == 1
+
+
+def test_step_equality():
+    env1 = DiscreteMockEnv(n_agents=2)
+    env2 = DiscreteMockEnv(n_agents=3)
+    env3 = DiscreteMockEnv(n_agents=2)
+
+    env1.reset()
+    env2.reset()
+    env3.reset()
+
+    a1 = env1.sample_action()
+    s1 = env1.step(a1)
+    s3 = env3.step(a1)
+    assert s1 == s3
+    s2 = env2.random_step()
+    assert s1 != s2
+    assert s1 == s1
+
+    s4 = env1.step(a1)
+    assert s1 != s4
