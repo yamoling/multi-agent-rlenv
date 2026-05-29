@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 
+import numpy.typing as npt
 from typing_extensions import TypeVar
 
 from marlenv.models import ContinuousSpace, MARLEnv, Space, State
@@ -63,11 +64,11 @@ class RLEnvWrapper(MARLEnv[A]):
     def agent_state_size(self):
         return self.wrapped.agent_state_size
 
-    def step(self, action: A):
+    def step(self, action: A | npt.ArrayLike):
         return self.wrapped.step(action)
 
     def reset(self, *, seed: int | None = None):
-        return self.wrapped.reset()
+        return self.wrapped.reset(seed=seed)
 
     def get_state(self):
         return self.wrapped.get_state()

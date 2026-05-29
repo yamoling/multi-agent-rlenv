@@ -1,3 +1,5 @@
+import random
+
 import numpy as np
 import pytest
 
@@ -90,17 +92,17 @@ def test_time_limit_wrapper():
 
 def test_truncated_and_done():
     END_GAME = 10
-    env = marlenv.wrappers.TimeLimit(catalog.DiscreteMockEnv(2, end_game=END_GAME), END_GAME)
+    env = marlenv.wrappers.TimeLimit(catalog.DiscreteMockEnv(2, end_game=END_GAME), END_GAME, add_extra=True)
     obs, state = env.reset()
     episode = marlenv.Episode.new(obs, state)
     action = env.action_space.sample()
     step = env.step(action)
+    episode.add(marlenv.Transition.from_step(obs, state, step))
     while not episode.is_finished:
-        episode.add(marlenv.Transition.from_step(obs, state, action, step))
         obs = step.obs
         state = step.state
-        action = env.action_space.sample()
-        step = env.step(action)
+        step = env.random_step()
+        episode.add(marlenv.Transition.from_step(obs, state, step))
 
     assert step.done
     assert not step.truncated, (
@@ -375,7 +377,7 @@ def test_time_limit_set_state():
 
 
 def test_last_action_set_state():
-    env = LastAction(catalog.DiscreteMockEnv())
+    env = LastAction(catalog.DiscreteMockEnv(end_game=50))
     env.reset()
 
     states = []
@@ -502,7 +504,7 @@ def test_randomize_actions_full_randomization_replaces_with_valid_actions():
     env = ActionRandomizer(wrapped, p=1.0)
     env.reset()
 
-    action = np.zeros(env.n_agents, dtype=np.int32)
+    action = np.zeros(env.n_agents, dtype=np.int64)
     env.step(action)
 
     assert wrapped.last_action is not None
@@ -525,7 +527,7 @@ def test_randomize_actions_per_agent_probability():
     env = ActionRandomizer(wrapped, p=[0.0, 1.0, 0.0])
     env.reset()
 
-    action = np.array([1, 1, 1], dtype=np.int32)
+    action = np.array([1, 1, 1], dtype=np.int64)
     changed_second_agent = False
     for _ in range(100):
         env.step(action)
@@ -573,6 +575,18 @@ def test_env_pool():
             if env_pool.wrapped == env:
                 found[i] = True
     assert found[0] and found[1]
+
+
+def test_pool_dones():
+    envs = [catalog.DiscreteMockEnv(n_agents=2, n_actions=4, end_game=random.randint(5, 15)) for _ in range(50)]
+    env = EnvPool(envs)
+    for _ in range(100):
+        env.reset()
+        stop = False
+        while not stop:
+            step = env.random_step()
+            if step.is_terminal:
+                stop = True
 
 
 def test_incompatible_envs():

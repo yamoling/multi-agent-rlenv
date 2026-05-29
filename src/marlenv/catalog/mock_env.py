@@ -47,6 +47,10 @@ class DiscreteMockEnv(DiscreteMARLEnv):
     def agent_state_size(self):
         return self._agent_state_size
 
+    @property
+    def done(self):
+        return self.t >= self.end_game
+
     def reset(self, *, seed: int | None = None):
         if seed is not None:
             self.seed(seed)
@@ -78,6 +82,7 @@ class DiscreteMockEnv(DiscreteMARLEnv):
         return
 
     def step(self, action):
+        assert not self.done
         self.t += 1
         self.actions_history.append(action)
         return Step(
@@ -85,7 +90,7 @@ class DiscreteMockEnv(DiscreteMARLEnv):
             self.get_observation(),
             self.get_state(),
             self.reward_step,
-            self.t >= self.end_game,
+            self.done,
         )
 
 
@@ -142,7 +147,12 @@ class DiscreteMOMockEnv(DiscreteMARLEnv):
         s.add_extra(self.t)
         return s
 
+    @property
+    def done(self):
+        return self.t >= self.end_game
+
     def step(self, action):
+        assert not self.done
         self.t += 1
         self.actions_history.append(action)
         return Step(
@@ -150,5 +160,5 @@ class DiscreteMOMockEnv(DiscreteMARLEnv):
             self.get_observation(),
             self.get_state(),
             self.reward_step,
-            self.t >= self.end_game,
+            self.done,
         )
