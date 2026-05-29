@@ -37,7 +37,7 @@ class PotentialShaping(RLEnvWrapper[A], ABC):
         return obs
 
     def reset(self, *, seed: int | None = None):
-        obs, state = super().reset()
+        obs, state = super().reset(seed=seed)
         self._current_potential = self.compute_potential()
         return self.add_extras(obs), state
 

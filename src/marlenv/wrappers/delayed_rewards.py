@@ -23,7 +23,7 @@ class DelayedReward(RLEnvWrapper[A]):
         self._reward_queue.clear()
         for _ in range(self.delay):
             self._reward_queue.append(np.zeros(self.reward_space.shape, dtype=np.float32))
-        return super().reset()
+        return super().reset(seed=seed)
 
     def step(self, action):
         step = super().step(action)

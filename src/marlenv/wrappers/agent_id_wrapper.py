@@ -26,7 +26,7 @@ class AgentId(RLEnvWrapper[A]):
         return step
 
     def reset(self, *, seed: int | None = None):
-        obs, state = super().reset()
+        obs, state = super().reset(seed=seed)
         obs.add_extra(self._identity)
         return obs, state
 

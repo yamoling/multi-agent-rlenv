@@ -58,7 +58,7 @@ class TimeLimit(RLEnvWrapper[A]):
 
     def reset(self, *, seed: int | None = None):
         self._current_step = 0
-        obs, state = super().reset()
+        obs, state = super().reset(seed=seed)
         if self.add_extra:
             self.add_time_extra(obs, state)
         return obs, state

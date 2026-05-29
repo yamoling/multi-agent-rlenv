@@ -27,4 +27,4 @@ class EnvPool(RLEnvWrapper[A]):
 
     def reset(self, *, seed: int | None = None):
         self.wrapped = random.choice(self.envs)
-        return super().reset()
+        return super().reset(seed=seed)

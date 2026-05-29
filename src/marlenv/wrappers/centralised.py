@@ -28,7 +28,7 @@ class Centralized(RLEnvWrapper[npt.NDArray[np.int64]]):
         )
 
     def reset(self, *, seed: int | None = None):
-        obs, state = super().reset()
+        obs, state = super().reset(seed=seed)
         return self._joint_observation(obs), state
 
     def get_observation(self):
