@@ -1,6 +1,9 @@
+import random
+
 import pytest
 
 from marlenv import catalog
+from marlenv.catalog import EnvPool
 from marlenv.utils import dummy_function, dummy_type
 
 try:
@@ -131,3 +134,46 @@ def test_m_steps_other_paths():
             step = env.step(last_action.to_tuple())
             assert step.done
             assert step.reward.item() == 0
+
+
+def test_env_pool():
+    envs = [
+        catalog.DiscreteMockEnv(n_agents=2, n_actions=2),
+        catalog.DiscreteMockEnv(n_agents=2, n_actions=2),
+    ]
+    env_pool = EnvPool(envs)
+    found = [False, False]
+    n_trials = 0
+    while n_trials < 1000 and not all(found):
+        n_trials += 1
+        env_pool.reset()
+        for i, env in enumerate(envs):
+            if env_pool.current == env:
+                found[i] = True
+    assert found[0] and found[1]
+
+
+def test_pool_dones():
+    envs = [catalog.DiscreteMockEnv(n_agents=2, n_actions=4, end_game=random.randint(5, 15)) for _ in range(50)]
+    env = EnvPool(envs)
+    for _ in range(100):
+        env.reset()
+        stop = False
+        while not stop:
+            step = env.random_step()
+            if step.is_terminal:
+                stop = True
+
+
+def test_incompatible_envs():
+    with pytest.raises(AssertionError):
+        EnvPool([catalog.DiscreteMockEnv(n_agents=2, n_actions=2), catalog.DiscreteMockEnv(n_agents=2, n_actions=3)])
+    with pytest.raises(AssertionError):
+        EnvPool([catalog.DiscreteMockEnv(n_agents=2, n_actions=2), catalog.DiscreteMockEnv(n_agents=3, n_actions=2)])
+    with pytest.raises(AssertionError):
+        EnvPool(
+            [
+                catalog.DiscreteMockEnv(n_agents=2, n_actions=2, extras_size=10),
+                catalog.DiscreteMockEnv(n_agents=2, n_actions=2, extras_size=1),
+            ]
+        )
