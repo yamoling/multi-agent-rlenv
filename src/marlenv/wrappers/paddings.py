@@ -32,7 +32,7 @@ class PadExtras(RLEnvWrapper[A]):
         return step
 
     def reset(self, *, seed: int | None = None):
-        obs, state = super().reset()
+        obs, state = super().reset(seed=seed)
         obs.add_extra(self.padding)
         return obs, state
 
@@ -52,7 +52,7 @@ class PadObservations(RLEnvWrapper[A]):
         return step
 
     def reset(self, *, seed: int | None = None):
-        obs, state = super().reset()
+        obs, state = super().reset(seed=seed)
         obs = self._add_obs(obs)
         return obs, state
 

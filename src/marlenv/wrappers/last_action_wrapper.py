@@ -27,7 +27,7 @@ class LastAction(RLEnvWrapper[A]):
         self.last_one_hot_actions = np.zeros((env.n_agents, env.n_actions), dtype=np.float32)
 
     def reset(self, *, seed: int | None = None):
-        obs, state = super().reset()
+        obs, state = super().reset(seed=seed)
         self.last_one_hot_actions = np.zeros((self.n_agents, self.n_actions), dtype=np.float32)
         obs.add_extra(self.last_one_hot_actions)
         state.add_extra(self.last_one_hot_actions.flatten())

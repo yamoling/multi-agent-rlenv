@@ -54,7 +54,7 @@ class VideoRecorder(RLEnvWrapper[A]):
         return step
 
     def reset(self, *, seed: int | None = None):
-        res = super().reset()
+        res = super().reset(seed=seed)
         image = self.get_image()
         height, width, _ = image.shape
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
