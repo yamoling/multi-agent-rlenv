@@ -24,7 +24,7 @@ class RLEnvWrapper(MARLEnv[A]):
         observation_shape: tuple[int, ...] | None = None,
         state_shape: tuple[int, ...] | None = None,
         extra_shape: tuple[int, ...] | None = None,
-        state_extra_shape: tuple[int, ...] | None = None,
+        state_extras_shape: tuple[int, ...] | None = None,
         action_space: Space[A] | None = None,
         reward_space: ContinuousSpace | None = None,
         extra_meanings: list[str] | None = None,
@@ -40,7 +40,7 @@ class RLEnvWrapper(MARLEnv[A]):
             observation_shape=observation_shape or wrapped.observation_shape,
             state_shape=state_shape or wrapped.state_shape,
             extras_shape=extra_shape or wrapped.extras_shape,
-            state_extra_shape=state_extra_shape or wrapped.state_extra_shape,
+            state_extras_shape=state_extras_shape or wrapped.state_extras_shape,
             reward_space=reward_space or wrapped.reward_space,
             extras_meanings=extra_meanings or wrapped.extras_meanings,
         )

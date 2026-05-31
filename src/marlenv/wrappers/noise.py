@@ -30,7 +30,7 @@ class NoiseWrapper(RLEnvWrapper[A]):
         self.noise_size = noise_size
         self.with_state_extras = with_state_extras
         extra_meanings = wrapped.extras_meanings + [f"Noise-{i}" for i in range(noise_size)]
-        state_extra_shape = wrapped.state_extra_shape
+        state_extra_shape = wrapped.state_extras_shape
         if with_state_extras:
             assert len(state_extra_shape) == 1, "NoiseWrapper only supports 1D state extras"
             state_extra_shape = (state_extra_shape[0] + noise_size,)
@@ -38,7 +38,7 @@ class NoiseWrapper(RLEnvWrapper[A]):
             wrapped,
             extra_meanings=extra_meanings,
             extra_shape=(wrapped.extras_size + noise_size,),
-            state_extra_shape=state_extra_shape,
+            state_extras_shape=state_extra_shape,
         )
         self._episode_noise = np.zeros((self.n_agents, noise_size), dtype=np.float32)
 
@@ -57,7 +57,7 @@ class NoiseWrapper(RLEnvWrapper[A]):
             state.add_extra(self._episode_noise[0])
         return obs, state
 
-    def step(self, action: A):
+    def step(self, action):
         step = super().step(action)
         step.obs.add_extra(self._episode_noise)
         if self.with_state_extras:

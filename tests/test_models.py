@@ -597,7 +597,7 @@ def test_state_as_tensor():
     assert data.shape == env.state_shape
     assert data.dtype == torch.float32
     assert isinstance(extras, torch.Tensor)
-    assert extras.shape == env.state_extra_shape
+    assert extras.shape == env.state_extras_shape
     assert extras.dtype == torch.float32
 
 
@@ -612,7 +612,7 @@ def test_state_as_tensor_with_batch():
     assert data.shape == (1, *env.state_shape)
     assert data.dtype == torch.float32
     assert isinstance(extras, torch.Tensor)
-    assert extras.shape == (1, *env.state_extra_shape)
+    assert extras.shape == (1, *env.state_extras_shape)
     assert extras.dtype == torch.float32
 
 

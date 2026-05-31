@@ -23,7 +23,7 @@ class Centralized(RLEnvWrapper[npt.NDArray[np.int64]]):
             n_agents=1,
             observation_shape=joint_observation_shape,
             state_shape=env.state_shape,
-            state_extra_shape=env.extras_shape,
+            state_extras_shape=env.extras_shape,
             action_space=self._make_joint_action_space(env),
         )
 

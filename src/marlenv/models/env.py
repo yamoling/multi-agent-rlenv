@@ -7,6 +7,7 @@ from typing import Callable, Generic, Sequence, TypeVar
 import cv2
 import numpy as np
 import numpy.typing as npt
+from typing_extensions import deprecated
 
 from .episode import Episode
 from .observation import Observation
@@ -67,7 +68,7 @@ class MARLEnv(ABC, Generic[A]):
     _: KW_ONLY
     extras_shape: tuple[int, ...] = (0,)
     """The shape of the extras features for a single agent"""
-    state_extra_shape: tuple[int, ...] = (0,)
+    state_extras_shape: tuple[int, ...] = (0,)
     """The shape of the state."""
     reward_space: Space[npt.NDArray[np.float32]] = field(default_factory=lambda: ContinuousSpace.from_shape(1, labels=["Reward"]))
     extras_meanings: list[str] = field(default_factory=list)
@@ -108,8 +109,13 @@ class MARLEnv(ABC, Generic[A]):
         return math.prod(self.extras_shape)
 
     @property
+    @deprecated("Use `self.state_extras_shape` instead. This property will be removed in a future version.")
+    def state_extra_shape(self):
+        return self.state_extras_shape
+
+    @property
     def state_extras_size(self) -> int:
-        return math.prod(self.state_extra_shape)
+        return math.prod(self.state_extras_shape)
 
     @property
     def observation_size(self) -> int:

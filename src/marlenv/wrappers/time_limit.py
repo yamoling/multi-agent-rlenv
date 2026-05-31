@@ -32,18 +32,18 @@ class TimeLimit(RLEnvWrapper[A]):
         truncation_penalty: float | None = None,
     ) -> None:
         assert len(env.extras_shape) == 1
-        assert len(env.state_extra_shape) == 1
+        assert len(env.state_extras_shape) == 1
         extras_shape = env.extras_shape
-        state_extras_shape = env.state_extra_shape
+        state_extras_shape = env.state_extras_shape
         self.extra_index = 0
         extra_meanings = env.extras_meanings
         if add_extra:
             dims = env.extras_shape[0]
             self.extra_index = dims
             extras_shape = (dims + 1,)
-            state_extras_shape = (env.state_extra_shape[0] + 1,)
+            state_extras_shape = (env.state_extras_shape[0] + 1,)
             extra_meanings = env.extras_meanings + ["Time ratio"]
-        super().__init__(env, extra_shape=extras_shape, state_extra_shape=state_extras_shape, extra_meanings=extra_meanings)
+        super().__init__(env, extra_shape=extras_shape, state_extras_shape=state_extras_shape, extra_meanings=extra_meanings)
         self.step_limit = step_limit
         self._current_step = 0
         self.add_extra = add_extra
