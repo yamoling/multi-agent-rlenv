@@ -108,8 +108,8 @@ class MARLEnv(ABC, Generic[A]):
         """The size of the flattened extras features for a single agent."""
         return math.prod(self.extras_shape)
 
-    @deprecated("Use `self.state_extras_shape` instead. This property will be removed in a future version.")
     @property
+    @deprecated("Use `self.state_extras_shape` instead. This property will be removed in a future version.")
     def state_extra_shape(self):
         return self.state_extras_shape
 
