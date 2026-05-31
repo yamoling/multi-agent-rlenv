@@ -65,7 +65,7 @@ def test_state_shapes_and_sizes():
 
     # By default DiscreteMockEnv does not set state extras -> empty
     assert state.extras.shape == (0,)
-    assert state.extras_shape == env.state_extra_shape
+    assert state.extras_shape == env.state_extras_shape
     # extras_size on State is the product of extras_shape (0 => 0)
     assert state.extras_size == 0
     # MARLEnv convenience method for state extras size
@@ -80,12 +80,12 @@ def test_state_and_observation_consistency_multiple_resets():
         assert obs.data.shape == (env.n_agents, env.observation_shape[0])
         assert obs.extras.shape == (env.n_agents, env.extras_shape[0])
         assert state.data.shape == env.state_shape
-        assert state.extras.shape == env.state_extra_shape or state.extras.shape == (0,)
+        assert state.extras.shape == env.state_extras_shape or state.extras.shape == (0,)
 
 
 def test_state_extra_shape_size():
     env = DiscreteMockEnv()
-    assert env.state_extra_shape == (0,)
+    assert env.state_extras_shape == (0,)
     assert env.state_extras_size == 0
     obs, state = env.reset()
     assert obs.extras_size == 0

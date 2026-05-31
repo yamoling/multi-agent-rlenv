@@ -28,7 +28,7 @@ class EnvPool(MARLEnv[A]):
             self.current.observation_shape,
             self.current.state_shape,
             extras_shape=self.current.extras_shape,
-            state_extra_shape=self.current.state_extra_shape,
+            state_extras_shape=self.current.state_extras_shape,
             reward_space=self.current.reward_space,
             extras_meanings=self.current.extras_meanings,
         )

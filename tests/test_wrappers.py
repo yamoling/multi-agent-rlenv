@@ -1,5 +1,3 @@
-import random
-
 import numpy as np
 import pytest
 
@@ -76,7 +74,7 @@ def test_time_limit_wrapper():
     MAX_T = 5
     env = Builder(catalog.DiscreteMockEnv(1)).time_limit(MAX_T).build()
     assert env.extras_shape == (1,)
-    assert env.state_extra_shape == (1,)
+    assert env.state_extras_shape == (1,)
     t = 1
     step = env.step(np.array([0]))
     while not step.done:
