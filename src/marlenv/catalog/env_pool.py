@@ -15,13 +15,16 @@ class EnvPool(MARLEnv[A]):
     """Randomly selects an environment from the pool on reset."""
 
     envs: list[MARLEnv[A]]
+    sequential: bool
 
-    def __init__(self, envs: Collection[MARLEnv[A]]):
+    def __init__(self, envs: Collection[MARLEnv[A]], sequential: bool = False):
         self.envs = list(envs)
+        self.sequential = sequential
+        self._current_index = 0
         assert len(self.envs) > 0, "EnvPool must contain at least one environment"
         for env in self.envs[1:]:
             assert env.has_same_inouts(self.envs[0]), "All environments must have the same inputs and outputs"
-        self.current = self.envs[0]
+        self.current = self.envs[self._current_index]
         super().__init__(
             self.current.n_agents,
             self.current.action_space,
@@ -44,7 +47,11 @@ class EnvPool(MARLEnv[A]):
     def reset(self, *, seed: int | None = None):
         if seed is not None:
             self.seed(seed)
-        self.current = random.choice(self.envs)
+        if self.sequential:
+            self._current_index = (self._current_index + 1) % len(self.envs)
+        else:
+            self._current_index = random.randint(0, len(self.envs) - 1)
+        self.current = self.envs[self._current_index]
         return self.current.reset(seed=seed)
 
     @property

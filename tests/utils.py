@@ -9,7 +9,7 @@ def generate_episode(env: MARLEnv, with_probs: bool = False, seed: int | None = 
     obs, state = env.reset()
     episode = Episode.new(obs, state)
     while not episode.is_finished:
-        action = env.sample_action()
+        action = np.asarray(env.sample_action())
         probs = None
         if with_probs:
             probs = np.random.random(action.shape)
