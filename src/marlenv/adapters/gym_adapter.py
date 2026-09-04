@@ -3,13 +3,13 @@ from dataclasses import dataclass
 from typing import Any, Literal
 
 import cv2
-import gymnasium as gym  # pyright: ignore[reportMissingImports]
+import gymnasium as gym
 import numpy as np
 import numpy.typing as npt
-from gymnasium import Env, spaces  # pyright: ignore[reportMissingImports]
+from gymnasium import Env, spaces
 from typing_extensions import override
 
-from marlenv import ContinuousSpace, DiscreteSpace, MARLEnv, MultiDiscreteSpace, Observation, State, Step
+from marlenv.models import ContinuousSpace, DiscreteSpace, MARLEnv, MultiDiscreteSpace, Observation, State, Step
 
 
 @dataclass

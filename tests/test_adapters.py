@@ -11,6 +11,54 @@ skip_smac = not marlenv.adapters.HAS_SMAC
 skip_smacv2 = not marlenv.adapters.HAS_SMACv2
 
 
+@pytest.mark.parametrize(
+    ("flag", "dependencies"),
+    [
+        ("HAS_GYM", ("gymnasium", "cv2")),
+        ("HAS_PETTINGZOO", ("pettingzoo", "gymnasium")),
+        ("HAS_SMAC", ("smac.env",)),
+        ("HAS_SMACv2", ("smacv2.env",)),
+    ],
+)
+def test_availability_flag_is_set_when_dependencies_are_installed(flag: str, dependencies: tuple[str, ...]):
+    """
+    An availability flag may only be False when an optional dependency is genuinely missing.
+
+    The flags are computed with a bare `except ImportError` in `marlenv.adapters`, which
+    cannot distinguish a missing dependency from a broken adapter module: a circular import
+    inside the adapter raises ImportError too, and would be silently reported as
+    "not installed", making every dependent test skip instead of fail.
+    """
+    for dependency in dependencies:
+        pytest.importorskip(dependency)
+    assert getattr(marlenv.adapters, flag), (
+        f"{flag} is False even though {', '.join(dependencies)} can be imported. "
+        "The adapter module fails to import for some other reason and the error was swallowed."
+    )
+
+
+def test_only_a_missing_optional_dependency_is_swallowed():
+    """
+    The import guards in `marlenv.adapters` must re-raise anything that is not an
+    optional extra being absent, so a broken adapter fails loudly instead of silently
+    disabling itself.
+    """
+    from marlenv.adapters import _is_missing_optional_dependency as is_missing
+
+    # The optional extra is genuinely absent: swallow it and disable the adapter.
+    assert is_missing(ModuleNotFoundError("No module named 'smacv2'", name="smacv2"), "smacv2", "pysc2")
+    # A missing submodule of an absent extra counts too.
+    assert is_missing(ModuleNotFoundError("No module named 'smac.env'", name="smac.env"), "smac")
+
+    # A circular import raises a plain ImportError and must not pass for a missing extra.
+    circular = ImportError("cannot import name 'ContinuousSpace' from partially initialized module 'marlenv'")
+    assert not is_missing(circular, "gymnasium")
+    # A missing *core* dependency is a broken install, not a missing extra.
+    assert not is_missing(ModuleNotFoundError("No module named 'cv2'", name="cv2"), "gymnasium")
+    # An unrelated extra must not disable this adapter either.
+    assert not is_missing(ModuleNotFoundError("No module named 'pysc2'", name="pysc2"), "gymnasium")
+
+
 @pytest.mark.skipif(skip_gym, reason="Gymnasium is not installed")
 def test_gym_adapter_discrete():
     # Discrete action space
@@ -59,9 +107,9 @@ def test_gym_adapter_continuous():
 @pytest.mark.skipif(skip_pettingzoo, reason="PettingZoo is not installed")
 def test_pettingzoo_adapter_discrete_action():
     # https://pettingzoo.farama.org/environments/sisl/pursuit/#pursuit
-    from pettingzoo.sisl import pursuit_v4
+    from pettingzoo.sisl import pursuit_v5
 
-    env = marlenv.adapters.PettingZoo(pursuit_v4.parallel_env())
+    env = marlenv.adapters.PettingZoo(pursuit_v5.parallel_env())
     env.reset()
     action = env.action_space.sample()
     step = env.step(action)
@@ -102,7 +150,7 @@ def _check_env_3m(env):
     from marlenv.adapters import SMAC
 
     assert isinstance(env, SMAC)
-    obs, state = env.reset()
+    obs, _ = env.reset()
     assert isinstance(obs, Observation)
     assert env.n_agents == 3
     assert isinstance(env.action_space, MultiDiscreteSpace)
@@ -331,7 +379,7 @@ def test_smac_blank_init():
     SMAC()
 
 
-@pytest.mark.skipif(skip_smacv2, reason="SMAC is not installed")
+@pytest.mark.skipif(skip_smacv2, reason="SMACv2 is not installed")
 def test_smacv2_blank_init():
     from marlenv.adapters import SMACv2
 

@@ -24,11 +24,11 @@ dependencies = [
 all = [
   "gymnasium>0.29.1",
   "pettingzoo>=1.20",
-  "overcooked>=0.1.0",
+  "overcooked>=0.2.1",
   "smac",
-  "laser-learning-environment>=2.6.5",
+  "pysc2",
+  "laser-learning-environment>=2.12.0",
   "pymunk>=6.0",
-  "scipy>=1.10",
   "torch>=2.0",
 ]
 gym = ["gymnasium>=0.29.1"]

@@ -32,7 +32,7 @@ def test_overcooked():
 def test_dummy_type():
     try:
         x = dummy_type("")
-        x.abc
+        _ = x.abc
         assert False, "Expected ImportError upon usage because dummy_type is not installed"
     except ImportError:
         pass

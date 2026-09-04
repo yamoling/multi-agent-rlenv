@@ -201,9 +201,9 @@ def test_json_serialize_gym():
 
 @pytest.mark.skipif(not marlenv.adapters.HAS_PETTINGZOO, reason="PettingZoo is not installed")
 def test_json_serialize_pettingzoo():
-    from pettingzoo.sisl import pursuit_v4  # pyright: ignore[reportMissingImports]
+    from pettingzoo.sisl import pursuit_v5  # pyright: ignore[reportMissingImports]
 
-    env = marlenv.adapters.PettingZoo(pursuit_v4.parallel_env())
+    env = marlenv.adapters.PettingZoo(pursuit_v5.parallel_env())
     serde_and_check_key_values(env)
 
 
