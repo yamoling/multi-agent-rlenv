@@ -127,6 +127,105 @@ def test_smac_from_class():
 
 
 @pytest.mark.skipif(skip_smac, reason="SMAC is not installed")
+def test_smac_forwards_constructor_kwargs():
+    from marlenv.adapters import SMAC
+
+    env = SMAC("2m_vs_1z", reward_sparse=True, reward_scale=False, difficulty="1")
+
+    assert env._env.reward_sparse is True
+    assert env._env.reward_scale is False
+    assert env._env.difficulty == "1"
+
+
+@pytest.mark.skipif(skip_smac, reason="SMAC is not installed")
+def test_smac_accepts_an_existing_environment():
+    from smac.env import StarCraft2Env  # pyright: ignore[reportMissingImports]
+
+    from marlenv.adapters import SMAC
+
+    inner = StarCraft2Env(map_name="2m_vs_1z", reward_sparse=True)
+    env = SMAC(inner)
+
+    assert env._env is inner
+    assert env._env.reward_sparse is True
+
+
+@pytest.mark.skipif(skip_smac, reason="SMAC is not installed")
+def test_smac_seed_rebuilds_unlaunched_environment_without_losing_configuration(monkeypatch):
+    from marlenv.adapters import smac_adapter
+
+    class FakeStarCraft2Env:
+        def __init__(self, map_name, **kwargs):
+            self.map_name = map_name
+            self.n_agents = 2
+            self.n_actions = 4
+            self.reward_sparse = kwargs.get("reward_sparse", False)
+            self.reward_scale = kwargs.get("reward_scale", True)
+            self.difficulty = kwargs.get("difficulty", "7")
+            self._seed = kwargs.get("seed")
+            self._sc2_proc = None
+            self.closed = False
+
+        def get_env_info(self):
+            return {"obs_shape": 5 + int(self.reward_sparse), "state_shape": 10}
+
+        def seed(self):
+            return self._seed
+
+        def close(self):
+            self.closed = True
+
+    monkeypatch.setattr(smac_adapter, "StarCraft2Env", FakeStarCraft2Env)
+    env = smac_adapter.SMAC("test_map", reward_sparse=True, reward_scale=False, difficulty="1")
+    old_env = env._env
+
+    env.seed(7)
+
+    assert old_env.closed is True  # pyright: ignore[reportAttributeAccessIssue]  # StarCraft2Env is monkeypatched above.
+    assert env._env is not old_env
+    assert env._env.map_name == "test_map"
+    assert env._env.reward_sparse is True
+    assert env._env.reward_scale is False
+    assert env._env.difficulty == "1"
+    assert env._env.seed() == 7
+    assert env._env_info == {"obs_shape": 6, "state_shape": 10}
+
+
+@pytest.mark.skipif(skip_smac, reason="SMAC is not installed")
+def test_smac_seed_ignores_launched_environment(monkeypatch, caplog):
+    from marlenv.adapters import smac_adapter
+
+    class FakeStarCraft2Env:
+        def __init__(self, map_name, **kwargs):
+            self.map_name = map_name
+            self.n_agents = 2
+            self.n_actions = 4
+            self._seed = kwargs.get("seed")
+            self._sc2_proc = None
+            self.closed = False
+
+        def get_env_info(self):
+            return {"obs_shape": 5, "state_shape": 10}
+
+        def seed(self):
+            return self._seed
+
+        def close(self):
+            self.closed = True
+
+    monkeypatch.setattr(smac_adapter, "StarCraft2Env", FakeStarCraft2Env)
+    env = smac_adapter.SMAC("test_map")
+    old_env = env._env
+    old_env._sc2_proc = object()
+
+    env.seed(7)
+
+    assert env._env is old_env
+    assert old_env.closed is False  # pyright: ignore[reportAttributeAccessIssue]  # StarCraft2Env is monkeypatched above.
+    assert "cannot be reseeded once StarCraft II is running" in caplog.text
+
+
+@pytest.mark.skipif(skip_smac, reason="SMAC is not installed")
 def test_smac_render():
     from marlenv.adapters import SMAC
 

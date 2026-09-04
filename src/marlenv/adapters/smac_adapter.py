@@ -4,7 +4,7 @@ from typing import overload
 
 import numpy as np
 import numpy.typing as npt
-from smac.env import StarCraft2Env  # pyright: ignore[reportMissingImports]
+from smac.env import StarCraft2Env
 
 from marlenv.models import DiscreteMARLEnv, DiscreteSpace, Observation, State, Step
 
@@ -17,6 +17,8 @@ class SMAC(DiscreteMARLEnv):
     def __init__(
         self,
         map_name="8m",
+        /,
+        *,
         step_mul=8,
         move_amount=2,
         difficulty="7",
@@ -144,18 +146,20 @@ class SMAC(DiscreteMARLEnv):
         """
 
     @overload
-    def __init__(self, env: StarCraft2Env): ...
+    def __init__(self, env: StarCraft2Env, /) -> None: ...
 
-    def __init__(self, env_or_map_name="8m", **kwargs):  # type: ignore
+    def __init__(self, env_or_map_name: str | StarCraft2Env = "8m", /, **kwargs):
         match env_or_map_name:
             case StarCraft2Env():
+                if kwargs:
+                    raise ValueError("Cannot pass SMAC options alongside an existing StarCraft2Env instance.")
                 self._env = env_or_map_name
-                map_name = env_or_map_name.map_name
+                self._smac_kwargs = None
             case str() as map_name:
+                self._smac_kwargs = dict(kwargs)
                 self._env = StarCraft2Env(map_name=map_name, **kwargs)
             case other:
                 raise ValueError(f"Invalid argument type: {type(other)}")
-        self._env = StarCraft2Env(map_name=map_name)
         self._env_info = self._env.get_env_info()
         super().__init__(
             self._env.n_agents,
@@ -204,4 +208,23 @@ class SMAC(DiscreteMARLEnv):
         return img
 
     def seed(self, seed_value: int):
-        self._env = StarCraft2Env(map_name=self._env.map_name, seed=seed_value)
+        if self._env._sc2_proc is not None:
+            logging.warning("SMAC cannot be reseeded once StarCraft II is running. Ignoring seed argument.")
+            return
+        if self._smac_kwargs is None:
+            logging.warning("SMAC cannot reseed an environment instance supplied at initialization. Ignoring seed argument.")
+            return
+
+        old_env = self._env
+        smac_kwargs = {**self._smac_kwargs, "seed": seed_value}
+        new_env = StarCraft2Env(map_name=old_env.map_name, **smac_kwargs)
+        new_env_info = new_env.get_env_info()
+        old_env.close()
+
+        self._smac_kwargs = smac_kwargs
+        self._env = new_env
+        self._env_info = new_env_info
+        self._seed = self._env.seed()
+
+    def close(self):
+        self._env.close()
