@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 from marlenv import Builder, ParallelMARLEnv
-from marlenv.catalog import DiscreteMockEnv, DiscreteMOMockEnv
+from marlenv.catalog import DiscreteMockEnv, DiscreteMOMockEnv, EnvPool
 
 
 def make_env(end_games=(1, 3, 5), **kwargs):
@@ -111,6 +111,14 @@ def test_multi_objective_rewards():
     step = env.step(env.sample_action())
     assert step.reward.shape == (2, 3)
     assert np.all(step.reward[0] == 0) and np.all(step.reward[1] == 1)
+
+
+def test_env_pool_to_parallel():
+    envs = [DiscreteMockEnv(end_game=n) for n in (1, 3)]
+    parallel = EnvPool(envs).to_parallel()
+    assert parallel.envs == envs
+    episodes = parallel.rollout(lambda obs: np.zeros((len(obs), obs.n_agents), dtype=np.int64))
+    assert [len(e) for e in episodes] == [1, 3]
 
 
 def test_rollout():

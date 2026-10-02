@@ -1,9 +1,11 @@
 # `marlenv` - A unified framework for multi-agent reinforcement learning
+
 **Documentation: [https://yamoling.github.io/multi-agent-rlenv](https://yamoling.github.io/multi-agent-rlenv)**
 
 `marlenv` is a strongly typed library for multi-agent and multi-objective reinforcement learning.
 
 Install the library with:
+
 ```sh
 $ pip install multi-agent-rlenv      # Basics
 $ pip install multi-agent-rlenv[all] # With all optional dependencies
@@ -15,7 +17,9 @@ It aims to provide a simple and consistent interface for reinforcement learning 
 Most classes are dataclasses, which makes serialization straightforward (for example with `orjson`).
 
 # Fundamentals
+
 ## States & Observations
+
 `MARLEnv.reset()` returns a pair of `(Observation, State)` and `MARLEnv.step()` returns a `Step`.
 
 - `Observation` contains:
@@ -28,11 +32,13 @@ Most classes are dataclasses, which makes serialization straightforward (for exa
 Rewards are stored as `np.float32` arrays. Multi-objective envs use reward vectors with `reward_space.size > 1`.
 
 ## Extras
+
 Extras are auxiliary features appended by wrappers (agent id, last action, time ratio, available actions, ...).
 Wrappers that add extras must update both `extras_shape` and `extras_meanings` so downstream users can interpret them.
 `State` extras should stay in sync with `Observation` extras when applicable.
 
 # Environment catalog
+
 `marlenv.catalog` exposes curated environments and lazily imports optional dependencies.
 
 ```python
@@ -47,6 +53,7 @@ env4 = catalog.connect_n()(width=7, height=6, n=4)
 Catalog entries require their corresponding extras at install time (e.g., `multi-agent-rlenv[overcooked]`, `multi-agent-rlenv[lle]`).
 
 # Wrappers & builders
+
 Wrappers are composable through `RLEnvWrapper` and can be chained via `Builder` for fluent configuration.
 
 ```python
@@ -64,8 +71,31 @@ env = (
 
 Common wrappers include time limits, delayed rewards, masking available actions, and video recording.
 
+# Parallel environments
+
+`ParallelMARLEnv` steps several environments with the same inputs and outputs, and batches their observations so that a policy can select the actions of all environments in a single forward pass.
+
+```python
+from marlenv import Builder, ParallelMARLEnv
+from marlenv.catalog import DeepSea, EnvPool
+
+env = ParallelMARLEnv.from_factory(lambda: Builder(DeepSea(max_depth=5)).time_limit(20).build(), n_envs=8)
+# Or, from an existing pool: env = EnvPool([...]).to_parallel()
+obs, state = env.reset(seed=0)  # obs.data has shape [n_envs, n_agents, *observation_shape]
+while True:
+    step = env.step(policy(obs))  # One action per environment: [n_envs, ...]
+    if step.is_terminal:  # All environments are done or truncated
+        break
+    obs = step.obs
+```
+
+Environments are not reset automatically: once an environment is done or truncated, it is no longer stepped and its actions are ignored until the next `reset()`.
+Each `ParallelStep` has per-environment `done` and `truncated` flags, a `mask` of the environments that were actually stepped, and the individual `Step` of each environment in `steps` (`None` for masked environments).
+
 # Using the library
+
 ## Adapters for existing libraries
+
 Adapters normalize external APIs into `MARLEnv`:
 
 ```python
@@ -89,6 +119,7 @@ obs, state = env.reset()
 ```
 
 ## Designing a custom environment
+
 Create a custom environment by inheriting from `MARLEnv` and implementing `reset`, `step`, `get_observation`, and `get_state`.
 
 ```python
@@ -123,5 +154,6 @@ class CustomEnv(MARLEnv[MultiDiscreteSpace]):
 ```
 
 # Related projects
+
 - MARL: Collection of multi-agent reinforcement learning algorithms based on `marlenv` [https://github.com/yamoling/marl](https://github.com/yamoling/marl)
 - Laser Learning Environment: a multi-agent gridworld that leverages `marlenv`'s capabilities [https://pypi.org/project/laser-learning-environment/](https://pypi.org/project/laser-learning-environment/)

@@ -6,7 +6,7 @@ from typing import TypeVar
 import numpy as np
 import numpy.typing as npt
 
-from marlenv.models import MARLEnv, Observation, State, Step
+from marlenv.models import MARLEnv, Observation, ParallelMARLEnv, State, Step
 
 A = TypeVar("A")
 
@@ -39,6 +39,15 @@ class EnvPool(MARLEnv[A]):
 
     def step(self, action: A | npt.ArrayLike) -> Step:
         return self.current.step(action)
+
+    def to_parallel(self) -> ParallelMARLEnv[A]:
+        """
+        Create a `ParallelMARLEnv` where each environment of the pool is one of the parallel environments.
+
+        The environments are shared (not copied): stepping the parallel environment also changes the state of
+        the pool's environments, so do not use the pool and the parallel environment at the same time.
+        """
+        return ParallelMARLEnv(self.envs)
 
     def seed(self, seed_value: int):
         random.seed(seed_value)
