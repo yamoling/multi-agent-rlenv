@@ -1,6 +1,7 @@
 import random
+from collections.abc import Collection
 from dataclasses import dataclass
-from typing import Collection, TypeVar
+from typing import TypeVar
 
 import numpy as np
 import numpy.typing as npt

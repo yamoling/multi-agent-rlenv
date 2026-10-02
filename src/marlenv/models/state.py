@@ -23,7 +23,7 @@ class State(Generic[StateType]):
             extras = np.empty(0, dtype=np.float32)
         self.extras = extras
 
-    def add_extra(self, extra: int | float | npt.NDArray[np.float32]):
+    def add_extra(self, extra: float | npt.NDArray[np.float32]):
         if isinstance(extra, (float, int)):
             extra = np.array([extra], dtype=np.float32)
         self.extras = np.concatenate((self.extras, extra))
@@ -57,9 +57,7 @@ class State(Generic[StateType]):
                 return False
             if not np.array_equal(self.data, value.data):
                 return False
-        if not np.array_equal(self.extras, value.extras):
-            return False
-        return True
+        return np.array_equal(self.extras, value.extras)
 
     @overload
     def as_tensors(self, device=None, *, batch_dim: Literal[True]) -> "tuple[Tensor, Tensor]":

@@ -5,7 +5,7 @@ def test_episode_lengths():
     # Check rollout produces episode of the requested length (end_game)
     for length in (1, 5, 20):
         env = DiscreteMockEnv(n_agents=2, end_game=length)
-        episode = env.rollout(lambda _: env.sample_action())
+        episode = env.rollout(lambda _, env=env: env.sample_action())
         assert len(episode) == length
 
 
@@ -16,7 +16,7 @@ def test_observations_shapes_and_sizes():
     extras_size = 2
 
     env = DiscreteMockEnv(n_agents=n_agents, obs_size=obs_size, n_actions=n_actions, extras_size=extras_size)
-    obs, state = env.reset()
+    obs, _state = env.reset()
 
     # Observation data shape: [n_agents, *observation_shape]
     assert obs.data.shape == (n_agents, obs_size)
@@ -55,7 +55,7 @@ def test_state_shapes_and_sizes():
     n_agents = 5
     agent_state_size = 2
     env = DiscreteMockEnv(n_agents=n_agents, agent_state_size=agent_state_size)
-    obs, state = env.reset()
+    _obs, state = env.reset()
 
     # State data shape: flattened size = n_agents * agent_state_size
     expected_state_shape = (n_agents * agent_state_size,)

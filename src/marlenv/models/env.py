@@ -1,8 +1,9 @@
 import math
 from abc import ABC, abstractmethod
+from collections.abc import Callable, Sequence
 from dataclasses import KW_ONLY, dataclass, field
 from itertools import product
-from typing import Callable, Generic, Sequence, TypeVar
+from typing import Generic, TypeVar
 
 import cv2
 import numpy as np
@@ -238,9 +239,7 @@ class MARLEnv(ABC, Generic[A]):
             return False
         if self.extras_shape != other.extras_shape:
             return False
-        if self.reward_space != other.reward_space:
-            return False
-        return True
+        return self.reward_space == other.reward_space
 
     def __del__(self):
         if not hasattr(self, "_cv2_window_name"):

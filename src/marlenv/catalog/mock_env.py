@@ -13,7 +13,7 @@ class DiscreteMockEnv(DiscreteMARLEnv):
         obs_size: int = 42,
         n_actions: int = 5,
         end_game: int = 30,
-        reward_step: int | float | np.ndarray | list = 1,
+        reward_step: float | np.ndarray | list = 1,
         agent_state_size: int = 1,
         extras_size: int = 0,
     ) -> None:
@@ -23,7 +23,7 @@ class DiscreteMockEnv(DiscreteMARLEnv):
             case list():
                 reward_step = np.array(reward_step)
             case np.ndarray():
-                reward_step = reward_step
+                pass
             case _:
                 raise ValueError("reward_step must be an int, float or np.ndarray")
         super().__init__(

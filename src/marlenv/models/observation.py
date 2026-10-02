@@ -1,6 +1,7 @@
 import math
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Literal, Sequence, overload
+from typing import TYPE_CHECKING, Literal, overload
 
 import numpy as np
 import numpy.typing as npt
